@@ -15,14 +15,15 @@ function addAnswer(e) {
   });
 }
 
-function onSuccess(result, status){
+function onSuccess(response, status){
+  const result = response.result;
   if (result.status) {
-	  var answer = json.answer;
-	  var answerTemplate = $("#answerTemplate").html();
-	  var template = answerTemplate.format(answer.writer, new Date(answer.createdDate), answer.contents, answer.answerId, answer.answerId);
-	  $(".qna-comment-slipp-articles").prepend(template);	  
+    const answer = response.answer;
+    const answerTemplate = $("#answerTemplate").html();
+    const template = answerTemplate.format(answer.writer, new Date(answer.createdDate), answer.contents, answer.answerId, answer.answerId);
+    $(".qna-comment-slipp-articles").prepend(template);
   } else {
-	  alert(result.message);
+    alert(result.message);
   }
 }
 
