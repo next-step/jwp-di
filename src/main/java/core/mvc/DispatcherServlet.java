@@ -1,43 +1,32 @@
 package core.mvc;
 
-import core.mvc.asis.ControllerHandlerAdapter;
-import core.mvc.asis.RequestMapping;
-import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private HandlerMappingRegistry handlerMappingRegistry;
+    private HandlerMappingRegistry handlerMappingRegistry = new HandlerMappingRegistry();
 
-    private HandlerAdapterRegistry handlerAdapterRegistry;
+    private HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
 
-    private HandlerExecutor handlerExecutor;
+    private HandlerExecutor handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
 
-    @Override
-    public void init() {
-        handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next.controller"));
+    public void addHandlerMapping(HandlerMapping handlerMapping) {
+        handlerMappingRegistry.addHandlerMpping(handlerMapping);
+    }
 
-        handlerAdapterRegistry = new HandlerAdapterRegistry();
-        handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
-        handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
-
-        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+    public void addHandlerAdapter(HandlerAdapter handlerAdapter) {
+        handlerAdapterRegistry.addHandlerAdapter(handlerAdapter);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package next.controller;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
@@ -19,9 +20,16 @@ import java.util.List;
 
 @Controller
 public class QnaController extends AbstractNewController {
-    private QuestionDao questionDao = QuestionDao.getInstance();
-    private AnswerDao answerDao = AnswerDao.getInstance();
-    private QnaService qnaService = QnaService.getInstance();
+    private QnaService qnaService;
+    private QuestionDao questionDao;
+    private AnswerDao answerDao;
+
+    @Inject
+    public QnaController(QnaService qnaService, QuestionDao questionDao, AnswerDao answerDao) {
+        this.qnaService = qnaService;
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
+    }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
     public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -64,7 +72,7 @@ public class QnaController extends AbstractNewController {
 
         long questionId = Long.parseLong(req.getParameter("questionId"));
         Question question = questionDao.findById(questionId);
-        if (!question.isSameUser(UserSessionUtils.getUserFromSession(req.getSession()))) {
+        if (!question.isSameWriter(UserSessionUtils.getUserFromSession(req.getSession()))) {
             throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
         }
         return jspView("/qna/update.jsp").addObject("question", question);
@@ -78,7 +86,7 @@ public class QnaController extends AbstractNewController {
 
         long questionId = Long.parseLong(request.getParameter("questionId"));
         Question question = questionDao.findById(questionId);
-        if (!question.isSameUser(UserSessionUtils.getUserFromSession(request.getSession()))) {
+        if (!question.isSameWriter(UserSessionUtils.getUserFromSession(request.getSession()))) {
             throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
         }
 

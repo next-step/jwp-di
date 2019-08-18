@@ -8,9 +8,6 @@ public class User {
     private String name;
     private String email;
 
-    private User() {
-    }
-
     public User(String userId, String password, String name, String email) {
         this.userId = userId;
         this.password = password;
@@ -49,7 +46,7 @@ public class User {
     }
 
     public boolean isSameUser(User user) {
-        return userId.equals(user.userId);
+        return isSameUser(user.getUserId());
     }
 
     public boolean isSameUser(String newUserId) {
