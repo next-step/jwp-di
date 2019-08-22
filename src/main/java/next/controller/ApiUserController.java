@@ -1,15 +1,16 @@
 package next.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.mvc.JsonView;
 import core.mvc.ModelAndView;
-import next.dao.UserDao;
 import next.dto.UserCreatedDto;
 import next.dto.UserUpdatedDto;
 import next.model.User;
+import next.repository.JdbcUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,18 +20,23 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class ApiUserController {
-    private static final Logger logger = LoggerFactory.getLogger( ApiUserController.class );
+    private static final Logger logger = LoggerFactory.getLogger(ApiUserController.class);
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private UserDao userDao = UserDao.getInstance();
+    private final JdbcUserRepository jdbcUserRepository;
+
+    @Inject
+    public ApiUserController(JdbcUserRepository jdbcUserRepository) {
+        this.jdbcUserRepository = jdbcUserRepository;
+    }
 
     @RequestMapping(value = "/api/users", method = RequestMethod.POST)
     public ModelAndView create(HttpServletRequest request, HttpServletResponse response) throws Exception {
         UserCreatedDto createdDto = objectMapper.readValue(request.getInputStream(), UserCreatedDto.class);
         logger.debug("Created User : {}", createdDto);
 
-        userDao.insert(new User(
+        jdbcUserRepository.insert(new User(
                 createdDto.getUserId(),
                 createdDto.getPassword(),
                 createdDto.getName(),
@@ -48,7 +54,7 @@ public class ApiUserController {
         logger.debug("userId : {}", userId);
 
         ModelAndView mav = new ModelAndView(new JsonView());
-        mav.addObject("user", userDao.findByUserId(userId));
+        mav.addObject("user", jdbcUserRepository.findById(userId));
         return mav;
     }
 
@@ -59,9 +65,9 @@ public class ApiUserController {
         UserUpdatedDto updateDto = objectMapper.readValue(request.getInputStream(), UserUpdatedDto.class);
         logger.debug("Updated User : {}", updateDto);
 
-        User user = userDao.findByUserId(userId);
+        User user = jdbcUserRepository.findById(userId);
         user.update(updateDto);
-        userDao.update(user);
+        jdbcUserRepository.update(user);
 
         return new ModelAndView(new JsonView());
     }

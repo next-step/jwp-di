@@ -22,22 +22,20 @@ public class BeanFactory {
         this.preInstanticateBeans = preInstanticateBeans;
     }
 
+    public BeanFactory() {
+    }
+
+    public Map<Class<?>, Object> getBeans() {
+        return beans;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
     }
 
     public void initialize() {
-        preInstanticateBeans.forEach(this::createBeans);
-    }
-
-    private void createBeans(Class<?> preInstanticateBean) {
-        try {
-            initBean(preInstanticateBean);
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            logger.error("bean creation failed. ", e);
-            throw new BeanCreationException();
-        }
+        preInstanticateBeans.forEach(this::registerBean);
     }
 
     private void initBean(Class<?> clazz) throws IllegalAccessException, InstantiationException, InvocationTargetException {
@@ -48,6 +46,7 @@ public class BeanFactory {
             beans.put(clazz, clazz.newInstance());
             return;
         }
+
 
         Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
 
@@ -70,4 +69,12 @@ public class BeanFactory {
                 .toArray(Class[]::new);
     }
 
+    public void registerBean(Class<?> targetBean) {
+        try {
+            initBean(targetBean);
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            logger.error("bean creation failed. ", e);
+            throw new BeanCreationException();
+        }
+    }
 }

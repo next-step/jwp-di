@@ -1,16 +1,17 @@
 package next.controller;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.jdbc.DataAccessException;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
-import next.dao.AnswerDao;
-import next.dao.QuestionDao;
 import next.model.Answer;
 import next.model.Result;
 import next.model.User;
+import next.repository.JdbcAnswerRepository;
+import next.repository.JdbcQuestionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,14 +20,20 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class ApiQnaController extends AbstractNewController {
-    private static final Logger logger = LoggerFactory.getLogger( ApiQnaController.class );
+    private static final Logger logger = LoggerFactory.getLogger(ApiQnaController.class);
 
-    private QuestionDao questionDao = QuestionDao.getInstance();
-    private AnswerDao answerDao = AnswerDao.getInstance();
+    private final JdbcQuestionRepository jdbcQuestionRepository;
+    private final JdbcAnswerRepository jdbcAnswerRepository;
+
+    @Inject
+    public ApiQnaController(JdbcQuestionRepository jdbcQuestionRepository, JdbcAnswerRepository jdbcAnswerRepository) {
+        this.jdbcAnswerRepository = jdbcAnswerRepository;
+        this.jdbcQuestionRepository = new JdbcQuestionRepository();
+    }
 
     @RequestMapping(value = "/api/qna/list", method = RequestMethod.GET)
     public ModelAndView questions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        return jsonView().addObject("questions", questionDao.findAll());
+        return jsonView().addObject("questions", jdbcQuestionRepository.findAll());
     }
 
     @RequestMapping(value = "/api/qna/addAnswer", method = RequestMethod.POST)
@@ -40,8 +47,8 @@ public class ApiQnaController extends AbstractNewController {
                 Long.parseLong(req.getParameter("questionId")));
         logger.debug("answer : {}", answer);
 
-        Answer savedAnswer = answerDao.insert(answer);
-        questionDao.updateCountOfAnswer(savedAnswer.getQuestionId());
+        Answer savedAnswer = jdbcAnswerRepository.insert(answer);
+        jdbcQuestionRepository.updateCountOfAnswer(savedAnswer.getQuestionId());
 
         return jsonView().addObject("answer", savedAnswer).addObject("result", Result.ok());
     }
@@ -52,7 +59,7 @@ public class ApiQnaController extends AbstractNewController {
 
         ModelAndView mav = jsonView();
         try {
-            answerDao.delete(answerId);
+            jdbcAnswerRepository.delete(answerId);
             mav.addObject("result", Result.ok());
         } catch (DataAccessException e) {
             mav.addObject("result", Result.fail(e.getMessage()));

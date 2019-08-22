@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.web.context.WebApplicationContext;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +17,8 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        dispatcher = new DispatcherServlet();
+        WebApplicationContext webApplicationContext = new WebApplicationContext("next.controller");
+        dispatcher = new DispatcherServlet(webApplicationContext);
         dispatcher.init();
 
         request = new MockHttpServletRequest();
