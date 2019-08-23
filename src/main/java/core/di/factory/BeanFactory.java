@@ -18,11 +18,11 @@ public class BeanFactory {
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory() {
     }
 
-    public BeanFactory() {
+    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
+        this.preInstanticateBeans = preInstanticateBeans;
     }
 
     @SuppressWarnings("unchecked")
@@ -44,6 +44,15 @@ public class BeanFactory {
         }
 
         Parameter[] parameters = injectedConstructor.getParameters();
+        List<Class<?>> concreteClassForParameters = getConcreteClasses(parameters);
+        Object[] objects = concreteClassForParameters.stream()
+                .map(clazz -> beans.get(clazz))
+                .toArray();
+
+        beans.put(bean, injectedConstructor.newInstance(objects));
+    }
+
+    private List<Class<?>> getConcreteClasses(Parameter[] parameters) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         List<Class<?>> concreteClassForParameters = new ArrayList<>();
         for (Parameter parameter : parameters) {
             Class<?> type = parameter.getType();
@@ -52,11 +61,7 @@ public class BeanFactory {
             initializeBean(concreteClass);
         }
 
-        Object[] objects = concreteClassForParameters.stream()
-                .map(clazz -> beans.get(clazz))
-                .toArray();
-
-        beans.put(bean, injectedConstructor.newInstance(objects));
+        return concreteClassForParameters;
     }
 
     public Map<Class<?>, Object> getControllers() {

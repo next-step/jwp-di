@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
@@ -34,11 +33,7 @@ public class DispatcherServlet extends HttpServlet {
     public void init() {
         BeanFactory beanFactory = new BeanFactory();
         BeanScanner beanScanner = new BeanScanner(beanFactory, "next.controller");
-        try {
-            beanScanner.scan();
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            e.printStackTrace();
-        }
+        beanScanner.scan();
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());

@@ -23,10 +23,14 @@ public class BeanScanner {
         reflections = new Reflections(basePackage);
     }
 
-    public void scan() throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        Set<Class<?>> preInitiatedControllers = getTypesAnnotatedWith(Controller.class, Repository.class, Service.class);
-        for (Class<?> preInitiatedController : preInitiatedControllers) {
-            beanFactory.initializeBean(preInitiatedController);
+    public void scan() {
+        try {
+            Set<Class<?>> preInitiatedControllers = getTypesAnnotatedWith(Controller.class, Repository.class, Service.class);
+            for (Class<?> preInitiatedController : preInitiatedControllers) {
+                beanFactory.initializeBean(preInitiatedController);
+            }
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            log.error(e.getMessage());
         }
     }
 
@@ -35,6 +39,7 @@ public class BeanScanner {
         for (Class<? extends Annotation> annotation : annotations) {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
+
         return beans;
     }
 }
