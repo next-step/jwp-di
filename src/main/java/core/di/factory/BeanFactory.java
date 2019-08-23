@@ -1,16 +1,15 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -21,6 +20,9 @@ public class BeanFactory {
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
+    }
+
+    public BeanFactory() {
     }
 
     @SuppressWarnings("unchecked")
@@ -55,5 +57,11 @@ public class BeanFactory {
                 .toArray();
 
         beans.put(bean, injectedConstructor.newInstance(objects));
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        return beans.keySet().stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(clazz -> clazz, clazz -> beans.get(clazz), (a, b) -> b));
     }
 }
