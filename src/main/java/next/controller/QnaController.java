@@ -1,16 +1,17 @@
 package next.controller;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
 import next.CannotDeleteException;
-import next.dao.AnswerDao;
-import next.dao.QuestionDao;
 import next.model.Answer;
 import next.model.Question;
 import next.model.User;
+import next.repository.JdbcAnswerRepository;
+import next.repository.JdbcQuestionRepository;
 import next.service.QnaService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,9 +20,17 @@ import java.util.List;
 
 @Controller
 public class QnaController extends AbstractNewController {
-    private QuestionDao questionDao = QuestionDao.getInstance();
-    private AnswerDao answerDao = AnswerDao.getInstance();
-    private QnaService qnaService = QnaService.getInstance();
+
+    private final QnaService qnaService;
+    private final JdbcQuestionRepository jdbcQuestionRepository;
+    private final JdbcAnswerRepository jdbcAnswerRepository;
+
+    @Inject
+    public QnaController(QnaService qnaService, JdbcQuestionRepository jdbcQuestionRepository, JdbcAnswerRepository jdbcAnswerRepository) {
+        this.qnaService = qnaService;
+        this.jdbcQuestionRepository = jdbcQuestionRepository;
+        this.jdbcAnswerRepository = jdbcAnswerRepository;
+    }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
     public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -39,7 +48,7 @@ public class QnaController extends AbstractNewController {
         User user = UserSessionUtils.getUserFromSession(request.getSession());
         Question question = new Question(user.getUserId(), request.getParameter("title"),
                 request.getParameter("contents"));
-        questionDao.insert(question);
+        jdbcQuestionRepository .insert(question);
         return jspView("redirect:/");
     }
 
@@ -47,8 +56,8 @@ public class QnaController extends AbstractNewController {
     public ModelAndView show(HttpServletRequest request, HttpServletResponse response) throws Exception {
         long questionId = Long.parseLong(request.getParameter("questionId"));
 
-        Question question = questionDao.findById(questionId);
-        List<Answer> answers = answerDao.findAllByQuestionId(questionId);
+        Question question = jdbcQuestionRepository .findById(questionId);
+        List<Answer> answers = jdbcAnswerRepository.findAllByQuestionId(questionId);
 
         ModelAndView mav = jspView("/qna/show.jsp");
         mav.addObject("question", question);
@@ -63,7 +72,7 @@ public class QnaController extends AbstractNewController {
         }
 
         long questionId = Long.parseLong(req.getParameter("questionId"));
-        Question question = questionDao.findById(questionId);
+        Question question = jdbcQuestionRepository.findById(questionId);
         if (!question.isSameUser(UserSessionUtils.getUserFromSession(req.getSession()))) {
             throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
         }
@@ -77,7 +86,7 @@ public class QnaController extends AbstractNewController {
         }
 
         long questionId = Long.parseLong(request.getParameter("questionId"));
-        Question question = questionDao.findById(questionId);
+        Question question = jdbcQuestionRepository.findById(questionId);
         if (!question.isSameUser(UserSessionUtils.getUserFromSession(request.getSession()))) {
             throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
         }
@@ -85,7 +94,7 @@ public class QnaController extends AbstractNewController {
         Question newQuestion = new Question(question.getWriter(), request.getParameter("title"),
                 request.getParameter("contents"));
         question.update(newQuestion);
-        questionDao.update(question);
+        jdbcQuestionRepository.update(question);
         return jspView("redirect:/");
     }
 
