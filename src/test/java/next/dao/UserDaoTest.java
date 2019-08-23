@@ -23,7 +23,7 @@ public class UserDaoTest {
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
-        userDao = UserDao.getInstance();
+        userDao = new UserDao();
     }
 
     @Test

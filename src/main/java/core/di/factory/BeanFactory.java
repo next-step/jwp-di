@@ -2,18 +2,25 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.Inject;
-import org.apache.commons.lang3.ClassUtils;
+import core.annotation.Repository;
+import core.annotation.Service;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
-import java.lang.reflect.Constructor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.Map.Entry;
 
 import static core.di.factory.BeanFactoryUtils.findConcreteClass;
 import static core.di.factory.BeanFactoryUtils.getInjectedConstructor;
+import static core.di.factory.ReflectionSupport.getArguments;
+import static core.di.factory.ReflectionSupport.setFieldByForce;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
+import static org.springframework.beans.BeanUtils.instantiateClass;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -22,19 +29,17 @@ public class BeanFactory {
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    @SuppressWarnings("unchecked")
+    public BeanFactory(BeanScanner scanner) {
+        this.preInstanticateBeans = scanner.scan(Controller.class, Service.class, Repository.class);
     }
 
-    /**
-     * if exist beans
-     *  return bean
-     * else
-     *  createBean
-     */
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        logger.info("find {}", requiredType.getName());
+        logger.info("find {}", requiredType);
+        if (requiredType == null) {
+            return null;
+        }
 
         if (beans.containsKey(requiredType)) {
             return (T) beans.get(requiredType);
@@ -45,73 +50,36 @@ public class BeanFactory {
 
     @SuppressWarnings("unchecked")
     private <T> T createBean(Class<T> clazz) {
-        try {
-            Class<T> concreteClass = (Class<T>) findConcreteClass(clazz, preInstanticateBeans);
-            T instance = newInstance(concreteClass);
-            populateBean(instance, concreteClass);
-            return instance;
-        } catch (IllegalAccessException e) {
-            logger.info("class access failed", e);
-        } catch (InvocationTargetException e) {
-            logger.info("target invocation failed", e);
-        } catch (InstantiationException e) {
-            logger.info("instantiation failed", e);
+        Class<T> concreteClass = (Class<T>) findConcreteClass(clazz, preInstanticateBeans);
+
+        if (!preInstanticateBeans.contains(concreteClass)) {
+            return null;
         }
 
-        return null;
+        T instance = newInstance(concreteClass);
+        populateBean(instance, concreteClass);
+        beans.put(clazz, instance);
+        return instance;
     }
 
-    private <T> void populateBean(T instance, Class<T> clazz) throws IllegalAccessException {
-        final Field[] fields = clazz.getFields();
-
-        for (Field field : fields) {
-            if (ClassUtils.isPrimitiveOrWrapper(field.getClass())) {
-                continue;
-            }
-
-            Object bean = getBean(field.getClass());
-            field.setAccessible(true);
-            field.set(instance, bean);
-        }
+    private <T> T newInstance(final Class<T> clazz) {
+        return ofNullable(getInjectedConstructor(clazz))
+                .map(ctor -> instantiateClass(ctor, getArguments(ctor, this::getBean)))
+                .orElseGet(() -> instantiateClass(clazz));
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T newInstance(Class<T> clazz) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-
-        Constructor<?> constructor = getInjectedConstructor(clazz);
-
-        if (constructor == null) {
-            constructor = clazz.getConstructors()[0];
-            if (constructor.getParameterCount() != 0) {
-                throw new IllegalStateException(clazz.getName() + " Default Constructor is Required");
-            }
-            return (T) constructor.newInstance();
-        }
-
-        Object[] args = new Object[constructor.getParameterCount()];
-        for (int i = 0; i < constructor.getParameterCount(); i++) {
-            Class<?> parameterType = constructor.getParameterTypes()[i];
-            args[i] = getBean(parameterType);
-        }
-
-        return (T) constructor.newInstance(args);
+    private void populateBean(final Object instance, final Class<?> clazz) {
+        Arrays.stream(clazz.getDeclaredFields())
+                .filter(this::isInjectField)
+                .forEach(field -> setFieldByForce(field, instance, getBean(field.getType())));
     }
 
+    private boolean isInjectField(Field field) {
+        return field != null
+                && field.isAnnotationPresent(Inject.class)
+                && !BeanUtils.isSimpleValueType(field.getClass());
+    }
 
-
-    /**
-     * 1. create instance
-     *   - constructor injection
-     * 2. populate bean
-     *
-     * getBean (Class)
-     *   if null
-     *     - createBean
-     *   else
-     *     - getBean
-     *
-     */
-    @SuppressWarnings("unchecked")
     public void initialize() {
         for (Class<?> preInstanticateBean : preInstanticateBeans) {
             Object bean = getBean(preInstanticateBean);
@@ -121,7 +89,10 @@ public class BeanFactory {
         }
     }
 
-    private boolean isInjectField(Field field) {
-        return field != null && field.isAnnotationPresent(Inject.class);
+    public Map<Class<?>, Object> getBeans(Class<? extends Annotation> annotation) {
+        return beans.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().isAnnotationPresent(annotation))
+                .collect(toMap(Entry::getKey, Entry::getValue, (b1, b2) -> b2));
     }
 }
