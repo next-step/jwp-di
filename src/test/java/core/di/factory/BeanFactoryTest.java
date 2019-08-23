@@ -14,6 +14,7 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class BeanFactoryTest {
     private Reflections reflections;
@@ -26,6 +27,15 @@ public class BeanFactoryTest {
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstanticateClazz);
         beanFactory.initialize();
+    }
+
+    @Test
+    void getBean_NULL() {
+        final NotBean emptyBean = beanFactory.getBean(NotBean.class);
+        assertNull(emptyBean);
+
+        final Object nullBean = beanFactory.getBean(null);
+        assertNull(nullBean);
     }
 
     @Test
@@ -47,5 +57,9 @@ public class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    private static class NotBean {
+
     }
 }
