@@ -43,7 +43,9 @@ public class ApiQnaController extends AbstractNewController {
         Answer savedAnswer = answerDao.insert(answer);
         questionDao.updateCountOfAnswer(savedAnswer.getQuestionId());
 
-        return jsonView().addObject("answer", savedAnswer).addObject("result", Result.ok());
+        return jsonView()
+                .addObject("answer", savedAnswer)
+                .addObject("result", Result.ok());
     }
 
     @RequestMapping(value = "/api/qna/deleteAnswer", method = RequestMethod.POST)

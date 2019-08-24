@@ -1,4 +1,4 @@
-package core.mvc.tobe;
+package core.mvc.tobe.scanner;
 
 import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
@@ -23,7 +23,7 @@ public class ControllerScanner {
         return instantiateControllers(preInitiatedControllers);
     }
 
-    Map<Class<?>, Object> instantiateControllers(Set<Class<?>> preInitiatedControllers) {
+    private Map<Class<?>, Object> instantiateControllers(Set<Class<?>> preInitiatedControllers) {
         Map<Class<?>, Object> controllers = Maps.newHashMap();
         try {
             for (Class<?> clazz : preInitiatedControllers) {

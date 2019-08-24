@@ -1,6 +1,7 @@
 package core.mvc.tobe;
 
 import core.db.DataBase;
+import next.controller.ApiQnaController;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,5 +43,16 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
         execution.handle(request, response);
+    }
+
+    @Test
+    void name() {
+        final AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping("next");
+        handlerMapping.initialize();
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/qna/list");
+        final HandlerExecution handler = (HandlerExecution) handlerMapping.getHandler(request);
+
+        assertThat(handler.getDeclaredObject().getClass()).isEqualTo(ApiQnaController.class);
     }
 }
