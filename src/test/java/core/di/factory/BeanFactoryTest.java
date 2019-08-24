@@ -1,51 +1,54 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class BeanFactoryTest {
+class BeanFactoryTest {
+
     private Reflections reflections;
     private BeanFactory beanFactory;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
-    public void setup() {
+    void setup() {
         reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
+
+        final Set<Class<?>> pareInstantiateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        beanFactory = new BeanFactory(pareInstantiateClazz);
         beanFactory.initialize();
     }
 
+    @DisplayName("QnaController의 DI를 확인한다.")
     @Test
-    public void di() throws Exception {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
+    void qnaControllerDi() {
+        final QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
         assertNotNull(qnaController.getQnaService());
 
-        MyQnaService qnaService = qnaController.getQnaService();
+        final MyQnaService qnaService = qnaController.getQnaService();
         assertNotNull(qnaService.getUserRepository());
         assertNotNull(qnaService.getQuestionRepository());
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
+    @SafeVarargs
+    private Set<Class<?>> getTypesAnnotatedWith(final Class<? extends Annotation>... annotations) {
+        return Arrays.stream(annotations)
+                .map(annotation -> reflections.getTypesAnnotatedWith(annotation))
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
     }
 }
