@@ -5,11 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+
+import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.toMap;
 
 public class BeanFactory {
 
@@ -26,6 +30,18 @@ public class BeanFactory {
     @SuppressWarnings("unchecked")
     public <T> T getBean(final Class<T> requiredType) {
         return (T) beans.get(requiredType);
+    }
+
+    public Map<Class<?>, Object> getBeans() {
+        return unmodifiableMap(beans);
+    }
+
+    public Map<Class<?>, Object> getBeansOfAnnotatedBy(final Class<? extends Annotation> annotation) {
+        return unmodifiableMap(getBeans()
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().isAnnotationPresent(annotation))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     public void initialize() {
