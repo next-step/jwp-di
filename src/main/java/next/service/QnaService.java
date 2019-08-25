@@ -13,8 +13,6 @@ import java.util.List;
 
 @Service
 public class QnaService {
-    private static QnaService qnaService;
-
     private final QuestionDao questionDao;
     private final AnswerDao answerDao;
 
@@ -22,13 +20,6 @@ public class QnaService {
     public QnaService(QuestionDao questionDao, AnswerDao answerDao) {
         this.questionDao = questionDao;
         this.answerDao = answerDao;
-    }
-
-    public static QnaService getInstance() {
-        if (qnaService == null) {
-            qnaService = new QnaService();
-        }
-        return qnaService;
     }
 
     public Question findById(long questionId) {
