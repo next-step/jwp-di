@@ -2,8 +2,11 @@ package core.di.factory;
 
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
+import org.reflections.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
@@ -18,7 +21,7 @@ public class BeanFactoryUtils {
      * @Inject 애노테이션이 설정되어 있는 생성자는 클래스당 하나로 가정한다.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Constructor<?> getInjectedConstructor(Class<?> clazz) {
+    public static <T> Constructor<T> getInjectedConstructor(Class<T> clazz) {
         Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
             return null;
@@ -48,4 +51,5 @@ public class BeanFactoryUtils {
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
     }
+
 }
