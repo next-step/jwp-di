@@ -2,11 +2,8 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.Inject;
-import core.annotation.Repository;
-import core.annotation.Service;
 import core.annotation.web.Controller;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import core.mvc.tobe.BeanScanner;
 import org.springframework.beans.BeanUtils;
 import support.exception.ExceptionWrapper;
 
@@ -16,19 +13,22 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    public static final Class<? extends Annotation>[] ANNOTATIONS =
-            new Class[] {Repository.class, Service.class, Controller.class};
+    private final BeanScanner beanScanner;
+    private final Set<Class<?>> annotatedTypes;
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    private Set<Class<?>> preInstanticateBeans;
+    public BeanFactory(final BeanScanner beanScanner) {
+        this.beanScanner = beanScanner;
+        this.annotatedTypes = beanScanner.getTypesAnnotatedWith();
+    }
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public void initialize() {
+        beanScanner.getAnnotations()
+                .forEach(this::createBeans);
     }
 
     @SuppressWarnings("unchecked")
@@ -36,13 +36,14 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
-        Arrays.stream(ANNOTATIONS)
-                .forEach(this::createBeans);
+    public Set<Class<?>> getControllers() {
+        return annotatedTypes.stream()
+                .filter(type -> type.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toSet());
     }
 
     private void createBeans(Class<? extends Annotation> annotation) {
-        preInstanticateBeans.stream()
+        annotatedTypes.stream()
                 .filter(bean -> bean.isAnnotationPresent(annotation))
                 .forEach(ExceptionWrapper.consumer(
                         bean -> {
