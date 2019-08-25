@@ -3,6 +3,8 @@ package core.di.factory;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import support.exception.CreateInstanceFailException;
+import support.exception.NoSuchDefaultConstructorException;
 
 import java.lang.reflect.Constructor;
 import java.util.Map;
@@ -11,9 +13,7 @@ import java.util.Set;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
-
     private Set<Class<?>> preInstanticateBeans;
-
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
@@ -59,7 +59,8 @@ public class BeanFactory {
         try {
             return clazz.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            logger.error(e.getMessage());
+            throw new NoSuchDefaultConstructorException();
         }
     }
 
@@ -68,7 +69,8 @@ public class BeanFactory {
             Object[] parameters = getParameters(parameterTypes);
             return constructor.newInstance(parameters);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            logger.error(e.getMessage());
+            throw new CreateInstanceFailException();
         }
     }
 
