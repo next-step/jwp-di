@@ -4,6 +4,8 @@ public class Result {
     private boolean status;
     private String message;
 
+    private Result() { }
+
     private Result(boolean status) {
         this(status, "");
     }

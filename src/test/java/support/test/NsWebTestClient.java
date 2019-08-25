@@ -1,10 +1,12 @@
 package support.test;
 
+import next.model.Result;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
@@ -40,6 +42,16 @@ public class NsWebTestClient {
         return response.getResponseHeaders().getLocation();
     }
 
+    public <T> EntityExchangeResult<byte[]> createResource2(String url, T body, Class<T> clazz) {
+        return testClientBuilder.build()
+                .post()
+                .uri(url)
+                .body(Mono.just(body), clazz)
+                .exchange()
+                .expectBody()
+                .returnResult();
+    }
+
     public <T> void updateResource(URI location, T body, Class<T> clazz) {
         testClientBuilder.build()
                 .put()
@@ -56,6 +68,25 @@ public class NsWebTestClient {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(clazz)
+                .returnResult().getResponseBody();
+    }
+
+    public <T> List<T> getResources(String location, Class<T> clazz) {
+        return testClientBuilder.build()
+                .get()
+                .uri(location)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(clazz)
+                .returnResult().getResponseBody();
+    }
+
+    public Result deleteResource(String location) {
+        return testClientBuilder.build()
+                .delete()
+                .uri(location)
+                .exchange()
+                .expectBody(Result.class)
                 .returnResult().getResponseBody();
     }
 
