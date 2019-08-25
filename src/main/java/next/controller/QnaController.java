@@ -22,12 +22,6 @@ import java.util.List;
 public class QnaController extends AbstractNewController {
 
     @Inject
-    private QuestionDao questionDao;
-
-    @Inject
-    private AnswerDao answerDao;
-
-    @Inject
     private QnaService qnaService;
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
@@ -46,7 +40,7 @@ public class QnaController extends AbstractNewController {
         User user = UserSessionUtils.getUserFromSession(request.getSession());
         Question question = new Question(user.getUserId(), request.getParameter("title"),
                 request.getParameter("contents"));
-        questionDao.insert(question);
+        qnaService.insert(question);
         return jspView("redirect:/");
     }
 
@@ -54,8 +48,8 @@ public class QnaController extends AbstractNewController {
     public ModelAndView show(HttpServletRequest request, HttpServletResponse response) throws Exception {
         long questionId = Long.parseLong(request.getParameter("questionId"));
 
-        Question question = questionDao.findById(questionId);
-        List<Answer> answers = answerDao.findAllByQuestionId(questionId);
+        Question question = qnaService.findById(questionId);
+        List<Answer> answers = qnaService.findAllByQuestionId(questionId);
 
         ModelAndView mav = jspView("/qna/show.jsp");
         mav.addObject("question", question);
@@ -70,7 +64,7 @@ public class QnaController extends AbstractNewController {
         }
 
         long questionId = Long.parseLong(req.getParameter("questionId"));
-        Question question = questionDao.findById(questionId);
+        Question question = qnaService.findById(questionId);
         if (!question.isSameUser(UserSessionUtils.getUserFromSession(req.getSession()))) {
             throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
         }
@@ -84,15 +78,14 @@ public class QnaController extends AbstractNewController {
         }
 
         long questionId = Long.parseLong(request.getParameter("questionId"));
-        Question question = questionDao.findById(questionId);
+        Question question = qnaService.findById(questionId);
         if (!question.isSameUser(UserSessionUtils.getUserFromSession(request.getSession()))) {
             throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
         }
 
         Question newQuestion = new Question(question.getWriter(), request.getParameter("title"),
                 request.getParameter("contents"));
-        question.update(newQuestion);
-        questionDao.update(question);
+        qnaService.update(questionId, newQuestion);
         return jspView("redirect:/");
     }
 

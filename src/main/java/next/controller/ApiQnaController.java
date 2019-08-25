@@ -9,46 +9,37 @@ import core.jdbc.DataAccessException;
 import core.mvc.JsonView;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
-import next.dao.AnswerDao;
-import next.dao.QuestionDao;
-import next.dto.QnaCreatedDto;
-import next.dto.QnaUpdatedDto;
+import next.dto.QuestionDto;
 import next.model.Answer;
 import next.model.Question;
 import next.model.Result;
 import next.model.User;
+import next.service.QnaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Date;
 
 @Controller
 public class ApiQnaController extends AbstractNewController {
     private static final Logger logger = LoggerFactory.getLogger( ApiQnaController.class );
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
-    private QuestionDao questionDao;
-
-    @Inject
-    private AnswerDao answerDao;
-
-    private long questionId = 0;
+    private QnaService qnaService;
 
     @RequestMapping(value = "/api/qna/list", method = RequestMethod.GET)
     public ModelAndView questions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        return jsonView().addObject("questions", questionDao.findAll());
+        return jsonView().addObject("questions", qnaService.findAll());
     }
 
     @RequestMapping(value = "/api/qna", method = RequestMethod.POST)
     public ModelAndView addQuestion(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        QnaCreatedDto question = objectMapper.readValue(req.getInputStream(), QnaCreatedDto.class);
-        final Question savedQuestion = questionDao.insert(question.toQuestion());
+        QuestionDto questionDto = objectMapper.readValue(req.getInputStream(), QuestionDto.class);
+        final Question savedQuestion = qnaService.insert(questionDto.toQuestion());
 
         resp.setHeader("Location", "/api/qna?questionId=" + savedQuestion.getQuestionId());
         resp.setStatus(HttpStatus.CREATED.value());
@@ -58,16 +49,14 @@ public class ApiQnaController extends AbstractNewController {
     @RequestMapping(value = "/api/qna", method = RequestMethod.GET)
     public ModelAndView question(HttpServletRequest req, HttpServletResponse resp) {
         final long questionId = Long.parseLong(req.getParameter("questionId"));
-        return jsonView().addObject("question", questionDao.findById(questionId));
+        return jsonView().addObject("question", qnaService.findById(questionId));
     }
 
     @RequestMapping(value = "/api/qna", method = RequestMethod.PUT)
     public ModelAndView putQuestion(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Long questionId = Long.valueOf(req.getParameter("questionId"));
-        QnaUpdatedDto updatedDto = objectMapper.readValue(req.getInputStream(), QnaUpdatedDto.class);
-        final Question question = questionDao.findById(questionId);
-        question.update(updatedDto.toQuestion());
-        questionDao.update(question);
+        QuestionDto questionDto = objectMapper.readValue(req.getInputStream(), QuestionDto.class);
+        qnaService.update(questionId, questionDto.toQuestion());
         return new ModelAndView(new JsonView());
     }
 
@@ -82,8 +71,8 @@ public class ApiQnaController extends AbstractNewController {
                 Long.parseLong(req.getParameter("questionId")));
         logger.debug("answer : {}", answer);
 
-        Answer savedAnswer = answerDao.insert(answer);
-        questionDao.updateCountOfAnswer(savedAnswer.getQuestionId());
+        Answer savedAnswer = qnaService.insert(answer);
+        qnaService.updateCountOfAnswer(savedAnswer.getQuestionId());
 
         return jsonView().addObject("answer", savedAnswer).addObject("result", Result.ok());
     }
@@ -94,7 +83,7 @@ public class ApiQnaController extends AbstractNewController {
 
         ModelAndView mav = jsonView();
         try {
-            answerDao.delete(answerId);
+            qnaService.delete(answerId);
             mav.addObject("result", Result.ok());
         } catch (DataAccessException e) {
             mav.addObject("result", Result.fail(e.getMessage()));
