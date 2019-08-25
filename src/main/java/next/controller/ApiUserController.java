@@ -1,15 +1,16 @@
 package next.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.mvc.JsonView;
 import core.mvc.ModelAndView;
-import next.dao.UserDao;
 import next.dto.UserCreatedDto;
 import next.dto.UserUpdatedDto;
 import next.model.User;
+import next.repository.JdbcUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,14 +24,19 @@ public class ApiUserController {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private UserDao userDao = UserDao.getInstance();
+    private JdbcUserRepository userRepository;
+
+    @Inject
+    public ApiUserController(JdbcUserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @RequestMapping(value = "/api/users", method = RequestMethod.POST)
     public ModelAndView create(HttpServletRequest request, HttpServletResponse response) throws Exception {
         UserCreatedDto createdDto = objectMapper.readValue(request.getInputStream(), UserCreatedDto.class);
         logger.debug("Created User : {}", createdDto);
 
-        userDao.insert(new User(
+        userRepository.insert(new User(
                 createdDto.getUserId(),
                 createdDto.getPassword(),
                 createdDto.getName(),
@@ -48,7 +54,7 @@ public class ApiUserController {
         logger.debug("userId : {}", userId);
 
         ModelAndView mav = new ModelAndView(new JsonView());
-        mav.addObject("user", userDao.findByUserId(userId));
+        mav.addObject("user", userRepository.findByUserId(userId));
         return mav;
     }
 
@@ -59,9 +65,9 @@ public class ApiUserController {
         UserUpdatedDto updateDto = objectMapper.readValue(request.getInputStream(), UserUpdatedDto.class);
         logger.debug("Updated User : {}", updateDto);
 
-        User user = userDao.findByUserId(userId);
+        User user = userRepository.findByUserId(userId);
         user.update(updateDto);
-        userDao.update(user);
+        userRepository.update(user);
 
         return new ModelAndView(new JsonView());
     }
