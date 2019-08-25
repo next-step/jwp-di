@@ -13,7 +13,6 @@ import support.test.NsWebTestClient;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class UserAcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(UserAcceptanceTest.class);

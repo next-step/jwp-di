@@ -1,6 +1,5 @@
 package core.di.factory;
 
-import core.annotation.Component;
 import core.annotation.web.Controller;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
