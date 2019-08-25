@@ -1,9 +1,6 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,21 +12,21 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class BeanFactoryTest {
+class BeanFactoryTest {
     private Reflections reflections;
     private BeanFactory beanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setup() {
+    void setup() {
         reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(BeanFactory.ANNOTATIONS);
         beanFactory = new BeanFactory(preInstanticateClazz);
         beanFactory.initialize();
     }
 
     @Test
-    public void di() throws Exception {
+    void di() throws Exception {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
