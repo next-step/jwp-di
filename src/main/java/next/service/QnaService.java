@@ -25,6 +25,14 @@ public class QnaService {
         return qnaService;
     }
 
+    public QnaService(QuestionDao questionDao, AnswerDao answerDao) {
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
+    }
+
+    public QnaService() {
+    }
+
     public Question findById(long questionId) {
         return questionDao.findById(questionId);
     }

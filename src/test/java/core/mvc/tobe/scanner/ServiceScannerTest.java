@@ -10,11 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ServiceScannerTest {
 
-    @DisplayName("ServiceScanner가 Service 어노테이션이 있는 QnaService 클래스를 찾아서 객체로 생성한다")
+    @DisplayName("Service 어노테이션이 있는 QnaService 클래스를 찾아서 객체로 생성한다")
     @Test
     void getServices() {
         final ServiceScanner serviceScanner = new ServiceScanner("next");
-        final Map<Class<?>, Object> services = serviceScanner.getServices();
+        final Map<Class<?>, Object> services = serviceScanner.getBeans();
 
         assertThat(services).isNotEmpty();
         assertThat(services).containsKey(QnaService.class);

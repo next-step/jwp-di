@@ -1,14 +1,17 @@
 package core.mvc.tobe.scanner;
 
+import com.google.common.collect.Maps;
 import core.annotation.Service;
 import org.reflections.Reflections;
+import org.springframework.util.CollectionUtils;
 import support.exception.ExceptionWrapper;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class ServiceScanner {
+import static java.util.stream.Collectors.toMap;
+
+public class ServiceScanner implements BeanScanner {
 
     private final Reflections reflections;
 
@@ -16,17 +19,20 @@ public class ServiceScanner {
         this.reflections = new Reflections(basePackage);
     }
 
-    public Map<Class<?>, Object> getServices() {
+    public Map<Class<?>, Object> getBeans() {
         final Set<Class<?>> services = reflections.getTypesAnnotatedWith(Service.class);
-        return instantiateServices(services);
+
+        if (CollectionUtils.isEmpty(services)) {
+            return Maps.newHashMap();
+        }
+
+        return instantiate(services);
     }
 
-    private Map<Class<?>, Object> instantiateServices(Set<Class<?>> preInitiatedServices) {
-        final Map<Class<?>, Object> services = new HashMap<>();
-
-        preInitiatedServices.forEach(
-                ExceptionWrapper.consumer(service -> services.put(service, service.newInstance())));
-
-        return services;
+    private Map<Class<?>, Object> instantiate(Set<Class<?>> preInitiatedServices) {
+        return preInitiatedServices.stream()
+                .collect(toMap(
+                        service -> service,
+                        ExceptionWrapper.function(Class::newInstance)));
     }
 }

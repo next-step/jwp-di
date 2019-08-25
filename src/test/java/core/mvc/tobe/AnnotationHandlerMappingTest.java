@@ -4,6 +4,7 @@ import core.db.DataBase;
 import next.controller.ApiQnaController;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -14,13 +15,13 @@ public class AnnotationHandlerMappingTest {
     private AnnotationHandlerMapping handlerMapping;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
         handlerMapping.initialize();
     }
 
     @Test
-    public void create_find() throws Exception {
+    void create_find() throws Exception {
         User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
         assertThat(DataBase.findUserById(user.getUserId())).isEqualTo(user);
@@ -45,14 +46,16 @@ public class AnnotationHandlerMappingTest {
         execution.handle(request, response);
     }
 
+    @DisplayName("컨트롤러 객체와 HandlerExecution 생성 확인")
     @Test
-    void name() {
+    void createHandlerExecution() {
         final AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping("next");
         handlerMapping.initialize();
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/qna/list");
         final HandlerExecution handler = (HandlerExecution) handlerMapping.getHandler(request);
 
-        assertThat(handler.getDeclaredObject().getClass()).isEqualTo(ApiQnaController.class);
+        assertThat(handler.getDeclaredObject().getClass())
+                .isEqualTo(ApiQnaController.class);
     }
 }
