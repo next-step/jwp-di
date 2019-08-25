@@ -7,8 +7,6 @@ import core.annotation.web.RequestMethod;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
 import next.CannotDeleteException;
-import next.dao.AnswerDao;
-import next.dao.QuestionDao;
 import next.model.Answer;
 import next.model.Question;
 import next.model.User;
@@ -21,8 +19,12 @@ import java.util.List;
 @Controller
 public class QnaController extends AbstractNewController {
 
+    private final QnaService qnaService;
+
     @Inject
-    private QnaService qnaService;
+    public QnaController(QnaService qnaService) {
+        this.qnaService = qnaService;
+    }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
     public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {

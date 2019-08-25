@@ -13,6 +13,7 @@ import support.test.NsWebTestClient;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class UserAcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(UserAcceptanceTest.class);
@@ -47,5 +48,7 @@ public class UserAcceptanceTest {
         assertThat(actual.getPassword()).isEqualTo(updateUser.getPassword());
         assertThat(actual.getName()).isEqualTo(updateUser.getName());
         assertThat(actual.getEmail()).isEqualTo(updateUser.getEmail());
+
+        client.deleteResource("/api/users?userId=" + actual.getUserId());
     }
 }
