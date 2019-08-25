@@ -15,16 +15,13 @@ import java.util.List;
 public class QnaService {
     private static QnaService qnaService;
 
-    private QuestionDao questionDao;
-    private AnswerDao answerDao;
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
 
     @Inject
     public QnaService(QuestionDao questionDao, AnswerDao answerDao) {
         this.questionDao = questionDao;
         this.answerDao = answerDao;
-    }
-
-    private QnaService() {
     }
 
     public static QnaService getInstance() {
