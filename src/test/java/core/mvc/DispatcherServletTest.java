@@ -35,7 +35,7 @@ class DispatcherServletTest {
 
     @Test
     void annotation_user_create() throws Exception {
-        User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
+        User user = new User("test1", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
         assertThat(response.getRedirectedUrl()).isEqualTo("/");
     }
@@ -53,7 +53,7 @@ class DispatcherServletTest {
 
     @Test
     void legacy_login_success() throws Exception {
-        User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
+        User user = new User("test2", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
 
         MockHttpServletRequest secondRequest = new MockHttpServletRequest();

@@ -1,5 +1,7 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
+import core.di.factory.BeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -18,8 +20,11 @@ import java.util.Optional;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
+
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
+
+    private static final String DEFAULT_SCAN_PACKAGE = "next";
 
     private HandlerMappingRegistry handlerMappingRegistry;
 
@@ -29,15 +34,24 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
+        BeanFactory beanFactory = beanInitializer();
+
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next.controller"));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
         handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+    }
+
+    private BeanFactory beanInitializer() {
+        BeanFactory beanFactory = new BeanFactory();
+        BeanScanner beanScanner = new BeanScanner(beanFactory, DEFAULT_SCAN_PACKAGE);
+        beanScanner.enroll();
+        return beanFactory;
     }
 
     @Override
