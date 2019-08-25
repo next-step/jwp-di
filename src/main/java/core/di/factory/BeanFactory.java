@@ -29,6 +29,10 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
+    public Map<Class<?>, Object> getBeans() {
+        return beans;
+    }
+
     public void initialize() {
         for (Class<?> preInstantiateBean : preInstantiateBeans) {
             initializeBean(preInstantiateBean);
