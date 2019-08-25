@@ -1,8 +1,10 @@
 package next.controller;
 
+import next.Server;
 import next.dto.UserCreatedDto;
 import next.dto.UserUpdatedDto;
 import next.model.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,14 +16,23 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserAcceptanceTest {
+class UserAcceptanceTest {
+
     private static final Logger logger = LoggerFactory.getLogger(UserAcceptanceTest.class);
 
     private NsWebTestClient client;
+    private Server server;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         client = NsWebTestClient.of(8080);
+        server = new Server();
+        server.start();
+    }
+
+    @AfterEach
+    void clear() throws Exception {
+        server.close();
     }
 
     @Test
