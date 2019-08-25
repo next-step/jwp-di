@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -29,9 +30,10 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
+        BeanFactory beanFactory = (BeanFactory) getServletContext().getAttribute(BeanFactory.class.getName());
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next"));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
