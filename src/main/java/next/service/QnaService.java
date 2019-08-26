@@ -14,14 +14,39 @@ import java.util.List;
 @Service
 public class QnaService {
 
-    @Inject
-    private QuestionDao questionDao;
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
 
     @Inject
-    private AnswerDao answerDao;
+    public QnaService(QuestionDao questionDao, AnswerDao answerDao) {
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
+    }
 
     public Question findById(long questionId) {
         return questionDao.findById(questionId);
+    }
+
+    public List<Question> findAll() {
+        return questionDao.findAll();
+    }
+
+    public Question insert(Question question) {
+        return questionDao.insert(question);
+    }
+
+    public Answer insert(Answer answer) {
+        return answerDao.insert(answer);
+    }
+
+    public void update(long questionId, Question updatedQuestion) {
+        final Question question = questionDao.findById(questionId);
+        question.update(updatedQuestion);
+        questionDao.update(question);
+    }
+
+    public void updateCountOfAnswer(long questionId) {
+        questionDao.updateCountOfAnswer(questionId);
     }
 
     public List<Answer> findAllByQuestionId(long questionId) {
@@ -58,5 +83,9 @@ public class QnaService {
         }
 
         questionDao.delete(questionId);
+    }
+
+    public void delete(long answerId) {
+        answerDao.delete(answerId);
     }
 }

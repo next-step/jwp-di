@@ -1,23 +1,15 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
-
-import java.lang.annotation.Annotation;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class BeanFactoryTest {
-    private Reflections reflections;
     private BeanFactory beanFactory;
 
     @BeforeEach
@@ -27,17 +19,20 @@ public class BeanFactoryTest {
         beanFactory.initialize();
     }
 
+    @DisplayName("BeanFactory 에 빈이 존재하지 않을 경우 Null 반환")
     @Test
     void getBean_NULL() {
-        final NotBean emptyBean = beanFactory.getBean(NotBean.class);
+        final NotExistBean emptyBean = beanFactory.getBean(NotExistBean.class);
         assertNull(emptyBean);
 
         final Object nullBean = beanFactory.getBean(null);
         assertNull(nullBean);
     }
 
+    private static class NotExistBean {} // 테스트 용 클래스
+
     @Test
-    public void di() throws Exception {
+    public void di() {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
@@ -48,16 +43,4 @@ public class BeanFactoryTest {
         assertNotNull(qnaService.getQuestionRepository());
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
-    }
-
-    private static class NotBean {
-
-    }
 }

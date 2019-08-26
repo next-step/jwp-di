@@ -67,4 +67,11 @@ public class ApiUserController {
 
         return new ModelAndView(new JsonView());
     }
+
+    @RequestMapping(value = "/api/users", method = RequestMethod.DELETE)
+    public ModelAndView delete(HttpServletRequest req, HttpServletResponse resp) {
+        String userId = req.getParameter("userId");
+        userDao.delete(userId);
+        return new ModelAndView(new JsonView());
+    }
 }

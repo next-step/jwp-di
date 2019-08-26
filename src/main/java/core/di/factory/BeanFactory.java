@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.Component;
 import core.annotation.Inject;
 import core.annotation.Repository;
 import core.annotation.Service;
@@ -11,8 +12,10 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import static core.di.factory.BeanFactoryUtils.findConcreteClass;
 import static core.di.factory.BeanFactoryUtils.getInjectedConstructor;
@@ -31,7 +34,7 @@ public class BeanFactory {
 
     @SuppressWarnings("unchecked")
     public BeanFactory(BeanScanner scanner) {
-        this.preInstanticateBeans = scanner.scan(Controller.class, Service.class, Repository.class);
+        this.preInstanticateBeans = scanner.scan(Controller.class, Service.class, Repository.class, Component.class);
     }
 
     @SuppressWarnings("unchecked")

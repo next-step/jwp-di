@@ -47,5 +47,7 @@ public class UserAcceptanceTest {
         assertThat(actual.getPassword()).isEqualTo(updateUser.getPassword());
         assertThat(actual.getName()).isEqualTo(updateUser.getName());
         assertThat(actual.getEmail()).isEqualTo(updateUser.getEmail());
+
+        client.deleteResource("/api/users?userId=" + actual.getUserId());
     }
 }

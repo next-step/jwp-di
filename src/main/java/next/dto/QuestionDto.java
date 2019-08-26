@@ -7,7 +7,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import java.util.Date;
 import java.util.StringJoiner;
 
-public class QnaCreatedDto {
+public class QuestionDto {
 
     private long questionId;
 
@@ -28,18 +28,17 @@ public class QnaCreatedDto {
                 this.contents,
                 this.createdDate,
                 this.countOfComment);
-
     }
 
-    public QnaCreatedDto() {
+    public QuestionDto() {
     }
 
-    public QnaCreatedDto(String writer, String title, String contents) {
+    public QuestionDto(String writer, String title, String contents) {
         this(0, writer, title, contents, new Date(), 0);
     }
 
-    public QnaCreatedDto(long questionId, String writer, String title, String contents, Date createdDate,
-                    int countOfComment) {
+    public QuestionDto(long questionId, String writer, String title, String contents, Date createdDate,
+                       int countOfComment) {
         this.questionId = questionId;
         this.writer = writer;
         this.title = title;
@@ -78,7 +77,7 @@ public class QnaCreatedDto {
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        QnaCreatedDto that = (QnaCreatedDto) o;
+        QuestionDto that = (QuestionDto) o;
 
         return new EqualsBuilder()
                 .append(writer, that.writer)
@@ -100,7 +99,7 @@ public class QnaCreatedDto {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", QnaCreatedDto.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", QuestionDto.class.getSimpleName() + "[", "]")
                 .add("writer='" + writer + "'")
                 .add("title='" + title + "'")
                 .add("contents='" + contents + "'")
