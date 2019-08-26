@@ -28,4 +28,8 @@ public class HandlerExecution {
             throw new RuntimeException(e);
         }
     }
+
+    public Object getDeclaredObject() {
+        return declaredObject;
+    }
 }
