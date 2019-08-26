@@ -25,16 +25,29 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.beans.BeanUtils.instantiateClass;
 
+/**
+ * Scanning and instantiate bean
+ * contain bean map with Class key & Instance value
+ */
+@SuppressWarnings("unchecked")
 public class BeanFactory {
+
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
     private Set<Class<?>> preInstanticateBeans;
-
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    @SuppressWarnings("unchecked")
     public BeanFactory(BeanScanner scanner) {
         this.preInstanticateBeans = scanner.scan(Controller.class, Service.class, Repository.class, Component.class);
+    }
+
+    public void initialize() {
+        for (Class<?> preInstanticateBean : preInstanticateBeans) {
+            Object bean = getBean(preInstanticateBean);
+            if (bean == null) {
+                logger.warn("{} initiate failed. ", preInstanticateBean.getName());
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -49,6 +62,13 @@ public class BeanFactory {
         }
 
         return createBean(requiredType);
+    }
+
+    public Map<Class<?>, Object> getBeans(Class<? extends Annotation> annotation) {
+        return beans.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().isAnnotationPresent(annotation))
+                .collect(toMap(Entry::getKey, Entry::getValue, (b1, b2) -> b2));
     }
 
     @SuppressWarnings("unchecked")
@@ -83,19 +103,4 @@ public class BeanFactory {
                 && !BeanUtils.isSimpleValueType(field.getClass());
     }
 
-    public void initialize() {
-        for (Class<?> preInstanticateBean : preInstanticateBeans) {
-            Object bean = getBean(preInstanticateBean);
-            if (bean == null) {
-                logger.warn("{} initiate failed. ", preInstanticateBean.getName());
-            }
-        }
-    }
-
-    public Map<Class<?>, Object> getBeans(Class<? extends Annotation> annotation) {
-        return beans.entrySet()
-                .stream()
-                .filter(entry -> entry.getKey().isAnnotationPresent(annotation))
-                .collect(toMap(Entry::getKey, Entry::getValue, (b1, b2) -> b2));
-    }
 }
