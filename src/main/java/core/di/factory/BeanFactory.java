@@ -5,11 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -20,6 +22,7 @@ public class BeanFactory {
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
+        initialize();
     }
 
     @SuppressWarnings("unchecked")
@@ -64,4 +67,10 @@ public class BeanFactory {
         return beans.get(concreteClass);
     }
 
+    public Map<Class<?>, Object> getAnnotationTypeClass(Class<? extends Annotation> annotation) {
+        return beans.keySet().stream()
+                .filter(key -> key.isAnnotationPresent(annotation))
+                .collect(Collectors.toMap(key -> key , key-> beans.get(key)));
+
+    }
 }

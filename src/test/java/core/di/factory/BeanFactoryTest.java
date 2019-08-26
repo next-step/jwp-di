@@ -11,8 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
@@ -47,5 +49,11 @@ public class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    @Test
+    void getAnnotationClass() {
+        Map<Class<?>, Object> annotationTypeClass = beanFactory.getAnnotationTypeClass(Controller.class);
+        assertThat(annotationTypeClass).containsKeys(QnaController.class);
     }
 }
