@@ -4,18 +4,24 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.util.Map;
 import java.util.Set;
+
+import static core.di.factory.BeanFactoryUtils.findConcreteClass;
+import static core.di.factory.BeanFactoryUtils.getInjectedConstructor;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
+    private Set<Class<?>> preInstantiateBeans;
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
+        this.preInstantiateBeans = preInstantiateBeans;
     }
 
     @SuppressWarnings("unchecked")
@@ -23,7 +29,53 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
+    public Map<Class<?>, Object> getBeans() {
+        return beans;
+    }
 
+    public void initialize() {
+        for (Class<?> preInstantiateBean : preInstantiateBeans) {
+            initializeBean(preInstantiateBean);
+        }
+        logger.debug("beans: {}", beans);
+    }
+
+    private void initializeBean(Class<?> preInstantiateBean) {
+        try {
+            registerBean(preInstantiateBean);
+        } catch (ReflectiveOperationException e) {
+            logger.error("bean create error : bean type={}", preInstantiateBean.getTypeName(), e);
+            throw new RuntimeException();
+        }
+    }
+
+    private Object registerBean(Class<?> beanType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+
+        Object bean;
+        Constructor<?> injectableConstructor = getInjectedConstructor(beanType);
+        if (injectableConstructor == null) {
+            bean = beanType.newInstance();
+            beans.put(beanType, bean);
+            return bean;
+        }
+
+        Parameter[] parameters = injectableConstructor.getParameters();
+        Object[] arguments = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            Class<?> argumentType = findConcreteClass(parameters[i].getType(), preInstantiateBeans);
+            Object argument = getArgumentInstance(argumentType);
+            arguments[i] = argument;
+        }
+        bean = injectableConstructor.newInstance(arguments);
+        beans.put(beanType, bean);
+        return bean;
+    }
+
+    private Object getArgumentInstance(Class<?> argumentType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Object argument = getBean(argumentType);
+        if (argument == null) {
+            return registerBean(argumentType);
+        }
+        return argument;
     }
 }

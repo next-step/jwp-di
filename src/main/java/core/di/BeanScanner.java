@@ -1,43 +1,37 @@
-package core.di.factory;
+package core.di;
 
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import core.di.factory.BeanFactory;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+public class BeanScanner {
 
-public class BeanFactoryTest {
+    private static final Logger log = LoggerFactory.getLogger(BeanScanner.class);
+
     private Reflections reflections;
     private BeanFactory beanFactory;
 
-    @BeforeEach
-    @SuppressWarnings("unchecked")
-    public void setup() {
-        reflections = new Reflections("core.di.factory.example");
+    public BeanScanner(Object... basePackage) {
+        reflections = new Reflections(basePackage);
         Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstantiateClazz);
         beanFactory.initialize();
     }
 
-    @Test
-    public void di() throws Exception {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
-
-        assertNotNull(qnaController);
-        assertNotNull(qnaController.getQnaService());
-
-        MyQnaService qnaService = qnaController.getQnaService();
-        assertNotNull(qnaService.getUserRepository());
-        assertNotNull(qnaService.getQuestionRepository());
+    public Map<Class<?>, Object> getControllers() {
+        return beanFactory.getBeans().entrySet().stream()
+                .filter(entry -> entry.getKey().getAnnotation(Controller.class) != null)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @SuppressWarnings("unchecked")

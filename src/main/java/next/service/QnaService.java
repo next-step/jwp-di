@@ -1,5 +1,6 @@
 package next.service;
 
+import core.annotation.Inject;
 import next.CannotDeleteException;
 import next.dao.AnswerDao;
 import next.dao.QuestionDao;
@@ -10,19 +11,13 @@ import next.model.User;
 import java.util.List;
 
 public class QnaService {
-    private static QnaService qnaService;
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
 
-    private QuestionDao questionDao = QuestionDao.getInstance();
-    private AnswerDao answerDao = AnswerDao.getInstance();
-
-    private QnaService() {
-    }
-
-    public static QnaService getInstance() {
-        if (qnaService == null) {
-            qnaService = new QnaService();
-        }
-        return qnaService;
+    @Inject
+    public QnaService(QuestionDao questionDao, AnswerDao answerDao) {
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
     }
 
     public Question findById(long questionId) {
