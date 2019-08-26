@@ -13,8 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -33,43 +35,50 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        preInstanticateBeans.stream()
-                .forEach(clazz -> beans.put(clazz, findAndInitInject(clazz)));
+        for (Class<?> clazz : preInstanticateBeans) {
+            beans.put(clazz, findAndInitInject(clazz));
+        }
     }
 
-    private Object findAndInitInject(Class<?> clazz){
+    private Object findAndInitInject(Class<?> clazz) {
         try {
             clazz = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
             return getNewInstance(clazz, BeanFactoryUtils.getInjectedConstructor(clazz));
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("injection Error {}", e.getMessage());
         }
 
         return null;
     }
 
-    private Object getNewInstance(Class<?> clazz, Constructor constructor) throws Exception{
-        if(constructor == null){
-            return clazz.newInstance();
-        }
+    private Object getNewInstance(Class<?> clazz, Constructor constructor) throws Exception {
+        return (constructor == null)
+                ? clazz.newInstance()
+                : constructor.newInstance(getConstructParameter(
+                        constructor.getParameterTypes()));
+    }
 
-        Object[] parameterObject = constructor.getParameterTypes();
+    private Object[] getConstructParameter(Object[] parameterObject){
         Object[] paramList = new Object[parameterObject.length];
 
         for (int i = 0; i < parameterObject.length; i++) {
             paramList[i] = findAndInitInject((Class<?>) parameterObject[i]);
         }
 
-        return constructor.newInstance(paramList);
+        return paramList;
     }
 
     public Map<Class<?>, Object> getControllers() {
         Map<Class<?>, Object> controllers = Maps.newHashMap();
-        for (Class<?> clazz : preInstanticateBeans) {
-            if (clazz.isAnnotationPresent(Controller.class)) {
-                controllers.put(clazz, beans.get(clazz));
-            }
+
+        List<Class<?>> controllerList = preInstanticateBeans.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toList());
+
+        for (Class<?> clazz : controllerList){
+            controllers.put(clazz, beans.get(clazz));
         }
+
         return controllers;
     }
 
