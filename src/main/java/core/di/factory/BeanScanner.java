@@ -5,22 +5,20 @@ import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import org.reflections.Reflections;
+
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
 public class BeanScanner {
 
-    private BeanFactory beanFactory;
     private Reflections reflections;
 
-    public BeanScanner(BeanFactory beanFactory, Object... basePackage) {
-        this.beanFactory = beanFactory;
+    public BeanScanner(Object... basePackage) {
         this.reflections = new Reflections(basePackage);
     }
 
-    public void enroll(){
-        Set<Class<?>> typesAnnotatedWith = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory.initialize(typesAnnotatedWith);
+    public Set<Class<?>> enroll(){
+        return getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
     }
 
     private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {

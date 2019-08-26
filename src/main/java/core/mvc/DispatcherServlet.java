@@ -48,10 +48,8 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     private BeanFactory beanInitializer() {
-        BeanFactory beanFactory = new BeanFactory();
-        BeanScanner beanScanner = new BeanScanner(beanFactory, DEFAULT_SCAN_PACKAGE);
-        beanScanner.enroll();
-        return beanFactory;
+        BeanScanner beanScanner = new BeanScanner(DEFAULT_SCAN_PACKAGE);
+        return BeanFactory.initialize(beanScanner.enroll());
     }
 
     @Override

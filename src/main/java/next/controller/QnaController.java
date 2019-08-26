@@ -7,8 +7,8 @@ import core.annotation.web.RequestMethod;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
 import next.CannotDeleteException;
-import next.dao.AnswerDao;
-import next.dao.QuestionDao;
+import next.dto.QuestionCreateDto;
+import next.dto.QuestionUpdateDto;
 import next.model.Answer;
 import next.model.Question;
 import next.model.User;
@@ -21,19 +21,15 @@ import java.util.List;
 @Controller
 public class QnaController extends AbstractNewController {
 
-    private QuestionDao questionDao;
-    private AnswerDao answerDao;
     private QnaService qnaService;
 
     @Inject
-    public QnaController(QuestionDao questionDao, AnswerDao answerDao, QnaService qnaService) {
-        this.questionDao = questionDao;
-        this.answerDao = answerDao;
+    public QnaController(QnaService qnaService) {
         this.qnaService = qnaService;
     }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
-    public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) {
         if (!UserSessionUtils.isLogined(req.getSession())) {
             return jspView("redirect:/users/loginForm");
         }
@@ -41,23 +37,25 @@ public class QnaController extends AbstractNewController {
     }
 
     @RequestMapping(value = "/qna/create", method = RequestMethod.POST)
-    public ModelAndView create(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView create(HttpServletRequest request, HttpServletResponse response) {
         if (!UserSessionUtils.isLogined(request.getSession())) {
             return jspView("redirect:/users/loginForm");
         }
         User user = UserSessionUtils.getUserFromSession(request.getSession());
-        Question question = new Question(user.getUserId(), request.getParameter("title"),
+        QuestionCreateDto questionCreateDto = new QuestionCreateDto(
+                request.getParameter("title"),
                 request.getParameter("contents"));
-        questionDao.insert(question);
+
+        qnaService.insertQuestion(user, questionCreateDto);
         return jspView("redirect:/");
     }
 
     @RequestMapping(value = "/qna/show", method = RequestMethod.GET)
-    public ModelAndView show(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView show(HttpServletRequest request, HttpServletResponse response) {
         long questionId = Long.parseLong(request.getParameter("questionId"));
 
-        Question question = questionDao.findById(questionId);
-        List<Answer> answers = answerDao.findAllByQuestionId(questionId);
+        Question question = qnaService.findById(questionId);
+        List<Answer> answers = qnaService.findAllByQuestionId(questionId);
 
         ModelAndView mav = jspView("/qna/show.jsp");
         mav.addObject("question", question);
@@ -66,50 +64,46 @@ public class QnaController extends AbstractNewController {
     }
 
     @RequestMapping(value = "/qna/updateForm", method = RequestMethod.GET)
-    public ModelAndView updateForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public ModelAndView updateForm(HttpServletRequest req, HttpServletResponse resp) {
         if (!UserSessionUtils.isLogined(req.getSession())) {
             return jspView("redirect:/users/loginForm");
         }
 
         long questionId = Long.parseLong(req.getParameter("questionId"));
-        Question question = questionDao.findById(questionId);
-        if (!question.isSameUser(UserSessionUtils.getUserFromSession(req.getSession()))) {
-            throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
-        }
+        Question question = qnaService.updateQuestion(questionId,
+                UserSessionUtils.getUserFromSession(req.getSession()));
+
         return jspView("/qna/update.jsp").addObject("question", question);
     }
 
     @RequestMapping(value = "/qna/update", method = RequestMethod.POST)
-    public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ModelAndView update(HttpServletRequest request, HttpServletResponse response) {
         if (!UserSessionUtils.isLogined(request.getSession())) {
             return jspView("redirect:/users/loginForm");
         }
 
         long questionId = Long.parseLong(request.getParameter("questionId"));
-        Question question = questionDao.findById(questionId);
-        if (!question.isSameUser(UserSessionUtils.getUserFromSession(request.getSession()))) {
-            throw new IllegalStateException("다른 사용자가 쓴 글을 수정할 수 없습니다.");
-        }
-
-        Question newQuestion = new Question(question.getWriter(), request.getParameter("title"),
+        QuestionUpdateDto questionUpdateDto = new QuestionUpdateDto(
+                request.getParameter("title"),
                 request.getParameter("contents"));
-        question.update(newQuestion);
-        questionDao.update(question);
+
+        qnaService.updateQuestion(questionId, questionUpdateDto,
+                UserSessionUtils.getUserFromSession(request.getSession()));
         return jspView("redirect:/");
     }
 
-    @RequestMapping(value = "/qna/delete", method = RequestMethod.GET)
-    public ModelAndView delete(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    @RequestMapping(value = "/qna/delete", method = RequestMethod.POST)
+    public ModelAndView delete(HttpServletRequest req, HttpServletResponse resp) {
         if (!UserSessionUtils.isLogined(req.getSession())) {
             return jspView("redirect:/users/loginForm");
         }
-
         long questionId = Long.parseLong(req.getParameter("questionId"));
         try {
             qnaService.deleteQuestion(questionId, UserSessionUtils.getUserFromSession(req.getSession()));
             return jspView("redirect:/");
         } catch (CannotDeleteException e) {
-            return jspView("show.jsp").addObject("question", qnaService.findById(questionId))
+            return jspView("show.jsp")
+                    .addObject("question", qnaService.findById(questionId))
                     .addObject("answers", qnaService.findAllByQuestionId(questionId))
                     .addObject("errorMessage", e.getMessage());
         }

@@ -20,18 +20,17 @@ public class BeanFactory {
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory() { }
-
-    BeanFactory(Set<Class<?>> preInstanticateBeans) {
+    private BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
     }
 
-    void initialize(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-        initialize();
+    public static BeanFactory initialize(Set<Class<?>> preInstanticateBeans) {
+        BeanFactory beanFactory = new BeanFactory(preInstanticateBeans);
+        beanFactory.initialize();
+        return beanFactory;
     }
 
-    void initialize() {
+    private void initialize() {
         preInstanticateBeans
                 .forEach(this::initializeBean);
         logger.debug("Complete BeanFactory : {}", beans);
@@ -57,7 +56,7 @@ public class BeanFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
+    <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
     }
 
