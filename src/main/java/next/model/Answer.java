@@ -49,6 +49,10 @@ public class Answer {
         return questionId;
     }
 
+    public boolean isSameUser(User user) {
+        return user.isSameUser(writer);
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
