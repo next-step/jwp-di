@@ -12,17 +12,9 @@ import java.sql.*;
 import java.util.List;
 
 public class AnswerDao {
-    private static final Logger logger = LoggerFactory.getLogger( AnswerDao.class );
+    private static final Logger logger = LoggerFactory.getLogger(AnswerDao.class);
 
-    private static AnswerDao answerDao = new AnswerDao();
     private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
-
-    private AnswerDao() {
-    }
-
-    public static AnswerDao getInstance() {
-        return answerDao;
-    }
 
     public Answer insert(Answer answer) {
         String sql = "INSERT INTO ANSWERS (writer, contents, createdDate, questionId) VALUES (?, ?, ?, ?)";
