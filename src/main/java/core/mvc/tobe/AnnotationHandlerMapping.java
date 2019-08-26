@@ -2,8 +2,10 @@ package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.support.BeanScanner;
 import core.mvc.HandlerMapping;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -26,8 +28,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     }
 
     public void initialize() {
-        ControllerScanner controllerScanner = new ControllerScanner(basePackage);
-        Map<Class<?>, Object> controllers = controllerScanner.getControllers();
+        BeanScanner beanScanner = new BeanScanner(basePackage);
+        Map<Class<?>, Object> controllers = beanScanner.getBeansOfAnnotatedBy(Controller.class);
         Set<Method> methods = getRequestMappingMethods(controllers.keySet());
         for (Method method : methods) {
             RequestMapping rm = method.getAnnotation(RequestMapping.class);
@@ -45,9 +47,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     }
 
     @SuppressWarnings("unchecked")
-    private Set<Method> getRequestMappingMethods(Set<Class<?>> controlleers) {
+    private Set<Method> getRequestMappingMethods(Set<Class<?>> controllers) {
         Set<Method> requestMappingMethods = Sets.newHashSet();
-        for (Class<?> clazz : controlleers) {
+        for (Class<?> clazz : controllers) {
             requestMappingMethods
                     .addAll(ReflectionUtils.getAllMethods(clazz, ReflectionUtils.withAnnotation(RequestMapping.class)));
         }
