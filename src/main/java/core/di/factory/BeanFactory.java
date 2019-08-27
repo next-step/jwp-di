@@ -64,6 +64,16 @@ public class BeanFactory {
         }
     }
 
+    private Class<?>[] getParameterTypes(Constructor<?> constructor) {
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
+        Class<?>[] concreteClass = new Class[parameterTypes.length];
+        for (int i = 0; i < concreteClass.length; i++) {
+            concreteClass[i] = BeanFactoryUtils.findConcreteClass(parameterTypes[i], preInstanticateBeans);
+        }
+
+        return concreteClass;
+    }
+
     private Object getInstance(Constructor<?> constructor, Class<?>[] parameterTypes) {
         try {
             Object[] parameters = getParameters(parameterTypes);
@@ -81,15 +91,5 @@ public class BeanFactory {
         }
 
         return parameters;
-    }
-
-    private Class<?>[] getParameterTypes(Constructor<?> constructor) {
-        Class<?>[] parameterTypes = constructor.getParameterTypes();
-        Class<?>[] concreteClass = new Class[parameterTypes.length];
-        for (int i = 0; i < concreteClass.length; i++) {
-            concreteClass[i] = BeanFactoryUtils.findConcreteClass(parameterTypes[i], preInstanticateBeans);
-        }
-
-        return concreteClass;
     }
 }
