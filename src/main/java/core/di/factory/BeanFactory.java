@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import support.exception.CreateInstanceFailException;
@@ -18,14 +19,10 @@ public class BeanFactory {
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
+        initialize();
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
-    }
-
-    public void initialize() {
+    private void initialize() {
         for (Class<?> clazz : preInstanticateBeans) {
             addBean(clazz);
         }
@@ -87,5 +84,27 @@ public class BeanFactory {
             logger.error(e.getMessage());
             throw new CreateInstanceFailException();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getBean(Class<T> requiredType) {
+        return (T) beans.get(requiredType);
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        for (Class<?> clazz : preInstanticateBeans) {
+            addController(controllers, clazz);
+        }
+
+        return controllers;
+    }
+
+    private void addController(Map<Class<?>, Object> controllers, Class<?> clazz) {
+        if (!clazz.isAnnotationPresent(Controller.class)) {
+            return;
+        }
+
+        controllers.put(clazz, getBean(clazz));
     }
 }

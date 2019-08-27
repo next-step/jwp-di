@@ -17,13 +17,15 @@ public class UserDaoTest {
 
     private UserDao userDao;
 
+
+
     @BeforeEach
     public void setup() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
-        userDao = UserDao.getInstance();
+        userDao = new UserDao();
     }
 
     @Test
