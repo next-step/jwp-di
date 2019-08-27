@@ -60,22 +60,28 @@ public class BeanFactory {
         }
 
         Parameter[] parameters = injectableConstructor.getParameters();
-        Object[] arguments = new Object[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            Class<?> argumentType = findConcreteClass(parameters[i].getType(), preInstantiateBeans);
-            Object argument = getArgumentInstance(argumentType);
-            arguments[i] = argument;
-        }
-        bean = injectableConstructor.newInstance(arguments);
+        Object[] dependencies = getDependencies(parameters);
+
+        bean = injectableConstructor.newInstance(dependencies);
         beans.put(beanType, bean);
         return bean;
     }
 
-    private Object getArgumentInstance(Class<?> argumentType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-        Object argument = getBean(argumentType);
-        if (argument == null) {
+    private Object[] getDependencies(Parameter[] parameters) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Object[] arguments = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            Class<?> argumentType = findConcreteClass(parameters[i].getType(), preInstantiateBeans);
+            Object argument = getDependentBean(argumentType);
+            arguments[i] = argument;
+        }
+        return arguments;
+    }
+
+    private Object getDependentBean(Class<?> argumentType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+        Object dependentBean = getBean(argumentType);
+        if (dependentBean == null) {
             return registerBean(argumentType);
         }
-        return argument;
+        return dependentBean;
     }
 }
