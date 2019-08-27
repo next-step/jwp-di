@@ -18,8 +18,11 @@ import java.util.Optional;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
+
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
+
+    private static final String BASE_PACKAGE_OF_CONTROLLERS = "next.controller";
 
     private HandlerMappingRegistry handlerMappingRegistry;
 
@@ -31,7 +34,7 @@ public class DispatcherServlet extends HttpServlet {
     public void init() {
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next"));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(BASE_PACKAGE_OF_CONTROLLERS));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

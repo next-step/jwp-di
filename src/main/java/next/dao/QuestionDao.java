@@ -7,7 +7,11 @@ import core.jdbc.PreparedStatementCreator;
 import core.jdbc.RowMapper;
 import next.model.Question;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
@@ -78,5 +82,10 @@ public class QuestionDao {
     public void updateCountOfAnswer(long questionId) {
         String sql = "UPDATE QUESTIONS set countOfAnswer = countOfAnswer + 1 WHERE questionId = ?";
         jdbcTemplate.update(sql, questionId);
+    }
+
+    public void deleteAll() {
+        String sql = "DELETE FROM QUESTIONS";
+        jdbcTemplate.update(sql);
     }
 }
