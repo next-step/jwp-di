@@ -1,13 +1,14 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.di.exception.BeanInstantiationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static core.di.factory.BeanFactoryUtils.findConcreteClass;
@@ -44,28 +45,36 @@ public class BeanFactory {
         try {
             registerBean(preInstantiateBean);
         } catch (ReflectiveOperationException e) {
-            logger.error("bean create error : bean type={}", preInstantiateBean.getTypeName(), e);
-            throw new RuntimeException();
+            logger.error("bean instantiate exception : type = {}", preInstantiateBean.getTypeName(), e);
+            throw new BeanInstantiationException(preInstantiateBean, e);
         }
     }
 
-    private Object registerBean(Class<?> beanType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private Object registerBean(Class<?> beanType) throws ReflectiveOperationException {
 
         Constructor<?> injectableConstructor = getInjectedConstructor(beanType);
         if (injectableConstructor == null) {
-            Object bean = beanType.newInstance();
-            beans.put(beanType, bean);
-            return bean;
+            return instantiateClass(beanType);
         }
 
-        Parameter[] parameters = injectableConstructor.getParameters();
-        Object[] dependencies = getDependencies(parameters);
-        Object bean = injectableConstructor.newInstance(dependencies);
-        beans.put(beanType, bean);
+        return instantiateConstructor(injectableConstructor);
+    }
+
+    private Object instantiateClass(Class<?> clazz) throws ReflectiveOperationException {
+        Object bean = clazz.newInstance();
+        beans.put(clazz, bean);
         return bean;
     }
 
-    private Object[] getDependencies(Parameter[] parameters) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private Object instantiateConstructor(Constructor<?> constructor) throws ReflectiveOperationException {
+        Parameter[] parameters = constructor.getParameters();
+        Object[] dependencies = getDependencies(parameters);
+        Object bean = constructor.newInstance(dependencies);
+        beans.put(constructor.getDeclaringClass(), bean);
+        return bean;
+    }
+
+    private Object[] getDependencies(Parameter[] parameters) throws ReflectiveOperationException {
         Object[] arguments = new Object[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             Class<?> argumentType = findConcreteClass(parameters[i].getType(), preInstantiateBeans);
@@ -75,11 +84,8 @@ public class BeanFactory {
         return arguments;
     }
 
-    private Object getDependentBean(Class<?> argumentType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-        Object dependentBean = getBean(argumentType);
-        if (dependentBean == null) {
-            return registerBean(argumentType);
-        }
-        return dependentBean;
+    private Object getDependentBean(Class<?> dependentBeanType) throws ReflectiveOperationException {
+        return Optional.ofNullable((Object) getBean(dependentBeanType))
+                .orElse(registerBean(dependentBeanType));
     }
 }
