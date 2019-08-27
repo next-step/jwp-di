@@ -1,30 +1,46 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.Inject;
 import core.annotation.web.Controller;
-import core.mvc.tobe.BeanScanner;
 import org.springframework.beans.BeanUtils;
 import support.exception.ExceptionWrapper;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
 
-    private final List<Class<? extends Annotation>> annotations;
     private final Set<Class<?>> scannedAnnotatedTypes;
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(final BeanScanner beanScanner) {
-        this.annotations = beanScanner.getAnnotations();
-        this.scannedAnnotatedTypes = beanScanner.getTypesAnnotatedWith();
+    public BeanFactory(final Set<Class<?>> scannedAnnotatedTypes) {
+        this.scannedAnnotatedTypes = scannedAnnotatedTypes;
     }
 
     public void initialize() {
-        annotations.forEach(this::createBeans);
+        scannedAnnotatedTypes.stream()
+                .sorted(compareInterfacesLength()
+                        .reversed())
+                .forEach(ExceptionWrapper.consumer(this::putInstance));
+    }
+
+    // interface를 구현한 클래스 먼저 객체를 만든다.
+    // repository
+    private Comparator<Class<?>> compareInterfacesLength() {
+        return Comparator.comparingInt(type -> type.getInterfaces().length);
+    }
+
+    private void putInstance(Class<?> type) {
+        final Object bean = instanticate(type);
+
+        final Optional<Class<?>> firstInterface = Arrays.stream(type.getInterfaces()).findFirst();
+        if (firstInterface.isPresent()) {
+            beans.put(firstInterface.get(), bean);
+            return;
+        }
+
+        beans.put(type, bean);
     }
 
     @SuppressWarnings("unchecked")
@@ -38,41 +54,35 @@ public class BeanFactory {
                 .collect(Collectors.toSet());
     }
 
-    private void createBeans(Class<? extends Annotation> annotation) {
-        scannedAnnotatedTypes.stream()
-                .filter(type -> type.isAnnotationPresent(annotation))
-                .forEach(ExceptionWrapper.consumer(
-                        bean -> {
-                            final Constructor<?> injectedConstructor = getInjectedConstructor(bean);
-                            final Object[] parameterBeans = getParameterBeans(injectedConstructor);
-
-                            beans.put(bean, BeanUtils.instantiateClass(injectedConstructor, parameterBeans));
-                        }));
-    }
-
-    private Constructor<?> getInjectedConstructor(Class<?> bean) throws NoSuchMethodException {
-        final Constructor<?> injectedConstructor = Arrays.stream(bean.getDeclaredConstructors())
-                .filter(constructor -> constructor.isAnnotationPresent(Inject.class))
-                .max(Comparator.comparing(Constructor::getParameterCount))
-                .orElse(null);
-
-        if (injectedConstructor == null) {
-            return bean.getDeclaredConstructor();
+    private Object instanticate(Class<?> type) {
+        // Bean 저장소에 clazz에 해당하는 인스턴스가 이미 존재하면 해당 인스턴스 반환
+        final Object found = beans.get(type);
+        if (found != null) {
+            return found;
         }
 
-        return injectedConstructor;
+        // clazz에 @Inject가 설정되어 있는 생성자를 찾는다. BeanFactoryUtils 활용
+        final Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(type);
+
+        // @Inject로 설정한 생성자가 없으면 Default 생성자로 인스턴스 생성 후 Bean 저장소에 추가 후 반환
+        if (injectedConstructor == null) {
+            return instantiateClass(type);
+        }
+
+        // @Inject로 설정한 생성자가 있으면 찾은 생성자를 활용해 인스턴스 생성 후 Bean 저장소에 추가 후 반환
+        return instantiateConstructor(injectedConstructor);
     }
 
-    private Object[] getParameterBeans(Constructor<?> injectedConstructor) {
-        return Arrays.stream(injectedConstructor.getParameterTypes())
-                .map(ExceptionWrapper.function(this::getObjectFromBeans))
+    private Object instantiateClass(Class<?> type) {
+        return BeanUtils.instantiateClass(type);
+    }
+
+    private Object instantiateConstructor(Constructor<?> constructor) {
+        final Object[] parameters = Arrays.stream(constructor.getParameterTypes())
+                .map(ExceptionWrapper.function(
+                        parameterType -> beans.getOrDefault(parameterType, instanticate(parameterType))))
                 .toArray();
-    }
 
-    private Object getObjectFromBeans(Class<?> parameter) throws ClassNotFoundException {
-        return beans.values().stream()
-                .filter(value -> parameter.isAssignableFrom(value.getClass()))
-                .findFirst()
-                .orElseThrow(ClassNotFoundException::new);
+        return BeanUtils.instantiateClass(constructor, parameters);
     }
 }

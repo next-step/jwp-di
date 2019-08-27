@@ -1,7 +1,6 @@
 package core.di.factory;
 
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
+import core.di.factory.example.*;
 import core.mvc.tobe.BeanScanner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,7 @@ class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     void setup() {
         BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
-        beanFactory = new BeanFactory(beanScanner);
+        beanFactory = new BeanFactory(beanScanner.getTypesAnnotatedWith());
         beanFactory.initialize();
     }
 
