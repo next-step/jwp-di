@@ -9,26 +9,22 @@ import support.exception.ExceptionWrapper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
 
-    private final BeanScanner beanScanner;
-    private final Set<Class<?>> annotatedTypes;
+    private final List<Class<? extends Annotation>> annotations;
+    private final Set<Class<?>> scannedAnnotatedTypes;
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(final BeanScanner beanScanner) {
-        this.beanScanner = beanScanner;
-        this.annotatedTypes = beanScanner.getTypesAnnotatedWith();
+        this.annotations = beanScanner.getAnnotations();
+        this.scannedAnnotatedTypes = beanScanner.getTypesAnnotatedWith();
     }
 
     public void initialize() {
-        beanScanner.getAnnotations()
-                .forEach(this::createBeans);
+        annotations.forEach(this::createBeans);
     }
 
     @SuppressWarnings("unchecked")
@@ -37,14 +33,14 @@ public class BeanFactory {
     }
 
     public Set<Class<?>> getControllers() {
-        return annotatedTypes.stream()
+        return scannedAnnotatedTypes.stream()
                 .filter(type -> type.isAnnotationPresent(Controller.class))
                 .collect(Collectors.toSet());
     }
 
     private void createBeans(Class<? extends Annotation> annotation) {
-        annotatedTypes.stream()
-                .filter(bean -> bean.isAnnotationPresent(annotation))
+        scannedAnnotatedTypes.stream()
+                .filter(type -> type.isAnnotationPresent(annotation))
                 .forEach(ExceptionWrapper.consumer(
                         bean -> {
                             final Constructor<?> injectedConstructor = getInjectedConstructor(bean);
