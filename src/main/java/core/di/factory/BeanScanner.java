@@ -2,6 +2,7 @@ package core.di.factory;
 
 import org.reflections.Reflections;
 
+import java.beans.BeanDescriptor;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Set;
@@ -11,15 +12,16 @@ public class BeanScanner {
 
     private Reflections reflections;
 
-    public BeanScanner(Object... basePackge) {
-        reflections = new Reflections(basePackge);
+    public BeanScanner(Object... basePackage) {
+        reflections = new Reflections(basePackage);
     }
 
-    public Set<Class<?>> scan(Class<? extends Annotation>... annotations) {
-        return Arrays.stream(annotations)
+    public BeanDefinitions scan(Class<? extends Annotation>... annotations) {
+        return new BeanDefinitions(Arrays.stream(annotations)
                 .map(reflections::getTypesAnnotatedWith)
                 .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+                .map(BeanDefinition::new)
+                .collect(Collectors.toSet()));
     }
 
 }

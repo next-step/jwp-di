@@ -6,8 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BeanScannerTest {
@@ -23,8 +21,8 @@ public class BeanScannerTest {
     @Test
     @SuppressWarnings("unchecked")
     void beanScannerWithController() {
-        final Set<Class<?>> classes = beanScanner.scan(Controller.class);
-        assertTrue(classes.contains(QnaController.class));
+        final BeanDefinitions beanDefinitions = beanScanner.scan(Controller.class);
+        assertTrue(beanDefinitions.contains(QnaController.class));
     }
 
 }

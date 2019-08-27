@@ -1,7 +1,6 @@
 package next.support.context;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.ApplicationContext;
 import core.jdbc.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +21,10 @@ public class ContextLoaderListener implements ServletContextListener {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
-        BeanFactory beanFactory = new BeanFactory(new BeanScanner("next"));
-        beanFactory.initialize();
+        ApplicationContext applicationContext = new ApplicationContext();
+        applicationContext.refresh();
 
-        sce.getServletContext().setAttribute(BeanFactory.class.getName(), beanFactory);
+        sce.getServletContext().setAttribute(ApplicationContext.class.getName(), applicationContext);
         logger.info("Completed Load ServletContext!");
     }
 
