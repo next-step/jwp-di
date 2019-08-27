@@ -51,18 +51,16 @@ public class BeanFactory {
 
     private Object registerBean(Class<?> beanType) throws IllegalAccessException, InstantiationException, InvocationTargetException {
 
-        Object bean;
         Constructor<?> injectableConstructor = getInjectedConstructor(beanType);
         if (injectableConstructor == null) {
-            bean = beanType.newInstance();
+            Object bean = beanType.newInstance();
             beans.put(beanType, bean);
             return bean;
         }
 
         Parameter[] parameters = injectableConstructor.getParameters();
         Object[] dependencies = getDependencies(parameters);
-
-        bean = injectableConstructor.newInstance(dependencies);
+        Object bean = injectableConstructor.newInstance(dependencies);
         beans.put(beanType, bean);
         return bean;
     }
