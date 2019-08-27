@@ -1,12 +1,12 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,4 +71,14 @@ public class BeanFactory {
         beans.put(key, value);
     }
 
+    public Map<Class<?>, Object> getControllers() {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        for (Class<?> clazz : preInstanticateBeans) {
+            if (clazz.isAnnotationPresent(Controller.class)) {
+                controllers.put(clazz, beans.get(clazz));
+            }
+        }
+
+        return controllers;
+    }
 }
