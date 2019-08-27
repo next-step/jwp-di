@@ -36,14 +36,20 @@ public class BeanFactory {
             return;
         }
 
+        instantiateClass(clazz);
+    }
+
+    private Object instantiateClass(Class<?> clazz) {
         Constructor<?> constructor = getConstructor(clazz);
         Class<?>[] parameterTypes = getParameterTypes(constructor);
-        for (Class<?> parameterClazz : parameterTypes) {
-            addBean(parameterClazz);
+        Object[] parameters = new Object[parameterTypes.length];
+        for (int i = 0; i < parameters.length; i++) {
+            parameters[i] = instantiateClass(parameterTypes[i]);
         }
 
-        Object object = getInstance(constructor, parameterTypes);
+        Object object = instantiateConstructor(constructor, parameters);
         beans.put(clazz, object);
+        return object;
     }
 
     private Constructor<?> getConstructor(Class<?> clazz) {
@@ -74,22 +80,12 @@ public class BeanFactory {
         return concreteClass;
     }
 
-    private Object getInstance(Constructor<?> constructor, Class<?>[] parameterTypes) {
+    private Object instantiateConstructor(Constructor<?> constructor, Object[] parameters) {
         try {
-            Object[] parameters = getParameters(parameterTypes);
             return constructor.newInstance(parameters);
         } catch (ReflectiveOperationException e) {
             logger.error(e.getMessage());
             throw new CreateInstanceFailException();
         }
-    }
-
-    private Object[] getParameters(Class<?>[] parameterTypes) {
-        Object[] parameters = new Object[parameterTypes.length];
-        for (int i = 0; i < parameters.length; i++) {
-            parameters[i] = beans.get(parameterTypes[i]);
-        }
-
-        return parameters;
     }
 }
