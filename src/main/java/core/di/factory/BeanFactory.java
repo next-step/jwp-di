@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import core.di.exception.BeanInstantiationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import java.lang.reflect.Parameter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static core.di.factory.BeanFactoryUtils.findConcreteClass;
 import static core.di.factory.BeanFactoryUtils.getInjectedConstructor;
@@ -28,10 +30,6 @@ public class BeanFactory {
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
-    }
-
-    public Map<Class<?>, Object> getBeans() {
-        return beans;
     }
 
     public void initialize() {
@@ -54,24 +52,20 @@ public class BeanFactory {
 
         Constructor<?> injectableConstructor = getInjectedConstructor(beanType);
         if (injectableConstructor == null) {
-            return instantiateClass(beanType);
+            Object bean = beanType.newInstance();
+            beans.put(beanType, bean);
+            return bean;
         }
 
-        return instantiateConstructor(injectableConstructor);
-    }
-
-    private Object instantiateClass(Class<?> clazz) throws ReflectiveOperationException {
-        Object bean = clazz.newInstance();
-        beans.put(clazz, bean);
+        Object bean = instantiateConstructor(injectableConstructor);
+        beans.put(beanType, bean);
         return bean;
     }
 
     private Object instantiateConstructor(Constructor<?> constructor) throws ReflectiveOperationException {
         Parameter[] parameters = constructor.getParameters();
         Object[] dependencies = getDependencies(parameters);
-        Object bean = constructor.newInstance(dependencies);
-        beans.put(constructor.getDeclaringClass(), bean);
-        return bean;
+        return constructor.newInstance(dependencies);
     }
 
     private Object[] getDependencies(Parameter[] parameters) throws ReflectiveOperationException {
@@ -87,5 +81,11 @@ public class BeanFactory {
     private Object getDependentBean(Class<?> dependentBeanType) throws ReflectiveOperationException {
         return Optional.ofNullable((Object) getBean(dependentBeanType))
                 .orElse(registerBean(dependentBeanType));
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        return beans.entrySet().stream()
+                .filter(entry -> entry.getKey().isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

@@ -6,21 +6,17 @@ import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.BeanFactory;
 import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class BeanScanner {
-
-    private static final Logger log = LoggerFactory.getLogger(BeanScanner.class);
 
     private Reflections reflections;
     private BeanFactory beanFactory;
 
+    @SuppressWarnings("unchecked")
     public BeanScanner(Object... basePackage) {
         reflections = new Reflections(basePackage);
         Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
@@ -29,9 +25,7 @@ public class BeanScanner {
     }
 
     public Map<Class<?>, Object> getControllers() {
-        return beanFactory.getBeans().entrySet().stream()
-                .filter(entry -> entry.getKey().getAnnotation(Controller.class) != null)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return beanFactory.getControllers();
     }
 
     @SuppressWarnings("unchecked")
