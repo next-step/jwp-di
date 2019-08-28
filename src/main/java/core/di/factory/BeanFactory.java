@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,12 +19,45 @@ public class BeanFactory {
         this.preInstanticateBeans = preInstanticateBeans;
     }
 
-    @SuppressWarnings("unchecked")
+    public void initialize() {
+        for(Class<?> clazz : this.preInstanticateBeans) {
+            beans.put(clazz, getInstantiateClass(clazz));
+        }
+    }
+
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
-
+    private Object getInstantiateClass(Class<?> clazz) {
+        return beans.computeIfAbsent(clazz, this::instantiate);
     }
+
+    private Object instantiate(Class<?> clazz) {
+        Constructor<?> constructor = getConstructor(clazz);
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
+        Object[] args = new Object[parameterTypes.length];
+        for(int i = 0 ; i < parameterTypes.length; i ++) {
+            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterTypes[i], this.preInstanticateBeans);
+            args[i] = instantiate(concreteClass);
+        }
+
+        try {
+            return constructor.newInstance(args);
+        } catch (Exception e) {
+            throw new RuntimeException("인스턴스화 중 문제 발생", e);
+        }
+    }
+
+    private Constructor<?> getConstructor(Class<?> clazz) {
+        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+
+        if(constructor != null) {
+            return constructor;
+        }
+
+        return BeanFactoryUtils.getNoArgsConstructor(clazz);
+    }
+
+
 }
