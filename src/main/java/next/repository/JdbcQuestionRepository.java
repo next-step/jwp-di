@@ -1,4 +1,4 @@
-package next.dao;
+package next.repository;
 
 import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
@@ -15,10 +15,11 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
-public class QuestionDao {
+public class JdbcQuestionRepository implements QuestionRepository {
 
     private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
+    @Override
     public Question insert(Question question) {
         String sql = "INSERT INTO QUESTIONS (writer, title, contents, createdDate) VALUES (?, ?, ?, ?)";
         PreparedStatementCreator psc = new PreparedStatementCreator() {
@@ -38,6 +39,7 @@ public class QuestionDao {
         return findById(keyHolder.getId());
     }
 
+    @Override
     public List<Question> findAll() {
         String sql = "SELECT questionId, writer, title, createdDate, countOfAnswer FROM QUESTIONS "
                 + "order by questionId desc";
@@ -54,6 +56,7 @@ public class QuestionDao {
         return jdbcTemplate.query(sql, rm);
     }
 
+    @Override
     public Question findById(long questionId) {
         String sql = "SELECT questionId, writer, title, contents, createdDate, countOfAnswer FROM QUESTIONS "
                 + "WHERE questionId = ?";
@@ -69,21 +72,25 @@ public class QuestionDao {
         return jdbcTemplate.queryForObject(sql, rm, questionId);
     }
 
+    @Override
     public void update(Question question) {
         String sql = "UPDATE QUESTIONS set title = ?, contents = ? WHERE questionId = ?";
         jdbcTemplate.update(sql, question.getTitle(), question.getContents(), question.getQuestionId());
     }
 
+    @Override
     public void delete(long questionId) {
         String sql = "DELETE FROM QUESTIONS WHERE questionId = ?";
         jdbcTemplate.update(sql, questionId);
     }
 
+    @Override
     public void updateCountOfAnswer(long questionId) {
         String sql = "UPDATE QUESTIONS set countOfAnswer = countOfAnswer + 1 WHERE questionId = ?";
         jdbcTemplate.update(sql, questionId);
     }
 
+    @Override
     public void deleteAll() {
         String sql = "DELETE FROM QUESTIONS";
         jdbcTemplate.update(sql);

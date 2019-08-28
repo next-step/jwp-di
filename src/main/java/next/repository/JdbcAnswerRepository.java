@@ -1,4 +1,4 @@
-package next.dao;
+package next.repository;
 
 import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
@@ -9,16 +9,21 @@ import next.model.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
-public class AnswerDao {
+public class JdbcAnswerRepository implements AnswerRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(AnswerDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcAnswerRepository.class);
 
     private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
+    @Override
     public Answer insert(Answer answer) {
         String sql = "INSERT INTO ANSWERS (writer, contents, createdDate, questionId) VALUES (?, ?, ?, ?)";
         PreparedStatementCreator psc = new PreparedStatementCreator() {
@@ -39,6 +44,7 @@ public class AnswerDao {
         return findById(keyHolder.getId());
     }
 
+    @Override
     public Answer findById(long answerId) {
         logger.debug("find AnswerId : {}", answerId);
         String sql = "SELECT answerId, writer, contents, createdDate, questionId FROM ANSWERS WHERE answerId = ?";
@@ -54,6 +60,7 @@ public class AnswerDao {
         return jdbcTemplate.queryForObject(sql, rm, answerId);
     }
 
+    @Override
     public List<Answer> findAllByQuestionId(long questionId) {
         String sql = "SELECT answerId, writer, contents, createdDate FROM ANSWERS WHERE questionId = ? "
                 + "order by answerId desc";
@@ -69,6 +76,7 @@ public class AnswerDao {
         return jdbcTemplate.query(sql, rm, questionId);
     }
 
+    @Override
     public void delete(Long answerId) {
         String sql = "DELETE FROM ANSWERS WHERE answerId = ?";
         jdbcTemplate.update(sql, answerId);

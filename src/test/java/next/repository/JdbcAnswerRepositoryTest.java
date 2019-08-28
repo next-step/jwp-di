@@ -1,4 +1,4 @@
-package next.dao;
+package next.repository;
 
 import core.jdbc.ConnectionManager;
 import next.model.Answer;
@@ -12,8 +12,8 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AnswerDaoTest {
-    private static final Logger log = LoggerFactory.getLogger(AnswerDaoTest.class);
+public class JdbcAnswerRepositoryTest {
+    private static final Logger log = LoggerFactory.getLogger(JdbcAnswerRepositoryTest.class);
 
     @BeforeEach
     public void setup() {
@@ -26,7 +26,7 @@ public class AnswerDaoTest {
     public void addAnswer() throws Exception {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
-        AnswerDao dut = new AnswerDao();
+        JdbcAnswerRepository dut = new JdbcAnswerRepository();
         Answer answer = dut.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();

@@ -1,7 +1,7 @@
 package next.service;
 
-import next.dao.AnswerDao;
 import next.model.Answer;
+import next.repository.JdbcAnswerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +21,9 @@ class AnswerServiceTest {
 
     @BeforeEach
     void setUp() {
-        final AnswerDao answerDao = new AnswerDao();
+        final JdbcAnswerRepository jdbcAnswerRepository = new JdbcAnswerRepository();
 
-        answerService = new AnswerService(answerDao);
+        answerService = new AnswerService(jdbcAnswerRepository);
     }
 
     @DisplayName("answer를 추가한다.")
@@ -60,7 +60,7 @@ class AnswerServiceTest {
 
     @DisplayName("추가한 answer들을 조회한다.")
     @ParameterizedTest
-    @ValueSource(ints = {1, 5, 6, 10, 100, 500})
+    @ValueSource(ints = {1, 5, 6, 10, 100})
     void findAllByQuestionId(final int count) {
         // given
         final long questionId = new Random().nextLong();
@@ -68,7 +68,7 @@ class AnswerServiceTest {
                 .mapToObj(number -> new Answer("userId" + number, "content" + number, questionId))
                 .forEach(answerService::save);
 
-        // when
+        // when기
         final List<Answer> savedAnswers = answerService.findAllByQuestionId(questionId);
 
         // then

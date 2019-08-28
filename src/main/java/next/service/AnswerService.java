@@ -1,34 +1,36 @@
 package next.service;
 
 import core.annotation.Inject;
-import next.dao.AnswerDao;
+import core.annotation.Service;
 import next.model.Answer;
+import next.repository.AnswerRepository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class AnswerService {
 
-    private final AnswerDao answerDao;
+    private final AnswerRepository answerRepository;
 
     @Inject
-    public AnswerService(final AnswerDao answerDao) {
-        this.answerDao = answerDao;
+    public AnswerService(final AnswerRepository answerRepository) {
+        this.answerRepository = answerRepository;
     }
 
     Answer save(final Answer answer) {
-        return answerDao.insert(answer);
+        return answerRepository.insert(answer);
     }
 
     Optional<Answer> findById(final long id) {
-        return Optional.ofNullable(answerDao.findById(id));
+        return Optional.ofNullable(answerRepository.findById(id));
     }
 
     List<Answer> findAllByQuestionId(final long questionId) {
-        return answerDao.findAllByQuestionId(questionId);
+        return answerRepository.findAllByQuestionId(questionId);
     }
 
     void deleteById(final long answerId) {
-        answerDao.delete(answerId);
+        answerRepository.delete(answerId);
     }
 }

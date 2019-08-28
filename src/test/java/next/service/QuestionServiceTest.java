@@ -1,7 +1,7 @@
 package next.service;
 
-import next.dao.QuestionDao;
 import next.model.Question;
+import next.repository.JdbcQuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,9 +20,9 @@ class QuestionServiceTest {
 
     @BeforeEach
     void setUp() {
-        final QuestionDao questionDao = new QuestionDao();
+        final JdbcQuestionRepository jdbcQuestionRepository = new JdbcQuestionRepository();
 
-        questionService = new QuestionService(questionDao);
+        questionService = new QuestionService(jdbcQuestionRepository);
     }
 
     @DisplayName("question을 추가한다.")
