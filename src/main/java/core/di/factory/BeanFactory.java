@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,8 +78,11 @@ public class BeanFactory {
     }
 
     private Object getDependentBean(Class<?> dependentBeanType) throws ReflectiveOperationException {
-        return Optional.ofNullable((Object) getBean(dependentBeanType))
-                .orElse(registerBean(dependentBeanType));
+        Object bean = getBean(dependentBeanType);
+        if (bean == null) {
+            return registerBean(dependentBeanType);
+        }
+        return bean;
     }
 
     public Map<Class<?>, Object> getControllers() {
