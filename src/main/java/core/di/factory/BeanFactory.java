@@ -32,15 +32,7 @@ public class BeanFactory {
     }
 
     private void putInstance(Class<?> type) {
-        final Object bean = instanticate(type);
-
-        final Optional<Class<?>> firstInterface = Arrays.stream(type.getInterfaces()).findFirst();
-        if (firstInterface.isPresent()) {
-            beans.put(firstInterface.get(), bean);
-            return;
-        }
-
-        beans.put(type, bean);
+        beans.put(type, instanticate(type));
     }
 
     @SuppressWarnings("unchecked")
@@ -79,8 +71,8 @@ public class BeanFactory {
 
     private Object instantiateConstructor(Constructor<?> constructor) {
         final Object[] parameters = Arrays.stream(constructor.getParameterTypes())
-                .map(ExceptionWrapper.function(
-                        parameterType -> beans.getOrDefault(parameterType, instanticate(parameterType))))
+                .map(parameterType -> BeanFactoryUtils.findConcreteClass(parameterType, scannedAnnotatedTypes))
+                .map(ExceptionWrapper.function(this::instanticate))
                 .toArray();
 
         return BeanUtils.instantiateClass(constructor, parameters);
