@@ -1,5 +1,7 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
+import core.di.factory.BeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -29,9 +31,14 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
+
+        BeanScanner beanScanner = new BeanScanner("next.controller");
+        BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateClasses());
+        beanFactory.initialize();
+
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next.controller"));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
