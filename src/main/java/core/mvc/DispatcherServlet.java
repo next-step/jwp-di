@@ -1,7 +1,6 @@
 package core.mvc;
 
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -11,17 +10,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
+
+    private final BeanFactory beanFactory;
 
     private HandlerMappingRegistry handlerMappingRegistry;
 
@@ -29,12 +28,12 @@ public class DispatcherServlet extends HttpServlet {
 
     private HandlerExecutor handlerExecutor;
 
+    public DispatcherServlet(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
     @Override
     public void init() {
-
-        BeanScanner beanScanner = new BeanScanner("next.controller");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateClasses());
-        beanFactory.initialize();
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
