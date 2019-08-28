@@ -1,9 +1,6 @@
 package core.di.factory;
 
-import core.di.factory.example.ExampleConfig;
-import core.di.factory.example.IntegrationConfig;
-import core.di.factory.example.MyJdbcTemplate;
-import core.jdbc.JdbcTemplate;
+import core.di.factory.example.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +17,6 @@ public class ApplicationContextTest {
     @DisplayName("@Bean 설정 단독 사용")
     void applicationContextWithExample() {
         ApplicationContext applicationContext = new ApplicationContext(ExampleConfig.class);
-        applicationContext.refresh();
         final DataSource dataSource = applicationContext.getBean(DataSource.class);
         assertNotNull(dataSource);
         assertThat(dataSource).isInstanceOf(DataSource.class);
@@ -30,11 +26,21 @@ public class ApplicationContextTest {
     @DisplayName("@Bean 2개 사용 (주입)")
     void applicationContextWithIntegration() throws SQLException {
         ApplicationContext applicationContext = new ApplicationContext(IntegrationConfig.class);
-        applicationContext.refresh();
         final MyJdbcTemplate myJdbcTemplate = applicationContext.getBean(MyJdbcTemplate.class);
         assertNotNull(myJdbcTemplate);
         assertNotNull(myJdbcTemplate.getDataSource());
         assertNotNull(myJdbcTemplate.getDataSource().getConnection());
-
     }
+
+    @Test
+    @DisplayName("@Bean 2개(Configuration) + @Repository(ComponentScan) 1개 사용(각각 주입)")
+    void configurationAndComponentScan() {
+        ApplicationContext applicationContext = new ApplicationContext(ScanIntegrationConfig.class);
+
+        final TestRepository testRepository = applicationContext.getBean(TestRepository.class);
+        assertNotNull(testRepository);
+        assertNotNull(testRepository.getJdbcTemplate());
+        assertNotNull(testRepository.getJdbcTemplate().getDataSource());
+    }
+
 }

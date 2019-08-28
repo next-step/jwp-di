@@ -2,6 +2,7 @@ package core.di.factory;
 
 import com.google.common.collect.Sets;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -9,18 +10,8 @@ public class BeanDefinitions {
 
     private Set<BeanDefinition> beanDefinitions;
 
-    public BeanDefinitions(Set<BeanDefinition> beanDefinitions) {
-        this.beanDefinitions = beanDefinitions;
-    }
-
-    public boolean contains(Class<?> type) {
-        for (BeanDefinition beanDefinition : beanDefinitions) {
-            if (beanDefinition.getType() == type) {
-                return true;
-            }
-        }
-
-        return false;
+    public BeanDefinitions() {
+        this.beanDefinitions = new HashSet<>();
     }
 
     public void register(BeanDefinition bd) {

@@ -1,19 +1,17 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.Component;
 import core.annotation.Inject;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import static core.di.factory.ReflectionSupport.setFieldByForce;
 import static java.util.stream.Collectors.toMap;
@@ -30,9 +28,8 @@ public class SimpleBeanFactory implements BeanFactory {
     private BeanDefinitions beanDefinitions;
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public SimpleBeanFactory(Object... basePackage) {
-        this.beanDefinitions = new BeanScanner(basePackage)
-                .scan(Controller.class, Service.class, Repository.class, Component.class);
+    public SimpleBeanFactory() {
+        beanDefinitions = new BeanDefinitions();
     }
 
     /**
@@ -94,7 +91,7 @@ public class SimpleBeanFactory implements BeanFactory {
                 && !BeanUtils.isSimpleValueType(field.getClass());
     }
 
-    public void registerBeanDefinitions(List<BeanDefinition> beanDefinitions) {
+    public void registerBeanDefinitions(Set<BeanDefinition> beanDefinitions) {
         for (BeanDefinition bd : beanDefinitions) {
             registerBeanDefinition(bd);
         }

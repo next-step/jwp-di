@@ -2,57 +2,69 @@ package core.di.factory;
 
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
+import core.annotation.Configuration;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ApplicationContext implements BeanFactory {
+public class ApplicationContext {
 
     private SimpleBeanFactory simpleBeanFactory;
 
-    private List<String> basePackages = new ArrayList<>();
-    private List<BeanDefinition> preBeanDefinitions = new ArrayList<>();
-
     public ApplicationContext(Class<?>... classes) {
-        for (Class<?> clazz : classes) {
-            addBasePackages(clazz);
-            addPreBeanDefinitions(clazz);
-        }
-    }
-
-    private void addBasePackages(Class<?> clazz) {
-        if (clazz.isAnnotationPresent(ComponentScan.class)) {
-            final ComponentScan componentScan = clazz.getAnnotation(ComponentScan.class);
-            basePackages.addAll(Arrays.asList(componentScan.basePackages()));
-        }
-    }
-
-    private void addPreBeanDefinitions(Class<?> clazz) {
-        Object target = BeanUtils.instantiateClass(clazz);
-        List<BeanDefinition> beanDefinitions = Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> method.isAnnotationPresent(Bean.class))
-                .map(method -> new BeanDefinition(target, method))
-                .collect(Collectors.toList());
-        preBeanDefinitions.addAll(beanDefinitions);
-    }
-
-    public void refresh() {
-        simpleBeanFactory = new SimpleBeanFactory(basePackages.toArray());
-        simpleBeanFactory.registerBeanDefinitions(preBeanDefinitions);
+        simpleBeanFactory = new SimpleBeanFactory();
+        register(classes);
         simpleBeanFactory.initialize();
     }
 
-    @Override
+    public ApplicationContext(String... basePackages) {
+        simpleBeanFactory = new SimpleBeanFactory();
+        register(basePackages);
+        simpleBeanFactory.initialize();
+    }
+
+    private void register(Class<?>[] classes) {
+        for (Class<?> clazz : classes) {
+            registerBean(clazz);
+        }
+    }
+
+    private void register(String[] basePackages) {
+        for (String basePackage : basePackages) {
+            registerBean(basePackage);
+        }
+    }
+
+    private void registerBean(String basePackage) {
+        simpleBeanFactory.registerBeanDefinitions(BeanScanner.scan(basePackage));
+    }
+
+    private void registerBean(Class<?> clazz) {
+        if (!clazz.isAnnotationPresent(Configuration.class)) {
+            return;
+        }
+
+        if (clazz.isAnnotationPresent(ComponentScan.class)) {
+            final ComponentScan componentScan = clazz.getAnnotation(ComponentScan.class);
+            simpleBeanFactory.registerBeanDefinitions(BeanScanner.scan((Object[]) componentScan.basePackages()));
+        }
+
+        Object target = BeanUtils.instantiateClass(clazz);
+        Set<BeanDefinition> beanDefinitions = Arrays.stream(clazz.getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(Bean.class))
+                .map(method -> new BeanDefinition(target, method))
+                .collect(Collectors.toSet());
+        simpleBeanFactory.registerBeanDefinitions(beanDefinitions);
+    }
+
     public Map<Class<?>, Object> getBeans(Class<? extends Annotation> annotation) {
         return simpleBeanFactory.getBeans(annotation);
     }
 
-    @Override
     public <T> T getBean(Class<T> requiredType) {
         return simpleBeanFactory.getBean(requiredType);
     }
