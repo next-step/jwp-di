@@ -2,8 +2,10 @@ package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -17,24 +19,24 @@ import java.util.Set;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Object[] basePackage;
+    private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final BeanScanner beanScanner;
+    private final BeanFactory beanFactory;
 
-    private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
-
-    public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
+    public AnnotationHandlerMapping(BeanScanner beanScanner, BeanFactory beanFactory) {
+        this.beanScanner = beanScanner;
+        this.beanFactory = beanFactory;
     }
 
     public void initialize() {
-        ControllerScanner controllerScanner = new ControllerScanner(basePackage);
-        Map<Class<?>, Object> controllers = controllerScanner.getControllers();
-        Set<Method> methods = getRequestMappingMethods(controllers.keySet());
+        Set<Class<?>> controllers = beanScanner.getBeanClassesWithAnnotation(Controller.class);
+        Set<Method> methods = getRequestMappingMethods(controllers);
         for (Method method : methods) {
             RequestMapping rm = method.getAnnotation(RequestMapping.class);
             logger.debug("register handlerExecution : url is {}, request method : {}, method is {}",
                     rm.value(), rm.method(), method);
             handlerExecutions.put(createHandlerKey(rm),
-                    new HandlerExecution(controllers.get(method.getDeclaringClass()), method));
+                    new HandlerExecution(beanFactory.getBean(method.getDeclaringClass()), method));
         }
 
         logger.info("Initialized AnnotationHandlerMapping!");

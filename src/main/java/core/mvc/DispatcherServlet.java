@@ -1,8 +1,10 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.BeanScanner;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +31,13 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
+        BeanScanner beanScanner = new BeanScanner("");
+        BeanFactory beanFactory = new BeanFactory(beanScanner.getAllBeanClasses());
+        beanFactory.initialize();
+
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next.controller"));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanScanner, beanFactory));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
