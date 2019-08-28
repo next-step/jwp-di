@@ -19,16 +19,7 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        scannedAnnotatedTypes.stream()
-                .sorted(compareInterfacesLength()
-                        .reversed())
-                .forEach(ExceptionWrapper.consumer(this::putInstance));
-    }
-
-    // interface를 구현한 클래스 먼저 객체를 만든다.
-    // repository
-    private Comparator<Class<?>> compareInterfacesLength() {
-        return Comparator.comparingInt(type -> type.getInterfaces().length);
+        scannedAnnotatedTypes.forEach(ExceptionWrapper.consumer(this::putInstance));
     }
 
     private void putInstance(Class<?> type) {
