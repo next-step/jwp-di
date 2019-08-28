@@ -1,7 +1,6 @@
 package core.mvc.tobe;
 
 import core.db.DataBase;
-import next.controller.ApiQnaController;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,13 +48,10 @@ class AnnotationHandlerMappingTest {
     @DisplayName("컨트롤러 객체와 HandlerExecution 생성 확인")
     @Test
     void createHandlerExecution() {
-        final AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping("next");
-        handlerMapping.initialize();
-
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/qna/list");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
         final HandlerExecution handler = (HandlerExecution) handlerMapping.getHandler(request);
 
         assertThat(handler.getDeclaredObject().getClass())
-                .isEqualTo(ApiQnaController.class);
+                .isEqualTo(MyController.class);
     }
 }

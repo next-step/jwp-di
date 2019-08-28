@@ -32,8 +32,4 @@ public class BeanScanner {
                 .flatMap(annotation -> reflections.getTypesAnnotatedWith(annotation).stream())
                 .collect(Collectors.toSet());
     }
-
-    public List<Class<? extends Annotation>> getAnnotations() {
-        return SORTED_ANNOTATIONS;
-    }
 }
