@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
@@ -19,16 +20,13 @@ public class BeanFactory {
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory() {
+
     }
 
     public void initialize() {
         for(Class<?> clazz : this.beanDefinitions.keySet()) {
-            beans.put(clazz, getInstantiateClass(clazz));
+            beans.computeIfAbsent(clazz, this::getInstantiateClass);
         }
-    }
-
-    public void addBeandDefinitions(BeanDefinition beanDefinition){
-        beanDefinitions.put(beanDefinition.getBeanType(), beanDefinition);
     }
 
     public <T> T getBean(Class<T> requiredType) {
@@ -62,7 +60,18 @@ public class BeanFactory {
         }
     }
 
+    public void addBeandDefinition(BeanDefinition beanDefinition){
+        Class<?> beanType = beanDefinition.getBeanType();
 
+        if(beanDefinitions.containsKey(beanType)) {
+            return;
+        }
+        beanDefinitions.put(beanType, beanDefinition);
+    }
 
-
+    public void addBeandDefinitions(Set<BeanDefinition> beanDefinitions) {
+        for(BeanDefinition beanDefinition : beanDefinitions) {
+            addBeandDefinition(beanDefinition);
+        }
+    }
 }

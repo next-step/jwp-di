@@ -3,11 +3,12 @@ package core.di.factory;
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Set;
 
-import static org.reflections.ReflectionUtils.getAllConstructors;
-import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.reflections.ReflectionUtils.*;
 
 public class BeanFactoryUtils {
     /**
@@ -42,6 +43,10 @@ public class BeanFactoryUtils {
         }
 
         return BeanFactoryUtils.getNoArgsConstructor(clazz);
+    }
+
+    public static Set<Method> getAnnotatedMethods(Class<?> clazz, Class<? extends Annotation> annotationType) {
+        return getAllMethods(clazz, withAnnotation(annotationType));
     }
 
     /**

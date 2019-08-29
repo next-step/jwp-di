@@ -30,8 +30,6 @@ public class ClassBeanDefinition implements BeanDefinition {
 
     @Override
     public BeanCreator getBeanCreator(){
-        return (args) -> {
-            return this.constructor.newInstance(args);
-        };
+        return (args) -> this.constructor.newInstance(args);
     }
 }

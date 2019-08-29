@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import core.annotation.Component;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -14,10 +15,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ClassPathBeanDefinitionScanner {
+public class ClassPathBeanDefinitionScanner implements BeanDefinitionLoader<Object>{
 
     private final List<Class<? extends Annotation>> TARGET_ANNOTATIONS = Arrays.asList(Controller.class
             , Service.class
+            , Component.class
             , Repository.class);
 
     private final BeanFactory beanFactory;
@@ -26,9 +28,10 @@ public class ClassPathBeanDefinitionScanner {
         this.beanFactory = beanFactory;
     }
 
+    @Override
     public void loadBeanDefinitions(Object... basePackage){
-        for (BeanDefinition beanDefinition : getBeanDefinitions(basePackage)) {
-            this.beanFactory.addBeandDefinitions(beanDefinition);
+        for (Class<?> clazz : this.getPreInstanticateClasses(basePackage)) {
+            this.beanFactory.addBeandDefinition(new ClassBeanDefinition(clazz));
         }
     }
 
