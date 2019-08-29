@@ -104,4 +104,13 @@ public class BeanFactory {
 
         controllers.put(clazz, getBean(clazz));
     }
+
+    public void addBean(Class<?> clazz, Object object) {
+        preInstanticateBeans.add(clazz);
+        beans.put(clazz, object);
+    }
+
+    public boolean containsBean(Class<?> clazz) {
+        return beans.containsKey(clazz);
+    }
 }
