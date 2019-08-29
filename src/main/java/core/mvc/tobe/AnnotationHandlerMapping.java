@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -18,11 +19,13 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
     private Map<Class<?>, Object> controllers;
-
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(Map<Class<?>, Object> controllers) {
-        this.controllers = controllers;
+    public AnnotationHandlerMapping(Object... basePackage) {
+        BeanFactory beanFactory = new BeanFactory();
+        BeanScanner beanScanner = new BeanScanner(beanFactory);
+        beanScanner.doScan(basePackage);
+        this.controllers = beanFactory.getControllers();
     }
 
     public void initialize() {

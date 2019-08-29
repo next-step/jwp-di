@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,16 +15,12 @@ import java.util.Set;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
-    private Set<Class<?>> preInstanticateBeans;
+    private Set<Class<?>> preInstanticateBeans = Sets.newHashSet();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-        initialize();
-    }
-
-    private void initialize() {
-        for (Class<?> clazz : preInstanticateBeans) {
+    public void register(Set<Class<?>> preInstanticateBeans) {
+        this.preInstanticateBeans.addAll(preInstanticateBeans);
+        for (Class<?> clazz : this.preInstanticateBeans) {
             addBean(clazz);
         }
     }

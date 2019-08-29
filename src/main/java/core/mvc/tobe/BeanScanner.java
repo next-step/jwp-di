@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.factory.BeanFactory;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +16,17 @@ public class BeanScanner {
     private static final Logger log = LoggerFactory.getLogger(BeanScanner.class);
 
     private Reflections reflections;
-    private Set<Class<?>> preInstanticateClazz;
+    private BeanFactory beanFactory;
 
-    public BeanScanner(Object... basePackage) {
+    public BeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void doScan(Object... basePackage) {
         reflections = new Reflections(basePackage);
-        preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        beanFactory.register(preInstanticateClazz);
     }
 
     @SuppressWarnings("unchecked")
@@ -29,9 +36,5 @@ public class BeanScanner {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
-    }
-
-    public Set<Class<?>> getPreInstanticateClazz() {
-        return preInstanticateClazz;
     }
 }
