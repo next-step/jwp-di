@@ -9,26 +9,26 @@ import org.slf4j.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Map<Class<?>, BeanDefinition> beanDefinitions;
+    private Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<BeanDefinition> beanDefinitions) {
-        this.beanDefinitions = beanDefinitions.stream()
-                .collect(Collectors.toMap(BeanDefinition::getBeanType, Function.identity(), (v1,v2) -> v1));
+    public BeanFactory() {
     }
 
     public void initialize() {
         for(Class<?> clazz : this.beanDefinitions.keySet()) {
             beans.put(clazz, getInstantiateClass(clazz));
         }
+    }
+
+    public void addBeandDefinitions(BeanDefinition beanDefinition){
+        beanDefinitions.put(beanDefinition.getBeanType(), beanDefinition);
     }
 
     public <T> T getBean(Class<T> requiredType) {

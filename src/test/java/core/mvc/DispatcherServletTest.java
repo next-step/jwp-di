@@ -1,7 +1,7 @@
 package core.mvc;
 
 import core.di.factory.BeanFactory;
-import core.di.factory.ClassPathBeanScanner;
+import core.di.factory.ClassPathBeanDefinitionScanner;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,9 +18,9 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-
-        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner("core.mvc.tobe");
-        BeanFactory beanFactory = new BeanFactory(classPathBeanScanner.getBeanDefinitions());
+        BeanFactory beanFactory = new BeanFactory();
+        ClassPathBeanDefinitionScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanFactory);
+        classPathBeanDefinitionScanner.loadBeanDefinitions("core.mvc.tobe");
         beanFactory.initialize();
 
         dispatcher = new DispatcherServlet(beanFactory);

@@ -8,6 +8,5 @@ public interface BeanDefinition {
 
     List<Class<?>> getArgumentTypes();
 
-
     BeanCreator getBeanCreator();
 }

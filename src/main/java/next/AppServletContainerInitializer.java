@@ -1,7 +1,7 @@
 package next;
 
 import core.di.factory.BeanFactory;
-import core.di.factory.ClassPathBeanScanner;
+import core.di.factory.ClassPathBeanDefinitionScanner;
 import core.mvc.DispatcherServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +20,9 @@ public class AppServletContainerInitializer implements ServletContainerInitializ
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {
         logger.debug("onStartup {}", this.getClass().getName());
-
-        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner("next.controller");
-        BeanFactory beanFactory = new BeanFactory(classPathBeanScanner.getBeanDefinitions());
+        BeanFactory beanFactory = new BeanFactory();
+        ClassPathBeanDefinitionScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanFactory);
+        classPathBeanDefinitionScanner.loadBeanDefinitions("next.controller");
         beanFactory.initialize();
 
         ServletRegistration.Dynamic dispatcher =

@@ -2,7 +2,7 @@ package core.mvc.tobe;
 
 import core.db.DataBase;
 import core.di.factory.BeanFactory;
-import core.di.factory.ClassPathBeanScanner;
+import core.di.factory.ClassPathBeanDefinitionScanner;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,8 +16,9 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner("core.mvc.tobe");
-        BeanFactory beanFactory = new BeanFactory(classPathBeanScanner.getBeanDefinitions());
+        BeanFactory beanFactory = new BeanFactory();
+        ClassPathBeanDefinitionScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanFactory);
+        classPathBeanDefinitionScanner.loadBeanDefinitions("core.mvc.tobe");
         beanFactory.initialize();
         handlerMapping = new AnnotationHandlerMapping(beanFactory);
         handlerMapping.initialize();
