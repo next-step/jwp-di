@@ -9,23 +9,23 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class BeanFactoryTest {
-    private BeanFactory beanFactory;
+public class SimpleBeanFactoryTest {
+
+    private ApplicationContext applicationContext;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        beanFactory = new BeanFactory(new BeanScanner("core.di.factory.example"));
-        beanFactory.initialize();
+        applicationContext = new ApplicationContext("core.di.factory.example");
     }
 
-    @DisplayName("BeanFactory 에 빈이 존재하지 않을 경우 Null 반환")
+    @DisplayName("SimpleBeanFactory 에 빈이 존재하지 않을 경우 Null 반환")
     @Test
     void getBean_NULL() {
-        final NotExistBean emptyBean = beanFactory.getBean(NotExistBean.class);
+        final NotExistBean emptyBean = applicationContext.getBean(NotExistBean.class);
         assertNull(emptyBean);
 
-        final Object nullBean = beanFactory.getBean(null);
+        final Object nullBean = applicationContext.getBean(null);
         assertNull(nullBean);
     }
 
@@ -33,7 +33,7 @@ public class BeanFactoryTest {
 
     @Test
     public void di() {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
+        QnaController qnaController = applicationContext.getBean(QnaController.class);
 
         assertNotNull(qnaController);
         assertNotNull(qnaController.getQnaService());
