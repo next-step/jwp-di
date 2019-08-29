@@ -1,17 +1,19 @@
 package core.di.factory;
 
-import core.di.factory.config.BeanDefinition;
-import core.jdbc.JdbcTemplate;
-import next.MyConfiguration;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.sql.DataSource;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import core.di.factory.config.BeanDefinition;
+import core.di.factory.example.MyConfiguration;
+import core.jdbc.JdbcTemplate;
 
 public class ConfigurationBeanDefinitionReaderTest {
 

@@ -1,29 +1,27 @@
 package core.mvc;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.ClassPathBeanDefinitionScanner;
-import next.controller.UserSessionUtils;
-import next.model.User;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import core.di.factory.ApplicationContext;
+import next.AppConfiguration;
+import next.controller.UserSessionUtils;
+import next.model.User;
 
 class DispatcherServletTest {
     private DispatcherServlet dispatcher;
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
-
+    
     @BeforeEach
     void setUp() {
-        BeanFactory beanFactory = new BeanFactory();
-        ClassPathBeanDefinitionScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanFactory);
-        classPathBeanDefinitionScanner.loadBeanDefinitions("core.mvc.tobe");
-        beanFactory.initialize();
-
-        dispatcher = new DispatcherServlet(beanFactory);
+    	
+    	ApplicationContext applicationContext = new ApplicationContext(DataInitConfiguration.class, AppConfiguration.class);
+        dispatcher = new DispatcherServlet(applicationContext);
         dispatcher.init();
 
         request = new MockHttpServletRequest();
@@ -34,9 +32,8 @@ class DispatcherServletTest {
     void annotation_user_list() throws Exception {
         request.setRequestURI("/users");
         request.setMethod("GET");
-
         dispatcher.service(request, response);
-
+        System.out.println(response.getStatus());
         assertThat(response.getRedirectedUrl()).isNotNull();
     }
 

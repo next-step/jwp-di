@@ -31,7 +31,7 @@ public class BeanFactoryUtils {
         try {
             return clazz.getConstructor();
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("가능한 constructor가 없습니다.", e);
+            throw new RuntimeException("가능한 constructor가 없습니다. : " + clazz, e);
         }
     }
 
@@ -63,6 +63,11 @@ public class BeanFactoryUtils {
         }
 
         for (Class<?> clazz : preInstanticateBeans) {
+        	
+        	if(clazz == injectedClazz) {
+        		return clazz;
+        	}
+        	
             Set<Class<?>> interfaces = Sets.newHashSet(clazz.getInterfaces());
             if (interfaces.contains(injectedClazz)) {
                 return clazz;

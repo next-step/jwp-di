@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import core.annotation.Component;
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -40,14 +41,18 @@ public class ClassPathBeanDefinitionScanner implements BeanDefinitionLoader<Obje
                 .map(ClassBeanDefinition::new)
                 .collect(Collectors.toSet());
     }
+    
+    public Set<Class<?>> getConfigurationClasses(Object[] basePackage) {
+        Reflections reflections = new Reflections(basePackage);
+        return reflections.getTypesAnnotatedWith(Configuration.class);
+    }
 
     private Set<Class<?>> getPreInstanticateClasses(Object[] basePackage) {
+    	
         Reflections reflections = new Reflections(basePackage);
         return TARGET_ANNOTATIONS.stream()
                 .map(reflections::getTypesAnnotatedWith)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
     }
-
-
 }

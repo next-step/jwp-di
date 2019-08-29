@@ -1,4 +1,4 @@
-package next;
+package core.di.factory.example;
 
 import core.annotation.Bean;
 import core.annotation.ComponentScan;

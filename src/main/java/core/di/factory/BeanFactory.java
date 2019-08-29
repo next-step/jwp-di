@@ -27,6 +27,12 @@ public class BeanFactory {
         for(Class<?> clazz : this.beanDefinitions.keySet()) {
             beans.computeIfAbsent(clazz, this::getInstantiateClass);
         }
+        beans.keySet()
+        .stream()
+        .forEach(cls ->{
+        	logger.debug("bean {}", cls);	
+        });
+        
     }
 
     public <T> T getBean(Class<T> requiredType) {
@@ -45,19 +51,20 @@ public class BeanFactory {
     }
 
     private Object instantiate(Class<?> clazz) {
+    	
         BeanDefinition beanDefinition = this.beanDefinitions.get(clazz);
         BeanCreator creator = beanDefinition.getBeanCreator();
-
         List<Object> args = beanDefinition.getArgumentTypes()
                 .stream()
                 .map(argType -> BeanFactoryUtils.findConcreteClass(argType, this.beanDefinitions.keySet()))
-                .map(this::instantiate)
+                .map(this::getInstantiateClass)
                 .collect(Collectors.toList());
         try {
             return creator.create(args.toArray());
         } catch (Exception e) {
             throw new RuntimeException("인스턴스화 중 문제 발생", e);
         }
+        
     }
 
     public void addBeandDefinition(BeanDefinition beanDefinition){

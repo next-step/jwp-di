@@ -41,7 +41,7 @@ public class ConfigurationBeanDefinitionReader implements BeanDefinitionLoader<C
 
         Set<Method> annotatedBeanMethods = BeanFactoryUtils.getAnnotatedMethods(annotatedClass, Bean.class);
         for(Method method : annotatedBeanMethods) {
-            beanDefinitions.add(new AnnotatedBeanDefinition(method.getReturnType(), method));
+            beanDefinitions.add(new AnnotatedBeanDefinition(annotatedClass, method));
         }
         return beanDefinitions;
     }

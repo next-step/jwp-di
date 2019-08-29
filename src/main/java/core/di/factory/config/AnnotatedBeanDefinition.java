@@ -15,13 +15,13 @@ public class AnnotatedBeanDefinition implements BeanDefinition {
         this.clazz = clazz;
         this.method = method;
         this.argumentTypes = new ArrayList<>();
-        this.argumentTypes.add(clazz);
+        this.argumentTypes.add(this.clazz);
         this.argumentTypes.addAll(Arrays.asList(method.getParameterTypes()));
     }
 
     @Override
     public Class<?> getBeanType() {
-        return this.clazz;
+        return this.method.getReturnType();
     }
 
     @Override

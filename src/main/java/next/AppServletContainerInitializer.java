@@ -1,17 +1,18 @@
 package next;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.ClassPathBeanDefinitionScanner;
-import core.mvc.DispatcherServlet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Set;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import core.di.factory.ApplicationContext;
+import core.mvc.DispatcherServlet;
 
 @HandlesTypes(AppInitializer.class)
 public class AppServletContainerInitializer implements ServletContainerInitializer {
@@ -20,13 +21,11 @@ public class AppServletContainerInitializer implements ServletContainerInitializ
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {
         logger.debug("onStartup {}", this.getClass().getName());
-        BeanFactory beanFactory = new BeanFactory();
-        ClassPathBeanDefinitionScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanFactory);
-        classPathBeanDefinitionScanner.loadBeanDefinitions("next.controller");
-        beanFactory.initialize();
+        
+        ApplicationContext applicationContext = new ApplicationContext(AppConfiguration.class);
 
         ServletRegistration.Dynamic dispatcher =
-                ctx.addServlet("dispatcher", new DispatcherServlet(beanFactory));
+                ctx.addServlet("dispatcher", new DispatcherServlet(applicationContext));
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
     }
