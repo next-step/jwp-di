@@ -31,6 +31,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         this.basePackage = basePackage;
     }
 
+    public AnnotationHandlerMapping() {
+    }
+
     public void initialize() {
         final BeanScanner beanScanner = new BeanScanner(basePackage);
         final BeanFactory beanFactory = new BeanFactory(beanScanner.getTypesAnnotatedWith());

@@ -1,6 +1,7 @@
 package core.mvc.tobe;
 
 import core.annotation.Component;
+import core.annotation.ComponentScan;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BeanScanner {
 
@@ -25,6 +27,28 @@ public class BeanScanner {
 
     public BeanScanner(Object... basePackage) {
         reflections = new Reflections(basePackage);
+    }
+
+    public BeanScanner() {
+        final Set<Class<?>> typeWithComponentScans = getTypesWithComponentScan();
+        final Object[] basePackages = getBasePackagesWithComponentScan(typeWithComponentScans);
+
+        reflections = new Reflections(basePackages);
+    }
+
+    private Set<Class<?>> getTypesWithComponentScan() {
+        final Reflections rootReflections = new Reflections("");
+        return rootReflections.getTypesAnnotatedWith(ComponentScan.class);
+    }
+
+    private String[] getBasePackagesWithComponentScan(Set<Class<?>> componentScans) {
+        return componentScans.stream()
+                .map(componentScan -> componentScan.getAnnotation(ComponentScan.class))
+                .flatMap(componentScan -> Stream.concat(
+                        Arrays.stream(componentScan.value()),
+                        Arrays.stream(componentScan.basePackages())
+                ))
+                .toArray(String[]::new);
     }
 
     public Set<Class<?>> getTypesAnnotatedWith() {

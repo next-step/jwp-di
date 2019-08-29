@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 @Configuration
 @ComponentScan({"next", "core"})
 public class MyConfiguration {
+
     @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();

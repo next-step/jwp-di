@@ -1,5 +1,6 @@
 package next.dao;
 
+import core.db.MyConfiguration;
 import core.jdbc.ConnectionManager;
 import next.model.Answer;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,9 @@ public class AnswerDaoTest {
     public void addAnswer() throws Exception {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
-        AnswerDao dut = new AnswerDao();
+
+        MyConfiguration myConfiguration = new MyConfiguration();
+        AnswerDao dut = new AnswerDao(myConfiguration.dataSource());
         Answer answer = dut.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();
