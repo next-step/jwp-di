@@ -8,14 +8,14 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BeanScannerTest {
+public class ClassPathBeanScannerTest {
 
 
     @DisplayName("scan test")
     @Test
     public void scanTest(){
-        BeanScanner beanScanner = new BeanScanner("core.mvc.tobe");
-        Set<Class<?>> classes = beanScanner.getPreInstanticateClasses();
+        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner("core.mvc.tobe");
+        Set<Class<?>> classes = classPathBeanScanner.getPreInstanticateClasses();
         assertThat(classes).isNotNull();
         assertThat(classes).isNotEmpty();
         assertThat(classes).contains(MyController.class);

@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
-    private BeanScanner beanScanner;
+    private ClassPathBeanScanner classPathBeanScanner;
     private BeanFactory beanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        beanScanner = new BeanScanner("core.di.factory.example");
-        beanFactory = new BeanFactory(beanScanner.getPreInstanticateClasses());
+        classPathBeanScanner = new ClassPathBeanScanner("core.di.factory.example");
+        beanFactory = new BeanFactory(classPathBeanScanner.getBeanDefinitions());
         beanFactory.initialize();
     }
 
