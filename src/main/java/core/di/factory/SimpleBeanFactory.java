@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toMap;
  * contain bean map with Class key & Instance value
  */
 @SuppressWarnings("unchecked")
-public class SimpleBeanFactory implements BeanFactory {
+public class SimpleBeanFactory implements BeanFactory, BeanDefinitionRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleBeanFactory.class);
 
@@ -63,11 +63,11 @@ public class SimpleBeanFactory implements BeanFactory {
                 .collect(toMap(Entry::getKey, Entry::getValue, (b1, b2) -> b2));
     }
 
+    @Override
     public void registerBeanDefinition(BeanDefinition bd) {
         beanDefinitions.register(bd);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> T createBean(Class<T> clazz) {
         return beanDefinitions.findBeanDefinition(clazz)
                 .map(bd -> bd.newInstance(clazz, this::getBean))
@@ -91,6 +91,7 @@ public class SimpleBeanFactory implements BeanFactory {
                 && !BeanUtils.isSimpleValueType(field.getClass());
     }
 
+    @Override
     public void registerBeanDefinitions(Set<BeanDefinition> beanDefinitions) {
         for (BeanDefinition bd : beanDefinitions) {
             registerBeanDefinition(bd);

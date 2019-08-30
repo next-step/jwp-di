@@ -41,7 +41,7 @@ public class BeanDefinition {
             return (T) ReflectionSupport.invokeMethod(method, target, args);
         }
 
-        return ofNullable(getInjectedConstructor(clazz))
+        return (T) ofNullable(getInjectedConstructor())
                 .map(ctor -> instantiateClass(ctor, getArguments(ctor.getParameterTypes(), am)))
                 .orElseGet(() -> instantiateClass(type, clazz));
     }
@@ -52,8 +52,8 @@ public class BeanDefinition {
      * @Inject 애노테이션이 설정되어 있는 생성자는 클래스당 하나로 가정한다.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private <T> Constructor<T> getInjectedConstructor(Class<T> clazz) {
-        Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
+    private <T> Constructor<T> getInjectedConstructor() {
+        Set<Constructor> injectedConstructors = getAllConstructors(type, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
             return null;
         }

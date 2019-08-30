@@ -3,6 +3,10 @@ package next.support.context;
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
+<<<<<<< HEAD
+=======
+import core.di.factory.AnnotationApplicationContext;
+>>>>>>> step3
 import core.di.factory.ApplicationContext;
 import core.jdbc.ConnectionManager;
 import core.jdbc.JdbcTemplate;
@@ -44,7 +48,11 @@ public class ContextLoaderListener implements ServletContextListener {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+<<<<<<< HEAD
         ApplicationContext applicationContext = new ApplicationContext(this.getClass());
+=======
+        ApplicationContext applicationContext = new AnnotationApplicationContext(this.getClass());
+>>>>>>> step3
 
         sce.getServletContext().setAttribute(ApplicationContext.class.getName(), applicationContext);
         logger.info("Completed Load ServletContext!");

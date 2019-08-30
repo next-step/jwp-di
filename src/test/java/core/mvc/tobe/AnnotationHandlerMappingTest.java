@@ -2,6 +2,10 @@ package core.mvc.tobe;
 
 import core.db.DataBase;
 import core.di.factory.ApplicationContext;
+<<<<<<< HEAD
+=======
+import core.di.factory.ClasspathApplicationContext;
+>>>>>>> step3
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +19,11 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
+<<<<<<< HEAD
         ApplicationContext applicationContext = new ApplicationContext("core.mvc.tobe");
+=======
+        ApplicationContext applicationContext = new ClasspathApplicationContext("core.mvc.tobe");
+>>>>>>> step3
         handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
     }
