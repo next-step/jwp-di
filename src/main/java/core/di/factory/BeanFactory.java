@@ -1,17 +1,11 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.Inject;
+import com.google.common.collect.Sets;
 import core.annotation.web.Controller;
-import core.annotation.web.RequestMapping;
-import core.mvc.tobe.HandlerExecution;
-import core.mvc.tobe.HandlerKey;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +19,13 @@ public class BeanFactory {
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
+    public void initInstanticateBeans(Set<Class<?>> preInstanticateBeans){
         this.preInstanticateBeans = preInstanticateBeans;
+    }
+
+    public void initInstanticateBeans(Class<?> preInstanticateBean){
+        preInstanticateBeans = Sets.newHashSet();
+        preInstanticateBeans.add(preInstanticateBean);
     }
 
     @SuppressWarnings("unchecked")
@@ -35,37 +34,17 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        for (Class<?> clazz : preInstanticateBeans) {
-            beans.put(clazz, findAndInitInject(clazz));
-        }
-    }
-
-    private Object findAndInitInject(Class<?> clazz) {
         try {
-            clazz = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
-            return getNewInstance(clazz, BeanFactoryUtils.getInjectedConstructor(clazz));
-        } catch (Exception e) {
-            logger.error("injection Error {}", e.getMessage());
+            InjectMaker injectMaker = new InjectMaker(preInstanticateBeans);
+            BeanMaker beanMaker = new BeanMaker();
+
+            for (Class<?> clazz : preInstanticateBeans) {
+                addBean(clazz, injectMaker.findAndInitInject(clazz));
+                addBeans(beanMaker.findAndInitBean(clazz, beans));
+            }
+        }catch (Exception e){
+            logger.error("Bean Create Initialize Error {}", e.getMessage());
         }
-
-        return null;
-    }
-
-    private Object getNewInstance(Class<?> clazz, Constructor constructor) throws Exception {
-        return (constructor == null)
-                ? clazz.newInstance()
-                : constructor.newInstance(getConstructParameter(
-                        constructor.getParameterTypes()));
-    }
-
-    private Object[] getConstructParameter(Object[] parameterObject){
-        Object[] paramList = new Object[parameterObject.length];
-
-        for (int i = 0; i < parameterObject.length; i++) {
-            paramList[i] = findAndInitInject((Class<?>) parameterObject[i]);
-        }
-
-        return paramList;
     }
 
     public Map<Class<?>, Object> getControllers() {
@@ -80,6 +59,23 @@ public class BeanFactory {
         }
 
         return controllers;
+    }
+
+    private void addBean(Class<?> clazz, Object value){
+        if(!beans.containsKey(clazz)){
+            beans.put(clazz, value);
+            return;
+        }
+
+        if(beans.get(clazz) == null){
+            beans.put(clazz, value);
+        }
+    }
+
+    private void addBeans(Map<Class<?>, Object> lists){
+        for(Class<?> clazz : lists.keySet()){
+            addBean(clazz, beans.get(clazz));
+        }
     }
 
 }

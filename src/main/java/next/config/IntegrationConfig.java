@@ -1,4 +1,4 @@
-package core.di.factory.example;
+package next.config;
 
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
@@ -8,8 +8,8 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan({"core.di.factory.example"})
-public class ExampleConfig {
+@ComponentScan({"next", "core"})
+public class IntegrationConfig {
     @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();
@@ -19,4 +19,5 @@ public class ExampleConfig {
         ds.setPassword("");
         return ds;
     }
+
 }
