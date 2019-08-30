@@ -13,20 +13,20 @@ public class Question {
 
     private Date createdDate;
 
-    private int countOfComment;
+    private int countOfAnswer;
 
     public Question(String writer, String title, String contents) {
         this(0, writer, title, contents, new Date(), 0);
     }
 
     public Question(long questionId, String writer, String title, String contents, Date createdDate,
-                    int countOfComment) {
+                    int countOfAnswer) {
         this.questionId = questionId;
         this.writer = writer;
         this.title = title;
         this.contents = contents;
         this.createdDate = createdDate;
-        this.countOfComment = countOfComment;
+        this.countOfAnswer = countOfAnswer;
     }
 
     public long getQuestionId() {
@@ -53,8 +53,8 @@ public class Question {
         return this.createdDate.getTime();
     }
 
-    public int getCountOfComment() {
-        return countOfComment;
+    public int getCountOfAnswer() {
+        return countOfAnswer;
     }
 
     public void update(Question newQuestion) {
@@ -64,8 +64,14 @@ public class Question {
 
     @Override
     public String toString() {
-        return "Question [questionId=" + questionId + ", writer=" + writer + ", title=" + title + ", contents="
-                + contents + ", createdDate=" + createdDate + ", countOfComment=" + countOfComment + "]";
+        return "Question{" +
+                "questionId=" + questionId +
+                ", writer='" + writer + '\'' +
+                ", title='" + title + '\'' +
+                ", contents='" + contents + '\'' +
+                ", createdDate=" + createdDate +
+                ", countOfAnswer=" + countOfAnswer +
+                '}';
     }
 
     @Override
@@ -85,8 +91,6 @@ public class Question {
         if (getClass() != obj.getClass())
             return false;
         Question other = (Question) obj;
-        if (questionId != other.questionId)
-            return false;
-        return true;
+        return questionId == other.questionId;
     }
 }

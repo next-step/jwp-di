@@ -1,6 +1,8 @@
 package core.mvc.tobe;
 
+import core.annotation.web.Controller;
 import core.db.DataBase;
+import core.di.support.BeanScanner;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,8 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+        final BeanScanner beanScanner = new BeanScanner("core.mvc.tobe");
+        handlerMapping = new AnnotationHandlerMapping(beanScanner.getBeansOfAnnotatedBy(Controller.class));
         handlerMapping.initialize();
     }
 

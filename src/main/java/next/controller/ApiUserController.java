@@ -7,10 +7,10 @@ import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.mvc.JsonView;
 import core.mvc.ModelAndView;
-import next.dao.UserDao;
 import next.dto.UserCreatedDto;
 import next.dto.UserUpdatedDto;
 import next.model.User;
+import next.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,25 +23,24 @@ public class ApiUserController {
 
     private static final Logger logger = LoggerFactory.getLogger(ApiUserController.class);
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final UserDao userDao;
+    private final UserService userService;
 
     @Inject
-    public ApiUserController(final UserDao userDao) {
-        this.userDao = userDao;
+    public ApiUserController(final UserService userService) {
+        this.userService = userService;
     }
 
     @RequestMapping(value = "/api/users", method = RequestMethod.POST)
-    public ModelAndView create(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        UserCreatedDto createdDto = objectMapper.readValue(request.getInputStream(), UserCreatedDto.class);
+    public ModelAndView create(final HttpServletRequest request,
+                               final HttpServletResponse response) throws Exception {
+        final UserCreatedDto createdDto = objectMapper.readValue(request.getInputStream(), UserCreatedDto.class);
         logger.debug("Created User : {}", createdDto);
 
-        userDao.insert(new User(
-                createdDto.getUserId(),
-                createdDto.getPassword(),
-                createdDto.getName(),
-                createdDto.getEmail()));
+        final User user = new User(createdDto.getUserId(), createdDto.getPassword(), createdDto.getName(),
+                createdDto.getEmail());
+        userService.insert(user);
 
         response.setHeader("Location", "/api/users?userId=" + createdDto.getUserId());
         response.setStatus(HttpStatus.CREATED.value());
@@ -50,25 +49,28 @@ public class ApiUserController {
     }
 
     @RequestMapping(value = "/api/users", method = RequestMethod.GET)
-    public ModelAndView show(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String userId = request.getParameter("userId");
+    public ModelAndView show(final HttpServletRequest request,
+                             final HttpServletResponse response) throws Exception {
+        final String userId = request.getParameter("userId");
         logger.debug("userId : {}", userId);
 
-        ModelAndView mav = new ModelAndView(new JsonView());
-        mav.addObject("user", userDao.findByUserId(userId));
+        final User user = userService.findByUserId(userId);
+
+        final ModelAndView mav = new ModelAndView(new JsonView());
+        mav.addObject("user", user);
         return mav;
     }
 
     @RequestMapping(value = "/api/users", method = RequestMethod.PUT)
-    public ModelAndView update(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String userId = request.getParameter("userId");
+    public ModelAndView update(final HttpServletRequest request,
+                               final HttpServletResponse response) throws Exception {
+        final String userId = request.getParameter("userId");
         logger.debug("userId : {}", userId);
-        UserUpdatedDto updateDto = objectMapper.readValue(request.getInputStream(), UserUpdatedDto.class);
+
+        final UserUpdatedDto updateDto = objectMapper.readValue(request.getInputStream(), UserUpdatedDto.class);
         logger.debug("Updated User : {}", updateDto);
 
-        User user = userDao.findByUserId(userId);
-        user.update(updateDto);
-        userDao.update(user);
+        userService.update(userId, updateDto);
 
         return new ModelAndView(new JsonView());
     }

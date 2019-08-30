@@ -1,4 +1,4 @@
-package next.dao;
+package next.repository;
 
 import core.jdbc.ConnectionManager;
 import next.dto.UserUpdatedDto;
@@ -13,9 +13,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserDaoTest {
+public class JdbcUserRepositoryTest {
 
-    private UserDao userDao;
+    private JdbcUserRepository jdbcUserRepository;
 
     @BeforeEach
     public void setup() {
@@ -23,25 +23,25 @@ public class UserDaoTest {
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
-        userDao = new UserDao();
+        jdbcUserRepository = new JdbcUserRepository();
     }
 
     @Test
     public void crud() throws Exception {
         User expected = new User("userId", "password", "name", "javajigi@email.com");
-        userDao.insert(expected);
-        User actual = userDao.findByUserId(expected.getUserId());
+        jdbcUserRepository.insert(expected);
+        User actual = jdbcUserRepository.findByUserId(expected.getUserId());
         assertThat(actual).isEqualTo(expected);
 
         expected.update(new UserUpdatedDto("password2", "name2", "sanjigi@email.com"));
-        userDao.update(expected);
-        actual = userDao.findByUserId(expected.getUserId());
+        jdbcUserRepository.update(expected);
+        actual = jdbcUserRepository.findByUserId(expected.getUserId());
         assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     public void findAll() throws Exception {
-        List<User> users = userDao.findAll();
+        List<User> users = jdbcUserRepository.findAll();
         assertThat(users).hasSize(1);
     }
 }

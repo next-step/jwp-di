@@ -1,4 +1,4 @@
-package next.dao;
+package next.repository;
 
 import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
@@ -10,15 +10,17 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class UserDao {
+public class JdbcUserRepository implements UserRepository {
 
     private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
+    @Override
     public void insert(User user) {
         String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql, user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
     }
 
+    @Override
     public User findByUserId(String userId) {
         String sql = "SELECT userId, password, name, email FROM USERS WHERE userid=?";
 
@@ -33,7 +35,8 @@ public class UserDao {
         return jdbcTemplate.queryForObject(sql, rm, userId);
     }
 
-    public List<User> findAll() throws SQLException {
+    @Override
+    public List<User> findAll() {
         String sql = "SELECT userId, password, name, email FROM USERS";
 
         RowMapper<User> rm = new RowMapper<User>() {
@@ -47,6 +50,7 @@ public class UserDao {
         return jdbcTemplate.query(sql, rm);
     }
 
+    @Override
     public void update(User user) {
         String sql = "UPDATE USERS set password = ?, name = ?, email = ? WHERE userId = ?";
         jdbcTemplate.update(sql, user.getPassword(), user.getName(), user.getEmail(), user.getUserId());

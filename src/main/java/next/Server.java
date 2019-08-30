@@ -22,7 +22,7 @@ public class Server implements AutoCloseable {
         tomcat.setPort(port);
 
         tomcat.addWebapp("/", new File(webappDirLocation).getAbsolutePath());
-        logger.info("configuring app with basedir: {}", new File("./" + webappDirLocation).getAbsolutePath());
+        logger.info("configuring app with baseㄴdir: {}", new File("./" + webappDirLocation).getAbsolutePath());
     }
 
     public void start() throws LifecycleException {
