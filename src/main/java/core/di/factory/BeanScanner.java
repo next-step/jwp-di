@@ -13,18 +13,31 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-public class BeanScanner {
+public abstract class BeanScanner<T> {
 
-    private static final List<Class<? extends Annotation>> annotations =
+    protected BeanDefinitionRegistry registry;
+
+    protected BeanScanner(BeanDefinitionRegistry registry) {
+        this.registry = registry;
+    }
+
+    private List<Class<? extends Annotation>> annotations =
             asList(Controller.class, Service.class, Repository.class, Component.class);
 
-    public static Set<BeanDefinition> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage);
+    public void scan(T... args) {
+        doScan(args);
+    }
+
+    protected abstract void doScan(T... args);
+
+    protected Set<BeanDefinition> scanByBasePackages(Object... basePackages) {
+        Reflections reflections = new Reflections(basePackages);
         return annotations.stream()
                 .map(reflections::getTypesAnnotatedWith)
                 .flatMap(Set::stream)
                 .map(BeanDefinition::new)
                 .collect(Collectors.toSet());
     }
+
 
 }
