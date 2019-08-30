@@ -1,76 +1,11 @@
 package core.di.factory;
 
-import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
+public interface BeanFactory {
 
-    private Set<Class<?>> preInstanticateBeans;
+    <T> T getBean(Class<T> clazz);
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-        initialize();
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
-    }
-
-    public void initialize() {
-        for (Class<?> clazz : preInstanticateBeans) {
-            initBeans(clazz);
-        }
-    }
-
-    private void initBeans(Class<?> clazz) {
-        Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
-        beans.put(clazz,getInstance(clazz,injectedConstructor));
-    }
-
-    private Object getInstance(Class<?> clazz, Constructor<?> injectedConstructor) {
-        return injectedConstructor == null ? BeanUtils.instantiateClass(clazz) : getInjectInstance(injectedConstructor);
-    }
-
-    private Object getInjectInstance(Constructor<?> injectedConstructor) {
-        Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
-        List params = makeConstructorParams(parameterTypes);
-        return BeanUtils.instantiateClass(injectedConstructor, params.stream().toArray());
-    }
-
-    private List makeConstructorParams(Class<?>[] parameterTypes) {
-        List params = new ArrayList();
-        for (Class clazz : parameterTypes) {
-            params.add(getConcreteClass(clazz));
-        }
-        return params;
-    }
-
-    private Object getConcreteClass(Class clazz) {
-        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
-        if(beans.get(concreteClass) == null) {
-            initBeans(concreteClass);
-        }
-        return beans.get(concreteClass);
-    }
-
-    public Map<Class<?>, Object> getAnnotationTypeClass(Class<? extends Annotation> annotation) {
-        return beans.keySet().stream()
-                .filter(key -> key.isAnnotationPresent(annotation))
-                .collect(Collectors.toMap(key -> key , key-> beans.get(key)));
-
-    }
+    Map<Class<?>, Object> getAnnotationTypeClass(Class<? extends Annotation> annotation);
 }

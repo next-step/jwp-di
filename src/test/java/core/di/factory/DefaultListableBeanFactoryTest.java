@@ -6,6 +6,7 @@ import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import core.di.factory.support.DefaultListableBeanFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
@@ -17,22 +18,22 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class BeanFactoryTest {
+public class DefaultListableBeanFactoryTest {
     private Reflections reflections;
-    private BeanFactory beanFactory;
+    private DefaultListableBeanFactory defaultListableBeanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
-        beanFactory.initialize();
+        defaultListableBeanFactory = new DefaultListableBeanFactory(preInstanticateClazz);
+        defaultListableBeanFactory.initialize();
     }
 
     @Test
     public void di() throws Exception {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
+        QnaController qnaController = defaultListableBeanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
         assertNotNull(qnaController.getQnaService());
@@ -53,7 +54,7 @@ public class BeanFactoryTest {
 
     @Test
     void getAnnotationClass() {
-        Map<Class<?>, Object> annotationTypeClass = beanFactory.getAnnotationTypeClass(Controller.class);
+        Map<Class<?>, Object> annotationTypeClass = defaultListableBeanFactory.getAnnotationTypeClass(Controller.class);
         assertThat(annotationTypeClass).containsKeys(QnaController.class);
     }
 }

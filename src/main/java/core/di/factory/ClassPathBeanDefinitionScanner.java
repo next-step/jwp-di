@@ -1,9 +1,11 @@
-package core.mvc.tobe;
+package core.di.factory;
 
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.factory.config.DefaultBeanDefinition;
+import core.di.factory.support.BeanDefinitionRegistry;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,13 +13,14 @@ import org.slf4j.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-public class BeanScanner {
-    private static final Logger log = LoggerFactory.getLogger(BeanScanner.class);
+public class ClassPathBeanDefinitionScanner {
+    private static final Logger log = LoggerFactory.getLogger(ClassPathBeanDefinitionScanner.class);
 
     private Reflections reflections;
+    private BeanDefinitionRegistry registry;
 
-    public BeanScanner(Object... basePackage) {
-        reflections = new Reflections(basePackage);
+    public ClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry) {
+        this.registry = registry;
     }
 
     public Set<Class<?>> getBeanClasses() {
@@ -33,4 +36,9 @@ public class BeanScanner {
         return beans;
     }
 
+    public void scan(Object[] basePackages) {
+        reflections = new Reflections(basePackages);
+        Set<Class<?>> beanClasses = getBeanClasses();
+        beanClasses.stream().forEach(clazz -> registry.registerBeanDefinition(new DefaultBeanDefinition(clazz)));
+    }
 }

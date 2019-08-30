@@ -1,10 +1,11 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
+import core.annotation.ComponentScan;
 import core.annotation.Inject;
 
 import java.lang.reflect.Constructor;
-import java.util.Set;
+import java.util.*;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
@@ -47,5 +48,14 @@ public class BeanFactoryUtils {
         }
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    public static Object[] getBasePackages(Class<?>... annotatedClasses) {
+        List<String> basePackages = new ArrayList<>();
+        for (Class<?> clazz : annotatedClasses) {
+            ComponentScan componentScan = clazz.getAnnotation(ComponentScan.class);
+            Arrays.stream(componentScan.basePackages()).forEach(basePackage -> basePackages.add(basePackage));
+        }
+        return basePackages.stream().toArray();
     }
 }

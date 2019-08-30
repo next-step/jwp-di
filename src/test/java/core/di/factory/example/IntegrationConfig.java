@@ -1,14 +1,20 @@
 package core.di.factory.example;
 
 import core.annotation.Bean;
+import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.sql.DataSource;
 
 @Configuration
+@ComponentScan(basePackages = {"core.di.factory","next"})
 public class IntegrationConfig {
     @Bean
+    public MyJdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new MyJdbcTemplate(dataSource);
+    }
+
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();
         ds.setDriverClassName("org.h2.Driver");
@@ -18,8 +24,5 @@ public class IntegrationConfig {
         return ds;
     }
 
-    @Bean
-    public MyJdbcTemplate jdbcTemplate(DataSource dataSource) {
-        return new MyJdbcTemplate(dataSource);
-    }
+
 }
