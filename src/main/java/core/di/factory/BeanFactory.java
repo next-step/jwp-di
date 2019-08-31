@@ -67,7 +67,7 @@ public class BeanFactory {
         
     }
 
-    public void addBeandDefinition(BeanDefinition beanDefinition){
+    public void addBeanDefinition(BeanDefinition beanDefinition){
         Class<?> beanType = beanDefinition.getBeanType();
 
         if(beanDefinitions.containsKey(beanType)) {
@@ -76,9 +76,9 @@ public class BeanFactory {
         beanDefinitions.put(beanType, beanDefinition);
     }
 
-    public void addBeandDefinitions(Set<BeanDefinition> beanDefinitions) {
+    public void addBeanDefinitions(Set<BeanDefinition> beanDefinitions) {
         for(BeanDefinition beanDefinition : beanDefinitions) {
-            addBeandDefinition(beanDefinition);
+            addBeanDefinition(beanDefinition);
         }
     }
 }
