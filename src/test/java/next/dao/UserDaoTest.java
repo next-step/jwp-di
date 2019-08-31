@@ -1,7 +1,7 @@
 package next.dao;
 
-import core.jdbc.ConnectionManager;
 import core.jdbc.JdbcTemplate;
+import next.AppConfiguration;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +10,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,11 +21,13 @@ public class UserDaoTest {
 
     @BeforeEach
     public void setup() {
+        AppConfiguration appConfiguration = new AppConfiguration();
+        DataSource dataSource = appConfiguration.dataSource();
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+        DatabasePopulatorUtils.execute(populator, dataSource);
 
-        userDao = new UserDao(new JdbcTemplate(ConnectionManager.getDataSource()));
+        userDao = new UserDao(new JdbcTemplate(dataSource));
     }
 
     @Test
