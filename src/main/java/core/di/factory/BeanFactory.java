@@ -55,25 +55,26 @@ public class BeanFactory {
             return beans.get(type);
         }
 
-        if (beanDefinition.isFactoryBean()) {
-            Object bean = getFactoryBean(beanDefinition);
-            beans.put(type, bean);
-            return bean;
-        }
-
-        Constructor<?> injectedConstructor = getInjectedConstructor(type);
-        if (injectedConstructor == null) {
-            Object bean = type.newInstance();
-            beans.put(type, bean);
-            return bean;
-        }
-
-        Object bean = instantiateConstructor(injectedConstructor);
+        Object bean = instantiate(beanDefinition);
         beans.put(type, bean);
         return bean;
     }
 
-    private Object getFactoryBean(BeanDefinition beanDefinition) throws ReflectiveOperationException {
+    private Object instantiate(BeanDefinition beanDefinition) throws ReflectiveOperationException {
+        Class<?> type = beanDefinition.getType();
+        if (beanDefinition.isFactoryBean()) {
+            return instantiateFactoryMethod(beanDefinition);
+        }
+
+        Constructor<?> injectedConstructor = getInjectedConstructor(type);
+        if (injectedConstructor == null) {
+            return type.newInstance();
+        }
+
+        return instantiateConstructor(injectedConstructor);
+    }
+
+    private Object instantiateFactoryMethod(BeanDefinition beanDefinition) throws ReflectiveOperationException {
         Method factoryMethod = beanDefinition.getFactoryMethod();
         Object[] args = getDependencies(factoryMethod.getParameters());
         return factoryMethod.invoke(beanDefinition.getFactory(), args);
