@@ -16,7 +16,7 @@ public class SimpleBeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        applicationContext = new ApplicationContext("core.di.factory.example");
+        applicationContext = new ClasspathApplicationContext("core.di.factory.example");
     }
 
     @DisplayName("SimpleBeanFactory 에 빈이 존재하지 않을 경우 Null 반환")
