@@ -1,25 +1,28 @@
 package core.mvc.tobe;
 
-import core.db.DataBase;
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
-import next.model.User;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import core.db.DataBase;
+import core.di.factory.ApplicationContext;
+import core.mvc.DataInitConfiguration;
+import core.mvc.TestTobeConfiguration;
+import next.model.User;
 
 public class AnnotationHandlerMappingTest {
     private AnnotationHandlerMapping handlerMapping;
 
     @BeforeEach
     public void setup() {
-        BeanScanner beanScanner = new BeanScanner("core.mvc.tobe");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateClasses());
-        beanFactory.initialize();
-        handlerMapping = new AnnotationHandlerMapping(beanFactory);
+    	
+    	ApplicationContext applicationContext = new ApplicationContext(
+    			DataInitConfiguration.class
+    			, TestTobeConfiguration.class);
+        handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
     }
 

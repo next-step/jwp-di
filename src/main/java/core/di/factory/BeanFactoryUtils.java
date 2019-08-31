@@ -3,11 +3,12 @@ package core.di.factory;
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Set;
 
-import static org.reflections.ReflectionUtils.getAllConstructors;
-import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.reflections.ReflectionUtils.*;
 
 public class BeanFactoryUtils {
     /**
@@ -30,8 +31,22 @@ public class BeanFactoryUtils {
         try {
             return clazz.getConstructor();
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("가능한 constructor가 없습니다.", e);
+            throw new RuntimeException("가능한 constructor가 없습니다. : " + clazz, e);
         }
+    }
+
+    public static  Constructor<?> getConstructor(Class<?> clazz) {
+        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+
+        if(constructor != null) {
+            return constructor;
+        }
+
+        return BeanFactoryUtils.getNoArgsConstructor(clazz);
+    }
+
+    public static Set<Method> getAnnotatedMethods(Class<?> clazz, Class<? extends Annotation> annotationType) {
+        return getAllMethods(clazz, withAnnotation(annotationType));
     }
 
     /**
@@ -48,6 +63,11 @@ public class BeanFactoryUtils {
         }
 
         for (Class<?> clazz : preInstanticateBeans) {
+        	
+        	if(clazz == injectedClazz) {
+        		return clazz;
+        	}
+        	
             Set<Class<?>> interfaces = Sets.newHashSet(clazz.getInterfaces());
             if (interfaces.contains(injectedClazz)) {
                 return clazz;
