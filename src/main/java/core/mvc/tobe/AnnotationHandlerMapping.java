@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.BeanScanner;
 import core.mvc.HandlerMapping;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
