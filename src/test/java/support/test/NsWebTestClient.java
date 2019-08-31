@@ -1,10 +1,15 @@
 package support.test;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import next.model.Question;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URI;
+import java.util.List;
 
 import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
@@ -65,5 +70,16 @@ public class NsWebTestClient {
 
     public static NsWebTestClient of(String baseUrl, int port) {
         return new NsWebTestClient(baseUrl, port);
+    }
+
+    public <T> List<T> getResources(String url, Class<T> clazz) {
+        URI location = URI.create(url);
+        return testClientBuilder.build()
+                .get()
+                .uri(location.toString())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(clazz)
+                .returnResult().getResponseBody();
     }
 }
