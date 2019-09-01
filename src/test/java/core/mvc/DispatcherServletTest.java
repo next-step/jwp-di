@@ -1,5 +1,11 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.BeanScanner;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +22,17 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
+        BeanScanner beanScanner = new BeanScanner("");
+        BeanFactory beanFactory = new BeanFactory(beanScanner.getAllBeanClasses());
+        beanFactory.initialize();
+
         dispatcher = new DispatcherServlet();
+        dispatcher.addHandlerMapping(new RequestMapping());
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(beanScanner, beanFactory));
+
+        dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        dispatcher.addHandlerAdapter(new ControllerHandlerAdapter());
+
         dispatcher.init();
 
         request = new MockHttpServletRequest();
@@ -35,7 +51,7 @@ class DispatcherServletTest {
 
     @Test
     void annotation_user_create() throws Exception {
-        User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
+        User user = new User("pobi1", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
         assertThat(response.getRedirectedUrl()).isEqualTo("/");
     }

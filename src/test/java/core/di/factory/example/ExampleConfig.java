@@ -6,7 +6,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.sql.DataSource;
 
-@Configuration
+//@Configuration
 public class ExampleConfig {
     @Bean
     public DataSource dataSource() {

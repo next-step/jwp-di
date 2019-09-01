@@ -1,11 +1,11 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
+import core.di.factory.example.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
@@ -13,6 +13,7 @@ import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
@@ -23,7 +24,7 @@ public class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Configuration.class, Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstanticateClazz);
         beanFactory.initialize();
     }
@@ -36,8 +37,10 @@ public class BeanFactoryTest {
         assertNotNull(qnaController.getQnaService());
 
         MyQnaService qnaService = qnaController.getQnaService();
-        assertNotNull(qnaService.getUserRepository());
         assertNotNull(qnaService.getQuestionRepository());
+        UserRepository userRepository = qnaService.getUserRepository();
+        assertThat(userRepository).isInstanceOf(JdbcUserRepository.class);
+        assertThat(((JdbcUserRepository) userRepository).getMyJdbcTemplate()).isInstanceOf(MyJdbcTemplate.class);
     }
 
     @SuppressWarnings("unchecked")
