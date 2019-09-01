@@ -6,20 +6,19 @@ import core.di.factory.BeanFactory;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-public class AnnotationConfigScanner {
+public class ConfigurationBeanScanner {
 
     private BeanFactory beanFactory;
+    private Object[] basePackages;
 
-    public AnnotationConfigScanner(BeanFactory beanFactory) {
+    public ConfigurationBeanScanner(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
-    public void loadConfig(Class<?>... annotatedClasses) {
+    public void register(Class<?>... annotatedClasses) {
         AnnotatedBeanDefinition annotatedBeanDefinition = new AnnotatedBeanDefinition(beanFactory);
         annotatedBeanDefinition.registerBean(annotatedClasses);
-        Object[] basePackages = findBasePackages(annotatedClasses);
-        BeanScanner beanScanner = new BeanScanner(beanFactory);
-        beanScanner.doScan(basePackages);
+        this.basePackages = findBasePackages(annotatedClasses);
     }
 
     private Object[] findBasePackages(Class<?>[] annotatedClasses) {
@@ -28,5 +27,9 @@ public class AnnotationConfigScanner {
                 .map(clazz -> clazz.getAnnotation(ComponentScan.class).value())
                 .flatMap(Stream::of)
                 .toArray();
+    }
+
+    public Object[] getBasePackages() {
+        return this.basePackages;
     }
 }

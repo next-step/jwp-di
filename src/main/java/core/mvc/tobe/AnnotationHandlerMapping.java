@@ -23,8 +23,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public AnnotationHandlerMapping(Object... basePackage) {
         BeanFactory beanFactory = new BeanFactory();
-        BeanScanner beanScanner = new BeanScanner(beanFactory);
-        beanScanner.doScan(basePackage);
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.doScan(basePackage);
         this.controllers = beanFactory.getControllers();
     }
 
