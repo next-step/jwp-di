@@ -1,7 +1,6 @@
 package next;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.context.AnnotationConfigApplicationContext;
 import core.mvc.DispatcherServlet;
 import core.mvc.HandlerAdapterRegistry;
 import core.mvc.HandlerExecutor;
@@ -26,13 +25,11 @@ public class MyServletContainerInitializer implements ServletContainerInitialize
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
         logger.info("MyServletContainerInitializer - onStartup");
 
-        BeanScanner beanScanner = new BeanScanner("next.controller");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInitiatedClasses());
-        beanFactory.initialize();
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MyConfiguration.class);
 
         HandlerMappingRegistry handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(context));
 
         HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
