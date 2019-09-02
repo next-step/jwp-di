@@ -7,16 +7,13 @@ import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.BeanScanner;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-import java.util.Set;
 
-public class WebAppInitializer implements ServletContainerInitializer {
+public class WebApplicationInitializerImpl implements WebApplicationInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+    public void onStartup(ServletContext servletContext) {
         BeanScanner beanScanner = new BeanScanner(new String[]{""});
         BeanFactory beanFactory = new BeanFactory(beanScanner.getAllBeanClasses());
         beanFactory.initialize();
@@ -28,7 +25,7 @@ public class WebAppInitializer implements ServletContainerInitializer {
         dispatcherServlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcherServlet.addHandlerAdapter(new ControllerHandlerAdapter());
 
-        ServletRegistration.Dynamic registration = ctx.addServlet("dispatcherServlet", dispatcherServlet);
+        ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcherServlet", dispatcherServlet);
         registration.addMapping("/");
         registration.setLoadOnStartup(1);
     }
