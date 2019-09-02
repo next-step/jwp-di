@@ -1,8 +1,10 @@
 package core.mvc.tobe;
 
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.mvc.ComponentScanTestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,18 +24,18 @@ class BeanScannerTest {
 
     @BeforeEach
     void setup() {
-        this.beanScanner = new BeanScanner("core.mvc.tobe");
+        this.beanScanner = new BeanScanner(ComponentScanTestConfig.class);
     }
 
     @Test
     void getAllBeanClasses() throws Exception {
         Set<Class<?>> beanClasses = beanScanner.getAllBeanClasses();
 
-        assertThat(beanClasses).contains(MyController.class, TestService.class, TestRepository.class);
+        assertThat(beanClasses).contains(MyController.class, TestService.class, TestRepository.class, ComponentScanTestConfig.class);
     }
 
     @DisplayName("getBeanClassesWithAnnotation - 입력받은 타입의 클래스들을 반환한다.")
-    @ParameterizedTest
+    @ParameterizedTest(name = "[{index}] annotation : {0}, beanClass : {1}")
     @MethodSource("getTestArguments")
     void getBeanClassesWithAnnotation(Class<? extends Annotation> annotationClass, Class<?> beanClass) {
         Set<Class<?>> beanClassesWithAnnotation = beanScanner.getBeanClassesWithAnnotation(annotationClass);
@@ -45,7 +47,8 @@ class BeanScannerTest {
         return Stream.of(
                 Arguments.of(Controller.class, MyController.class),
                 Arguments.of(Service.class, TestService.class),
-                Arguments.of(Repository.class, TestRepository.class)
+                Arguments.of(Repository.class, TestRepository.class),
+                Arguments.of(Configuration.class, ComponentScanTestConfig.class)
         );
     }
 

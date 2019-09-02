@@ -1,14 +1,18 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.Bean;
+import core.annotation.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -27,12 +31,57 @@ public class BeanFactory {
     }
 
     public void initialize() {
+        Map<Class<?>, Method> beanMethods = getBeanMethods();
+        for (Method method : beanMethods.values()) {
+            instantiateBeanMethod(beanMethods, method);
+        }
+
         for (Class<?> beanClass : preInstanticateBeans) {
-            instantiate(beanClass);
+            instantiateComponents(beanClass);
         }
     }
 
-    private Object instantiate(Class<?> beanClass) {
+    private Map<Class<?>, Method> getBeanMethods() {
+        return getConfigurationClasses().stream()
+                .map(Class::getMethods)
+                .map(Arrays::asList)
+                .flatMap(Collection::stream)
+                .filter(method -> method.isAnnotationPresent(Bean.class))
+                .collect(Collectors.toMap(Method::getReturnType, Function.identity()));
+    }
+
+    private Set<Class<?>> getConfigurationClasses() {
+        return preInstanticateBeans.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Configuration.class))
+                .collect(Collectors.toSet());
+    }
+
+    private Object instantiateBeanMethod(Map<Class<?>, Method> beanMethods, Method method) {
+        Object instance = BeanUtils.instantiateClass(method.getDeclaringClass());
+        Object[] parameters = getBeanMethodParameterInstances(method, beanMethods);
+        Object bean = ReflectionUtils.invokeMethod(method, instance, parameters);
+        beans.put(method.getReturnType(), bean);
+        return bean;
+    }
+
+    private Object[] getBeanMethodParameterInstances(Method method, Map<Class<?>, Method> beanMethods) {
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Object[] results = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            results[i] = getParameterInstance(beanMethods, parameterTypes[i]);
+        }
+        return results;
+    }
+
+    private Object getParameterInstance(Map<Class<?>, Method> beanMethods, Class<?> parameterType) {
+        Object bean = beans.get(parameterType);
+        if (Objects.nonNull(bean)) {
+            return bean;
+        }
+        return instantiateBeanMethod(beanMethods, beanMethods.get(parameterType));
+    }
+
+    private Object instantiateComponents(Class<?> beanClass) {
         Object instance = newInstance(beanClass);
         this.beans.put(beanClass, instance);
         return instance;
@@ -62,7 +111,7 @@ public class BeanFactory {
         if (Objects.nonNull(bean)) {
             return bean;
         }
-        return instantiate(parameterClass);
+        return instantiateComponents(parameterClass);
     }
 
 }
