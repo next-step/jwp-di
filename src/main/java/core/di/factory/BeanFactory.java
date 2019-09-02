@@ -3,16 +3,20 @@ package core.di.factory;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import core.annotation.Inject;
+import core.annotation.web.Controller;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -84,5 +88,11 @@ public class BeanFactory {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             throw new CannotNewInstanceException(ex);
         }
+    }
+
+    public Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotationClass) {
+        return this.beans.entrySet().stream()
+                .filter(bean -> bean.getKey().isAnnotationPresent(annotationClass))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
