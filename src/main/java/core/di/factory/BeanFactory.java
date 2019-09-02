@@ -25,16 +25,8 @@ public class BeanFactory {
     public void register(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans.addAll(preInstanticateBeans);
         for (Class<?> clazz : this.preInstanticateBeans) {
-            addBean(clazz);
+            beans.put(clazz, instantiateClass(clazz));
         }
-    }
-
-    private void addBean(Class<?> clazz) {
-        if (beans.containsKey(clazz)) {
-            return;
-        }
-
-        beans.put(clazz, instantiateClass(clazz));
     }
 
     private Object instantiateClass(Class<?> clazz) {
@@ -43,12 +35,21 @@ public class BeanFactory {
         Object[] parameters = new Object[parameterTypes.length];
 
         for (int i = 0; i < parameters.length; i++) {
-            Object parameter = instantiateClass(parameterTypes[i]);
-            beans.put(parameterTypes[i], parameter);
+            Object parameter = getParameterObject(parameterTypes[i]);
             parameters[i] = parameter;
         }
 
         return instantiateConstructor(constructor, parameters);
+    }
+
+    private Object getParameterObject(Class<?> parameterType) {
+        if (beans.containsKey(parameterType)) {
+            return beans.get(parameterType);
+        }
+
+        Object parameter = instantiateClass(parameterType);
+        beans.put(parameterType, parameter);
+        return parameter;
     }
 
     private Constructor<?> getConstructor(Class<?> clazz) {
@@ -91,17 +92,9 @@ public class BeanFactory {
     public void register(Map<Class<?>, BeanDefinition> beanDefinitions) {
         this.beanDefinitions.putAll(beanDefinitions);
         for (Class<?> beanType : this.beanDefinitions.keySet()) {
-            addBean(this.beanDefinitions.get(beanType));
+            BeanDefinition beanDefinition = this.beanDefinitions.get(beanType);
+            beans.put(beanType, instantiateBeanDefinition(beanDefinition));
         }
-    }
-
-    private void addBean(BeanDefinition beanDefinition) {
-        Class<?> beanType = beanDefinition.getBeanType();
-        if (beans.containsKey(beanType)) {
-            return;
-        }
-
-        beans.put(beanType, instantiateBeanDefinition(beanDefinition));
     }
 
     private Object instantiateBeanDefinition(BeanDefinition beanDefinition) {
@@ -109,12 +102,21 @@ public class BeanFactory {
         Object[] parameters = new Object[parameterTypes.length];
 
         for (int i = 0; i < parameters.length; i++) {
-            Object parameter = instantiateBeanDefinition(beanDefinitions.get(parameterTypes[i]));
-            beans.put(parameterTypes[i], parameter);
+            Object parameter = getParameterObjectByBeanDefinition(parameterTypes[i]);
             parameters[i] = parameter;
         }
 
         return invokeBeanCreateMethod(beanDefinition, parameters);
+    }
+
+    private Object getParameterObjectByBeanDefinition(Class<?> parameterType) {
+        if (beans.containsKey(parameterType)) {
+            beans.get(parameterType);
+        }
+
+        Object parameter = instantiateBeanDefinition(beanDefinitions.get(parameterType));
+        beans.put(parameterType, parameter);
+        return parameter;
     }
 
     private Object invokeBeanCreateMethod(BeanDefinition beanDefinition, Object[] parameters) {

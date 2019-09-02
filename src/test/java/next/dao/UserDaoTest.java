@@ -1,6 +1,7 @@
 package next.dao;
 
 import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTemplate;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,15 +18,14 @@ public class UserDaoTest {
 
     private UserDao userDao;
 
-
-
     @BeforeEach
     public void setup() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
-        userDao = new UserDao();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(ConnectionManager.getDataSource());
+        userDao = new UserDao(jdbcTemplate);
     }
 
     @Test
