@@ -7,3 +7,13 @@
 
 ## 온라인 코드 리뷰 과정
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
+
+@Controller, @Service, @Repository 클래스의 수집
+@Inject 를 이용해서 주입
+BeanFactoryTest를 이용하여 테스트
+BeanFactoryUtils 클래스를 사용
+BeanUtils instantiateClass() 사용가능
+
+추가 요구사항
+mvc의 ControllerScanner를 di 패키지로 이동해서 @Service, @Repository를 찾도록 리팩토링. BeanScanner
+AnnotationHandlerMapping 이 BeanFactory와 BeanScanner를 사용하도록
