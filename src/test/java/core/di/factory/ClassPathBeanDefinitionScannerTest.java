@@ -15,7 +15,7 @@ public class ClassPathBeanDefinitionScannerTest {
         DefaultListableBeanFactory registry = new DefaultListableBeanFactory();
         ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
 
-        scanner.scan("next.controller", "next.service");
+        scanner.scan("next", "core");
 
         assertThat(registry.getDefinitions())
                 .contains(

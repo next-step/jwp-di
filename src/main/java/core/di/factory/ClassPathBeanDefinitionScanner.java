@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
+import core.annotation.Component;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -24,7 +25,7 @@ public class ClassPathBeanDefinitionScanner {
     }
 
     public Set<Class<?>> getBeanClasses() {
-        Set<Class<?>> preInitiatedControllers = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        Set<Class<?>> preInitiatedControllers = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class, Component.class);
         return preInitiatedControllers;
     }
 
@@ -39,6 +40,9 @@ public class ClassPathBeanDefinitionScanner {
     public void scan(Object... basePackages) {
         reflections = new Reflections(basePackages);
         Set<Class<?>> beanClasses = getBeanClasses();
-        beanClasses.stream().forEach(clazz -> registry.registerBeanDefinition(new DefaultBeanDefinition(clazz)));
+        beanClasses.stream()
+                .forEach(clazz ->
+                        registry.registerBeanDefinition(new DefaultBeanDefinition(clazz))
+                );
     }
 }

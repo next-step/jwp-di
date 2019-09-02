@@ -1,8 +1,8 @@
 package core.di.factory;
 
 import core.di.factory.config.AnnontatedBeanDefinition;
-import core.di.factory.example.IntegrationConfig;
 import core.di.factory.support.DefaultListableBeanFactory;
+import core.web.config.MyConfiguration;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -14,7 +14,7 @@ class AnnotatedBeanDefinitionReaderTest {
 
     @Test
     void read() throws NoSuchMethodException {
-        Class<?> targetClass = IntegrationConfig.class;
+        Class<?> targetClass = MyConfiguration.class;
         DefaultListableBeanFactory registry = new DefaultListableBeanFactory();
         Method dataSource = targetClass.getMethod("dataSource");
         Method jdbcTemplate = targetClass.getMethod("jdbcTemplate", DataSource.class);
@@ -25,7 +25,7 @@ class AnnotatedBeanDefinitionReaderTest {
         assertThat(registry.getDefinitions()).hasSize(2);
         assertThat(registry.getDefinitions())
                 .contains(
-                        new AnnontatedBeanDefinition(targetClass, dataSource)
-                        , new AnnontatedBeanDefinition(targetClass, jdbcTemplate));
+                        new AnnontatedBeanDefinition(dataSource.getReturnType(), dataSource)
+                        , new AnnontatedBeanDefinition(jdbcTemplate.getReturnType(), jdbcTemplate));
     }
 }

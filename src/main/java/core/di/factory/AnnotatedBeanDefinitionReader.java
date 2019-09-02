@@ -32,7 +32,7 @@ public class AnnotatedBeanDefinitionReader {
 
     private void registerBeanDefinition(Class clazz, Method method) {
         if (method.isAnnotationPresent(Bean.class)) {
-            registry.registerBeanDefinition(new AnnontatedBeanDefinition(clazz, method));
+            registry.registerBeanDefinition(new AnnontatedBeanDefinition(method.getReturnType(), method));
         }
     }
 }

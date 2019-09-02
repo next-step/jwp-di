@@ -5,11 +5,14 @@ import core.di.factory.AnnotatedBeanDefinitionReader;
 import core.di.factory.BeanFactoryUtils;
 import core.di.factory.ClassPathBeanDefinitionScanner;
 import core.di.factory.support.DefaultListableBeanFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
 public class AnnotationConfigApplicationContext implements ApplicationContext {
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationConfigApplicationContext.class);
 
     private final AnnotatedBeanDefinitionReader reader;
     private final ClassPathBeanDefinitionScanner scanner;

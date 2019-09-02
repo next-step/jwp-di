@@ -5,7 +5,10 @@ import core.annotation.ComponentScan;
 import core.annotation.Inject;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
@@ -47,7 +50,7 @@ public class BeanFactoryUtils {
             }
         }
 
-        return null;
+        throw new RuntimeException(injectedClazz.getName() + " 구현 class가 없음");
     }
 
     public static Object[] getBasePackages(Class<?>... annotatedClasses) {

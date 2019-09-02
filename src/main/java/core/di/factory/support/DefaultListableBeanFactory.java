@@ -17,10 +17,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class DefaultListableBeanFactory implements BeanFactory, BeanDefinitionRegistry {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultListableBeanFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultListableBeanFactory.class);
 
     private Set<BeanDefinition> beanDefinitionMap = new HashSet<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
+    private Set<Class<?>> beanClasses;
 
     public DefaultListableBeanFactory() {
     }
@@ -45,7 +46,7 @@ public class DefaultListableBeanFactory implements BeanFactory, BeanDefinitionRe
         try {
             beans.put(method.getReturnType(), getInstance(method));
         } catch (InvocationTargetException | IllegalAccessException e) {
-            logger.error("error : {}", e.getMessage());
+            log.error("error : {}", e.getMessage());
         }
     }
 
@@ -58,7 +59,10 @@ public class DefaultListableBeanFactory implements BeanFactory, BeanDefinitionRe
 
     private Object getInjectInstance(Method method) throws InvocationTargetException, IllegalAccessException {
         Class<?>[] parameterTypes = method.getParameterTypes();
-        List params = makeConstructorParams(parameterTypes);
+        List params = new ArrayList();
+        for (Class clazz : parameterTypes) {
+            params.add(getInstanceBean(clazz));
+        }
         return method.invoke(BeanUtils.instantiateClass(method.getDeclaringClass()), params.stream().toArray());
     }
 
@@ -85,17 +89,29 @@ public class DefaultListableBeanFactory implements BeanFactory, BeanDefinitionRe
     private List makeConstructorParams(Class<?>[] parameterTypes) {
         List params = new ArrayList();
         for (Class clazz : parameterTypes) {
-            params.add(getConcreteClass(clazz));
+            params.add(getInstanceBean(BeanFactoryUtils.findConcreteClass(clazz,getBeanClasses())));
         }
         return params;
     }
 
-    private Object getConcreteClass(Class clazz) {
+    private Object getInstanceBean(Class clazz) {
         if (beans.get(clazz) == null) {
             instantiateBeans(clazz);
         }
         return beans.get(clazz);
     }
+
+    private Set<Class<?>> getBeanClasses() {
+
+        if (beanClasses != null) {
+            return beanClasses;
+        }
+        beanClasses = beanDefinitionMap.stream()
+                .map(beanDefinition -> beanDefinition.getBeanClass())
+                .collect(Collectors.toSet());
+        return beanClasses;
+    }
+
 
     public void instantiateBeans(Class<?> clazz) {
         BeanDefinition definition = getDefinitionByClass(clazz);
@@ -106,7 +122,7 @@ public class DefaultListableBeanFactory implements BeanFactory, BeanDefinitionRe
         return beanDefinitionMap.stream()
                 .filter(beanDefinition -> beanDefinition.getBeanClass().getName().equals(clazz.getName()))
                 .findAny()
-                .orElseThrow(() -> new RuntimeException("no definition class"));
+                .orElseThrow(() -> new RuntimeException("can not find " + clazz.getName()));
     }
 
     @Override
