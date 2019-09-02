@@ -1,60 +1,50 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
+import core.di.factory.config.AnnontatedBeanDefinition;
+import core.di.factory.config.DefaultBeanDefinition;
+import core.di.factory.example.IntegrationConfig;
+import core.di.factory.example.MyJdbcTemplate;
 import core.di.factory.support.DefaultListableBeanFactory;
-import org.junit.jupiter.api.BeforeEach;
+import next.controller.ApiQnaController;
+import next.dao.AnswerDao;
+import next.dao.QuestionDao;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
-import java.util.Map;
-import java.util.Set;
+import javax.sql.DataSource;
+import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class DefaultListableBeanFactoryTest {
-    private Reflections reflections;
-    private DefaultListableBeanFactory defaultListableBeanFactory;
 
-    @BeforeEach
-    @SuppressWarnings("unchecked")
-    public void setup() {
-        reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        defaultListableBeanFactory = new DefaultListableBeanFactory(preInstanticateClazz);
-        defaultListableBeanFactory.initialize();
+    @Test
+    void getClassPathBean() {
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        beanFactory.registerBeanDefinition(new DefaultBeanDefinition(ApiQnaController.class));
+        beanFactory.registerBeanDefinition(new DefaultBeanDefinition(QuestionDao.class));
+        beanFactory.registerBeanDefinition(new DefaultBeanDefinition(AnswerDao.class));
+        beanFactory.instantiateBeans();
+
+        ApiQnaController bean = beanFactory.getBean(ApiQnaController.class);
+        assertNotNull(bean);
     }
 
     @Test
-    public void di() throws Exception {
-        QnaController qnaController = defaultListableBeanFactory.getBean(QnaController.class);
+    void getAnnotatedBean() throws NoSuchMethodException {
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        Class<?> targetClass = IntegrationConfig.class;
+        Method dataSource = targetClass.getMethod("dataSource");
+        Method jdbcTemplate = targetClass.getMethod("jdbcTemplate", DataSource.class);
+        beanFactory.registerBeanDefinition(new AnnontatedBeanDefinition(dataSource.getReturnType(),dataSource));
+        beanFactory.registerBeanDefinition(new AnnontatedBeanDefinition(jdbcTemplate.getReturnType(),jdbcTemplate));
+        beanFactory.instantiateBeans();
 
-        assertNotNull(qnaController);
-        assertNotNull(qnaController.getQnaService());
+        DataSource dataSourceBean = beanFactory.getBean(DataSource.class);
+        MyJdbcTemplate jdbcTemplateBean = beanFactory.getBean(MyJdbcTemplate.class);
 
-        MyQnaService qnaService = qnaController.getQnaService();
-        assertNotNull(qnaService.getUserRepository());
-        assertNotNull(qnaService.getQuestionRepository());
-    }
-
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
-    }
-
-    @Test
-    void getAnnotationClass() {
-        Map<Class<?>, Object> annotationTypeClass = defaultListableBeanFactory.getAnnotationTypeClass(Controller.class);
-        assertThat(annotationTypeClass).containsKeys(QnaController.class);
+        assertNotNull(dataSourceBean);
+        assertNotNull(jdbcTemplateBean);
     }
 }
+

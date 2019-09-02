@@ -15,6 +15,7 @@ public class IntegrationConfig {
         return new MyJdbcTemplate(dataSource);
     }
 
+    @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();
         ds.setDriverClassName("org.h2.Driver");

@@ -36,7 +36,7 @@ public class ClassPathBeanDefinitionScanner {
         return beans;
     }
 
-    public void scan(Object[] basePackages) {
+    public void scan(Object... basePackages) {
         reflections = new Reflections(basePackages);
         Set<Class<?>> beanClasses = getBeanClasses();
         beanClasses.stream().forEach(clazz -> registry.registerBeanDefinition(new DefaultBeanDefinition(clazz)));

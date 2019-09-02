@@ -17,7 +17,7 @@ public class AnnotatedBeanDefinitionReader {
         this.registry = registry;
     }
 
-    public void register(Class<?>[] configClass) {
+    public void register(Class<?>... configClass) {
         for (Class clazz : configClass) {
             roadBeanMethod(clazz);
         }
