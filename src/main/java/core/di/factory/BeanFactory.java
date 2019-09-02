@@ -3,12 +3,14 @@ package core.di.factory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import core.annotation.web.Controller;
+import core.mvc.tobe.BeanDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import support.exception.CreateInstanceFailException;
 import support.exception.NoSuchDefaultConstructorException;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,6 +19,8 @@ public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
     private Set<Class<?>> preInstanticateBeans = Sets.newHashSet();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
+    private Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
+
 
     public void register(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans.addAll(preInstanticateBeans);
@@ -30,20 +34,21 @@ public class BeanFactory {
             return;
         }
 
-        instantiateClass(clazz);
+        beans.put(clazz, instantiateClass(clazz));
     }
 
     private Object instantiateClass(Class<?> clazz) {
         Constructor<?> constructor = getConstructor(clazz);
         Class<?>[] parameterTypes = getParameterTypes(constructor);
         Object[] parameters = new Object[parameterTypes.length];
+
         for (int i = 0; i < parameters.length; i++) {
-            parameters[i] = instantiateClass(parameterTypes[i]);
+            Object parameter = instantiateClass(parameterTypes[i]);
+            beans.put(parameterTypes[i], parameter);
+            parameters[i] = parameter;
         }
 
-        Object object = instantiateConstructor(constructor, parameters);
-        beans.put(clazz, object);
-        return object;
+        return instantiateConstructor(constructor, parameters);
     }
 
     private Constructor<?> getConstructor(Class<?> clazz) {
@@ -83,6 +88,45 @@ public class BeanFactory {
         }
     }
 
+    public void register(Map<Class<?>, BeanDefinition> beanDefinitions) {
+        this.beanDefinitions.putAll(beanDefinitions);
+        for (Class<?> beanType : this.beanDefinitions.keySet()) {
+            addBean(this.beanDefinitions.get(beanType));
+        }
+    }
+
+    private void addBean(BeanDefinition beanDefinition) {
+        Class<?> beanType = beanDefinition.getBeanType();
+        if (beans.containsKey(beanType)) {
+            return;
+        }
+
+        beans.put(beanType, instantiateBeanDefinition(beanDefinition));
+    }
+
+    private Object instantiateBeanDefinition(BeanDefinition beanDefinition) {
+        Class<?>[] parameterTypes = beanDefinition.getParameterTypes();
+        Object[] parameters = new Object[parameterTypes.length];
+
+        for (int i = 0; i < parameters.length; i++) {
+            Object parameter = instantiateBeanDefinition(beanDefinitions.get(parameterTypes[i]));
+            beans.put(parameterTypes[i], parameter);
+            parameters[i] = parameter;
+        }
+
+        return invokeBeanCreateMethod(beanDefinition, parameters);
+    }
+
+    private Object invokeBeanCreateMethod(BeanDefinition beanDefinition, Object[] parameters) {
+        try {
+            Method beanMethod = beanDefinition.getBeanCreateMethod();
+            return beanMethod.invoke(beanDefinition.getConfigurationObject(), parameters);
+        } catch (ReflectiveOperationException e) {
+            logger.error(e.getMessage());
+            throw new CreateInstanceFailException();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
@@ -103,14 +147,5 @@ public class BeanFactory {
         }
 
         controllers.put(clazz, getBean(clazz));
-    }
-
-    public void addBean(Class<?> clazz, Object object) {
-        preInstanticateBeans.add(clazz);
-        beans.put(clazz, object);
-    }
-
-    public boolean containsBean(Class<?> clazz) {
-        return beans.containsKey(clazz);
     }
 }
