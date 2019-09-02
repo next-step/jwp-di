@@ -42,4 +42,19 @@ public class ConfigurationBeanScannerTest {
         assertNotNull(jdbcTemplate);
         assertNotNull(jdbcTemplate.getDataSource());
     }
+
+    @Test
+    @DisplayName("ApplicationContext 테스트")
+    void ApplicationContext() {
+        ApplicationContext applicationContext = new ApplicationContext(IntegrationConfig.class);
+        AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping(applicationContext);
+        handlerMapping.initialize();
+
+        JdbcUserRepository userRepository = applicationContext.getBean(JdbcUserRepository.class);
+        assertNotNull(userRepository);
+
+        MyJdbcTemplate jdbcTemplate = applicationContext.getBean(MyJdbcTemplate.class);
+        assertNotNull(jdbcTemplate);
+        assertNotNull(jdbcTemplate.getDataSource());
+    }
 }
