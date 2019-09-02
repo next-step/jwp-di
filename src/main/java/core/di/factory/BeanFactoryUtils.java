@@ -3,8 +3,12 @@ package core.di.factory;
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
@@ -41,11 +45,25 @@ public class BeanFactoryUtils {
 
         for (Class<?> clazz : preInstantiateBeans) {
             Set<Class<?>> interfaces = Sets.newHashSet(clazz.getInterfaces());
-            if (interfaces.contains(injectedClazz)) {
+            if (clazz.equals(injectedClazz) || interfaces.contains(injectedClazz)) {
                 return clazz;
             }
         }
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    /**
+     * 인자로 전달되는 클래스의 구현 클래스. 만약 인자로 전달되는 Class가 인터페이스가 아니면 전달되는 인자가 구현 클래스,
+     * 인터페이스인 경우 BeanFactory가 관리하는 모든 클래스 중에 인터페이스를 구현하는 클래스를 찾아 반환
+     *
+     * @param clazz
+     * @param annotation
+     * @return
+     */
+    public static Set<Method> getFactoryMethods(Class<?> clazz, Class<? extends Annotation> annotation) {
+        return Arrays.stream(clazz.getMethods())
+                .filter(method -> method.isAnnotationPresent(annotation))
+                .collect(Collectors.toSet());
     }
 }

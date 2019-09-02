@@ -1,12 +1,15 @@
 package core.mvc.tobe;
 
 import core.db.DataBase;
-import core.di.BeanScanner;
+import core.di.ComponentBeanScanner;
+import core.di.factory.BeanFactory;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,7 +18,10 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        BeanScanner beanScanner = new BeanScanner("core.mvc.tobe");
+        BeanFactory beanFactory = new BeanFactory();
+        ComponentBeanScanner beanScanner = new ComponentBeanScanner(beanFactory, Collections.singleton("core.mvc.tobe"));
+        beanScanner.scan();
+        beanFactory.initialize();
         handlerMapping = new AnnotationHandlerMapping(beanScanner.getControllers());
         handlerMapping.initialize();
     }
@@ -29,7 +35,7 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
 
         assertThat(request.getAttribute("user")).isEqualTo(user);
@@ -42,7 +48,7 @@ public class AnnotationHandlerMappingTest {
         request.setParameter("name", user.getName());
         request.setParameter("email", user.getEmail());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
     }
 }
