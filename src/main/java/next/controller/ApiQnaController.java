@@ -27,9 +27,9 @@ public class ApiQnaController extends AbstractNewController {
     private AnswerDao answerDao;
 
     @Inject
-    public ApiQnaController(QuestionDao questionDao) {
+    public ApiQnaController(QuestionDao questionDao, AnswerDao answerDao) {
         this.questionDao = questionDao;
-        this.answerDao = AnswerDao.getInstance();
+        this.answerDao = answerDao;
     }
 
     @RequestMapping(value = "/api/qna/list", method = RequestMethod.GET)

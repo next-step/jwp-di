@@ -4,17 +4,13 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static core.di.factory.BeanFactoryUtils.findConcreteClass;
-import static core.di.factory.BeanFactoryUtils.getInjectedConstructor;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -49,43 +45,7 @@ public class BeanFactory {
         if (beanDefinition == null) {
             throw new RuntimeException(String.format("정의된 Bean Type[%s]이 없습니다.", clazz.getName()));
         }
-        return initBeanDef(beanDefinition);
-    }
-
-    private Object initBeanDef(BeanDefinition beanDef) {
-        Object bean = null;
-        if (beanDef instanceof ComponentBeanDefinition) {
-            bean = instanticateClass(beanDef.getBeanType());
-        }
-
-        if (beanDef instanceof AnnotationBeanDefinition) {
-            bean = instanticateMethod((AnnotationBeanDefinition) beanDef);
-        }
-        return bean;
-    }
-
-    private Object instanticateMethod(AnnotationBeanDefinition beanDef) {
-        List<Object> parameters = getParameters(beanDef.getParameters());
-        try {
-            return beanDef.getMethod().invoke(beanDef.getInstanceClass(), parameters.toArray());
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            logger.error("Bean 생성 실패 ", e);
-            throw new RuntimeException("Bean 생성 실패 ", e);
-        }
-    }
-
-    private Object instanticateClass(Class clazz) {
-        Constructor constructor = getInjectedConstructor(clazz);
-        if (constructor != null) {
-            return instanticateConstructor(getInjectedConstructor(findConcreteClass(clazz, beanDefs.keySet())));
-        }
-
-        return BeanUtils.instantiateClass(findConcreteClass(clazz, beanDefs.keySet()));
-    }
-
-    private Object instanticateConstructor(Constructor constructor) {
-        List<Object> parameters = getParameters(constructor.getParameterTypes());
-        return BeanUtils.instantiateClass(constructor, parameters.toArray());
+        return beanDefinition.newInstance(getParameters(beanDefinition.getParameters()));
     }
 
     private List<Object> getParameters(Class[] parameterTypes) {
