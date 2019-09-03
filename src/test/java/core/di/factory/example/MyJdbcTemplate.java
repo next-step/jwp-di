@@ -5,6 +5,9 @@ import javax.sql.DataSource;
 public class MyJdbcTemplate {
     private DataSource dataSource;
 
+    private MyJdbcTemplate() {
+    }
+
     public MyJdbcTemplate(DataSource dataSource) {
         this.dataSource = dataSource;
     }
