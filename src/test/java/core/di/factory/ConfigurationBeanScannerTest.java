@@ -24,14 +24,12 @@ public class ConfigurationBeanScannerTest {
         BeanFactory beanFactory = new BeanFactory();
         ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
         cbs.register(IntegrationConfig.class);
-        beanFactory.initialize();
 
         String[] basePath = cbs.getBasePath();
         assertNotNull(basePath);
 
         ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
         cbds.doScan("core.di.factory.example");
-        beanFactory.initialize();
 
         assertNotNull(beanFactory.getBean(DataSource.class));
 

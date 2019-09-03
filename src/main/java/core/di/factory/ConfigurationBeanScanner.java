@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import com.google.common.collect.Sets;
 import core.annotation.ComponentScan;
 
 public class ConfigurationBeanScanner {
@@ -12,7 +13,7 @@ public class ConfigurationBeanScanner {
     }
 
     public void register(Class<?> configuratorClass){
-        beanFactory.initInstanticateBeans(configuratorClass);
+        beanFactory.initialize(Sets.newHashSet(configuratorClass));
         basePath = configuratorClass.getAnnotation(ComponentScan.class).value();
     }
 

@@ -1,6 +1,6 @@
 package core.di.factory;
 
-import core.di.factory.example.ExampleConfig;
+import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import core.mvc.tobe.ApplicationContext;
@@ -15,7 +15,7 @@ public class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        ap = new ApplicationContext(ExampleConfig.class);
+        ap = new ApplicationContext(IntegrationConfig.class);
     }
 
     @Test

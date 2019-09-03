@@ -16,6 +16,7 @@ public class ClasspathBeanScanner {
     private BeanFactory beanFactory;
     private Reflections reflections;
 
+
     public ClasspathBeanScanner(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
@@ -26,8 +27,7 @@ public class ClasspathBeanScanner {
         try {
             Set<Class<?>> preInstanticateClazz = BeanFactoryUtils.getTypesAnnotatedWith(reflections,
                     Controller.class, Service.class, Repository.class);
-            beanFactory.initInstanticateBeans(preInstanticateClazz);
-            beanFactory.initialize();
+            beanFactory.initialize(preInstanticateClazz);
         }catch (Exception e){
             log.error("Configurator Bean Create Error {}", e.getMessage());
         }

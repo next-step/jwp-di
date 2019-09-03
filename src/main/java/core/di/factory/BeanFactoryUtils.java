@@ -58,16 +58,8 @@ public class BeanFactoryUtils {
 
     public static Optional<List<Method>> getBeanMethod(Class<?> clazz) {
         Set<Method> methods = ReflectionUtils.getAllMethods(clazz, ReflectionUtils.withAnnotation(Bean.class));
-
-        List<Method> filterMethods = methods.stream()
-                .filter(method -> method.getParameterCount() == 0)
-                .collect(Collectors.toList());
-
-        filterMethods.addAll(methods.stream()
-                .filter(method -> method.getParameterCount() != 0)
-                .collect(Collectors.toList()));
-
-        return Optional.ofNullable(filterMethods);
+        return Optional.ofNullable(methods.stream()
+                .sorted(Comparator.comparing(method -> method.getParameterCount())).collect(Collectors.toList()));
     }
 
     public static Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {

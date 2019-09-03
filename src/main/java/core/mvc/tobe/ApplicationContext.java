@@ -15,12 +15,11 @@ public class ApplicationContext {
 
     private void initContext(Class<?> configurationClass){
         beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
-        cbs.register(configurationClass);
-        beanFactory.initialize();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.register(configurationClass);
 
-        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
-        cbds.doScan(cbs.getBasePath());
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.doScan(configurationBeanScanner.getBasePath());
     }
 
     public <T> T getBean(Class<T> requiredType) {

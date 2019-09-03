@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class BeanMaker {
 
-    public Map<Class<?>, Object> findAndInitBean(Class<?> clazz, Map<Class<?>, Object> beans) throws Exception {
+    public Map<Class<?>, Object> findAndInitBean(Class<?> clazz, Map<Class<?>, Object> beans) throws BeanMakerException {
         List<Method> methods = BeanFactoryUtils.getBeanMethod(clazz).orElse(new ArrayList<>());
 
         for(Method method : methods){
@@ -18,7 +18,7 @@ public class BeanMaker {
     }
 
     private void invokeMethod(Class<?> clazz, Method method,
-                              Map<Class<?>, Object> beans) throws Exception{
+                              Map<Class<?>, Object> beans) throws BeanMakerException {
 
         Class<?>[] parameters = method.getParameterTypes();
         Object[] paramObject = new Object[parameters.length];
@@ -26,7 +26,11 @@ public class BeanMaker {
             paramObject[i] = beans.get(parameters[i]);
         }
 
-        beans.put(method.getReturnType(), method.invoke(clazz.newInstance(), paramObject));
+        try {
+            beans.put(method.getReturnType(), method.invoke(clazz.newInstance(), paramObject));
+        }catch (Exception e){
+            throw new BeanMakerException(e);
+        }
     }
 
 }
