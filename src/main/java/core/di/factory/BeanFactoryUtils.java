@@ -2,8 +2,10 @@ package core.di.factory;
 
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
+import core.di.bean.BeanDefinition;
 
 import java.lang.reflect.Constructor;
+import java.util.Collection;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
@@ -47,5 +49,21 @@ public class BeanFactoryUtils {
         }
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    public static BeanDefinition findConcreteClassByBeanDefinition(BeanDefinition injectedClazz, Collection<BeanDefinition> preInstanticateBeanDefinition) {
+        if (!injectedClazz.getBeanClass().isInterface()) {
+            return injectedClazz;
+        }
+
+        for (BeanDefinition beanDefinition : preInstanticateBeanDefinition) {
+            Class<?> clazz = beanDefinition.getBeanClass();
+            Set<Class<?>> interfaces = Sets.newHashSet(clazz.getInterfaces());
+            if (interfaces.contains(injectedClazz.getBeanClass())) {
+                return beanDefinition;
+            }
+        }
+
+        return injectedClazz;
     }
 }
