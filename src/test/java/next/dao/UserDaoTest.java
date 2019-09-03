@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserDaoTest {
+public class UserDaoTest extends AbstractDaoTest{
 
     private UserDao userDao;
 
@@ -23,7 +23,7 @@ public class UserDaoTest {
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
-        userDao = new JdbcUserDao();
+        userDao = new JdbcUserDao(getJdbcTemplate());
     }
 
     @Test
