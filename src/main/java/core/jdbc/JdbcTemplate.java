@@ -13,13 +13,7 @@ import java.util.List;
 public class JdbcTemplate {
     private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
 
-    private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
-
-    private JdbcTemplate() {
-    }
-
-    public static JdbcTemplate getInstance() {
-        return jdbcTemplate;
+    public JdbcTemplate() {
     }
 
     public void update(String sql, PreparedStatementSetter pss) throws DataAccessException {
