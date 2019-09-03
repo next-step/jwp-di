@@ -1,12 +1,14 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,8 +31,7 @@ public class BeanFactory {
 
     public void initialize() {
         for(Class<?> beanType : preInstanticateBeans) {
-            Object instance = this.createBean(beanType);
-            this.addBean(beanType, instance);
+            this.instantiateClass(beanType);
         }
     }
 
@@ -40,29 +41,25 @@ public class BeanFactory {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Object createBean(Class<?> beanType) {
+    private Object instantiateClass(Class<?> beanType) {
+        if(beans.containsKey(beanType)) {
+            return beans.get(beanType);
+        }
         final Constructor<?> constructor = getConstructor(beanType);
-        Object[] parameterBeans = getParameters(constructor);
-        return createInstance(constructor, parameterBeans);
-    }
-
-    private Object[] getParameters(Constructor<?> constructor) {
-        final Class<?>[] parameterTypes = constructor.getParameterTypes();
-        final Object[] parameterBeans = new Object[parameterTypes.length];
-        for(int i = 0; i < parameterTypes.length; i++) {
-            final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterTypes[i], preInstanticateBeans);
-            parameterBeans[i] = getOrCreateBean(concreteClass);
-        }
-        return parameterBeans;
-    }
-
-    private Object getOrCreateBean(Class<?> concreteClass) {
-        if(beans.containsKey(concreteClass)) {
-            return beans.get(concreteClass);
-        }
-        final Object instance = this.createBean(concreteClass);
-        this.addBean(concreteClass, instance);
+        final Object instance = this.instantiateConstructor(constructor);
+        beans.put(beanType, instance);
         return instance;
+    }
+
+    private Object instantiateConstructor(Constructor<?> constructor) {
+        final Class<?>[] parameterTypes = constructor.getParameterTypes();
+        final List<Object> args = Lists.newArrayListWithExpectedSize(parameterTypes.length);
+        for(Class<?> clazz : parameterTypes) {
+            final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
+            final Object instance = this.instantiateClass(concreteClass);
+            args.add(instance);
+        }
+        return BeanUtils.instantiateClass(constructor, args.toArray());
     }
 
     private Constructor<?> getConstructor(Class<?> beanType) {
@@ -75,17 +72,5 @@ public class BeanFactory {
         } catch (NoSuchMethodException ex) {
             throw new CannotFoundConstructorException(ex);
         }
-    }
-
-    private Object createInstance(Constructor<?> constructor, Object... parameterBeans) {
-        try {
-            return constructor.newInstance(parameterBeans);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-            throw new CannotNewInstanceException(ex);
-        }
-    }
-
-    private void addBean(Class<?> beanType, Object bean) {
-        beans.put(beanType, bean);
     }
 }
