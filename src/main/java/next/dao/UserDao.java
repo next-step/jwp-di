@@ -1,6 +1,7 @@
 package next.dao;
 
 import core.annotation.Inject;
+import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.RowMapper;
 import next.model.User;
@@ -9,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Repository
 public class UserDao {
 
     private JdbcTemplate jdbcTemplate;

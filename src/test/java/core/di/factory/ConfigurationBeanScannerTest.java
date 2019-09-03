@@ -1,10 +1,9 @@
 package core.di.factory;
 
-import core.di.factory.example.ExampleConfig;
-import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyJdbcTemplate;
 import core.mvc.tobe.ApplicationContext;
+import next.config.IntegrationConfig;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -15,7 +14,7 @@ public class ConfigurationBeanScannerTest {
 
     @Test
     public void register_simple() {
-        ApplicationContext ac = new ApplicationContext(ExampleConfig.class);
+        ApplicationContext ac = new ApplicationContext(IntegrationConfig.class);
         assertNotNull(ac.getBean(DataSource.class));
     }
 

@@ -1,9 +1,9 @@
 package core.di.factory;
 
-import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import core.mvc.tobe.ApplicationContext;
+import next.config.IntegrationConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

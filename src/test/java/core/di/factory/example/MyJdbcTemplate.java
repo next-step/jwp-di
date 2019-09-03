@@ -1,16 +1,20 @@
 package core.di.factory.example;
 
-import javax.sql.DataSource;
+import core.annotation.Inject;
+import core.annotation.Repository;
+import core.jdbc.JdbcTemplate;
 
+@Repository
 public class MyJdbcTemplate {
 
-    private DataSource dataSource;
+    private JdbcTemplate jdbcTemplate;
 
-    public MyJdbcTemplate(DataSource dataSource) {
-        this.dataSource = dataSource;
+    @Inject
+    public MyJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    public DataSource getDataSource() {
-        return dataSource;
+    public JdbcTemplate getDataSource() {
+        return jdbcTemplate;
     }
 }

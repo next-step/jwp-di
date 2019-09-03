@@ -3,6 +3,7 @@ package next.config;
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
+import core.jdbc.JdbcTemplate;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.sql.DataSource;
@@ -10,6 +11,7 @@ import javax.sql.DataSource;
 @Configuration
 @ComponentScan({"next", "core"})
 public class IntegrationConfig {
+
     @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();
@@ -18,6 +20,11 @@ public class IntegrationConfig {
         ds.setUsername("sa");
         ds.setPassword("");
         return ds;
+    }
+
+    @Bean
+    public JdbcTemplate getJdbcTemplate(DataSource dataSource){
+        return new JdbcTemplate(dataSource);
     }
 
 }
