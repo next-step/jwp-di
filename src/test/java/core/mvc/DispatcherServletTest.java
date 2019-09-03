@@ -1,5 +1,11 @@
 package core.mvc;
 
+import core.di.context.AnnotationConfigApplicationContext;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.MyConfiguration;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +22,19 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        dispatcher = new DispatcherServlet();
-        dispatcher.init();
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MyConfiguration.class);
+
+        HandlerMappingRegistry handlerMappingRegistry = new HandlerMappingRegistry();
+        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(context));
+
+        HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
+        handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
+
+        HandlerExecutor handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+
+        dispatcher = new DispatcherServlet(handlerMappingRegistry, handlerAdapterRegistry, handlerExecutor);
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
