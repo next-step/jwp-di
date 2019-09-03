@@ -1,22 +1,15 @@
 package core.di.factory;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
-import core.annotation.Inject;
-import core.annotation.web.Controller;
-import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -36,38 +29,40 @@ public class BeanFactory {
 
     public void initialize() {
         for(Class<?> beanType : preInstanticateBeans) {
-            this.addBean(beanType);
+            Object instance = this.createBean(beanType);
+            this.addBean(beanType, instance);
         }
     }
 
-    private Object addBean(Class<?> beanType) {
+    Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotationClass) {
+        return this.beans.entrySet().stream()
+                .filter(bean -> bean.getKey().isAnnotationPresent(annotationClass))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private Object createBean(Class<?> beanType) {
         final Constructor<?> constructor = getConstructor(beanType);
         Object[] parameterBeans = getParameters(constructor);
-        Object instance = createInstance(constructor, parameterBeans);
-        beans.put(beanType, instance);
-        return instance;
+        return createInstance(constructor, parameterBeans);
     }
 
     private Object[] getParameters(Constructor<?> constructor) {
         final Class<?>[] parameterTypes = constructor.getParameterTypes();
         final Object[] parameterBeans = new Object[parameterTypes.length];
-        if(parameterBeans.length == 0) {
-            return parameterBeans;
-        }
-
-        int indexOfArgs = 0;
-        for(Class<?> parameterType : parameterTypes) {
-            parameterBeans[indexOfArgs] = getParameterInstance(parameterType);
-            indexOfArgs++;
+        for(int i = 0; i < parameterTypes.length; i++) {
+            final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterTypes[i], preInstanticateBeans);
+            parameterBeans[i] = getOrCreateBean(concreteClass);
         }
         return parameterBeans;
     }
 
-    private Object getParameterInstance(Class<?> parameterType) {
-        final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
-        return beans.containsKey(concreteClass)
-                ? beans.get(concreteClass)
-                : this.addBean(concreteClass);
+    private Object getOrCreateBean(Class<?> concreteClass) {
+        if(beans.containsKey(concreteClass)) {
+            return beans.get(concreteClass);
+        }
+        final Object instance = this.createBean(concreteClass);
+        this.addBean(concreteClass, instance);
+        return instance;
     }
 
     private Constructor<?> getConstructor(Class<?> beanType) {
@@ -90,9 +85,7 @@ public class BeanFactory {
         }
     }
 
-    public Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotationClass) {
-        return this.beans.entrySet().stream()
-                .filter(bean -> bean.getKey().isAnnotationPresent(annotationClass))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    private void addBean(Class<?> beanType, Object bean) {
+        beans.put(beanType, bean);
     }
 }
