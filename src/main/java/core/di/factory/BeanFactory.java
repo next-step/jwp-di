@@ -1,22 +1,17 @@
 package core.di.factory;
 
-import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import core.annotation.Inject;
-import core.annotation.web.Controller;
-import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -36,38 +31,35 @@ public class BeanFactory {
 
     public void initialize() {
         for(Class<?> beanType : preInstanticateBeans) {
-            this.addBean(beanType);
+            this.instantiateClass(beanType);
         }
     }
 
-    private Object addBean(Class<?> beanType) {
+    Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotationClass) {
+        return this.beans.entrySet().stream()
+                .filter(bean -> bean.getKey().isAnnotationPresent(annotationClass))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private Object instantiateClass(Class<?> beanType) {
+        if(beans.containsKey(beanType)) {
+            return beans.get(beanType);
+        }
         final Constructor<?> constructor = getConstructor(beanType);
-        Object[] parameterBeans = getParameters(constructor);
-        Object instance = createInstance(constructor, parameterBeans);
+        final Object instance = this.instantiateConstructor(constructor);
         beans.put(beanType, instance);
         return instance;
     }
 
-    private Object[] getParameters(Constructor<?> constructor) {
+    private Object instantiateConstructor(Constructor<?> constructor) {
         final Class<?>[] parameterTypes = constructor.getParameterTypes();
-        final Object[] parameterBeans = new Object[parameterTypes.length];
-        if(parameterBeans.length == 0) {
-            return parameterBeans;
+        final List<Object> args = Lists.newArrayListWithExpectedSize(parameterTypes.length);
+        for(Class<?> clazz : parameterTypes) {
+            final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
+            final Object instance = this.instantiateClass(concreteClass);
+            args.add(instance);
         }
-
-        int indexOfArgs = 0;
-        for(Class<?> parameterType : parameterTypes) {
-            parameterBeans[indexOfArgs] = getParameterInstance(parameterType);
-            indexOfArgs++;
-        }
-        return parameterBeans;
-    }
-
-    private Object getParameterInstance(Class<?> parameterType) {
-        final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
-        return beans.containsKey(concreteClass)
-                ? beans.get(concreteClass)
-                : this.addBean(concreteClass);
+        return BeanUtils.instantiateClass(constructor, args.toArray());
     }
 
     private Constructor<?> getConstructor(Class<?> beanType) {
@@ -80,19 +72,5 @@ public class BeanFactory {
         } catch (NoSuchMethodException ex) {
             throw new CannotFoundConstructorException(ex);
         }
-    }
-
-    private Object createInstance(Constructor<?> constructor, Object... parameterBeans) {
-        try {
-            return constructor.newInstance(parameterBeans);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-            throw new CannotNewInstanceException(ex);
-        }
-    }
-
-    public Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotationClass) {
-        return this.beans.entrySet().stream()
-                .filter(bean -> bean.getKey().isAnnotationPresent(annotationClass))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
