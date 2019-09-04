@@ -1,12 +1,12 @@
 package core.di.factory;
 
-import core.di.ComponentBeanScanner;
+import core.di.ClasspathBeanScanner;
 import core.di.BeanScanner;
 import core.di.ConfigurationBeanScanner;
+import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.assertj.core.util.Lists;
-import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +23,10 @@ public class BeanFactoryTest {
 
         beanFactory = new BeanFactory();
         List<BeanScanner> scanners = Lists.newArrayList();
-        scanners.add(new ConfigurationBeanScanner(beanFactory));
-        scanners.add(new ComponentBeanScanner(beanFactory, Collections.singleton("core.di.factory.example")));
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.registerConfiguration(ExampleConfig.class);
+        scanners.add(configurationBeanScanner);
+        scanners.add(new ClasspathBeanScanner(beanFactory, Collections.singleton("core.di.factory.example")));
         scanners.forEach(BeanScanner::scan);
         beanFactory.initialize();
     }
