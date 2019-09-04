@@ -1,10 +1,17 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
+import core.annotation.Bean;
 import core.annotation.Inject;
+import core.annotation.web.RequestMapping;
+import org.reflections.ReflectionUtils;
+import org.reflections.Reflections;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Set;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
@@ -47,5 +54,19 @@ public class BeanFactoryUtils {
         }
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    public static Optional<List<Method>> getBeanMethod(Class<?> clazz) {
+        Set<Method> methods = ReflectionUtils.getAllMethods(clazz, ReflectionUtils.withAnnotation(Bean.class));
+        return Optional.ofNullable(methods.stream()
+                .sorted(Comparator.comparing(method -> method.getParameterCount())).collect(Collectors.toList()));
+    }
+
+    public static Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
+        Set<Class<?>> beans = Sets.newHashSet();
+        for (Class<? extends Annotation> annotation : annotations) {
+            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
+        }
+        return beans;
     }
 }
