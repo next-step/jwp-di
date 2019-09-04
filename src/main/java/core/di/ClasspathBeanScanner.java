@@ -12,12 +12,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class ComponentBeanScanner implements BeanScanner {
+public class ClasspathBeanScanner implements BeanScanner {
 
     private Reflections reflections;
     private BeanFactory beanFactory;
 
-    public ComponentBeanScanner(BeanFactory beanFactory, Collection<String> basePackage) {
+    public ClasspathBeanScanner(BeanFactory beanFactory, Collection<String> basePackage) {
         reflections = new Reflections(basePackage);
         this.beanFactory = beanFactory;
     }

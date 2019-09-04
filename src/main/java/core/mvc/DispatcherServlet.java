@@ -1,11 +1,7 @@
 package core.mvc;
 
-import com.google.common.collect.Lists;
 import core.db.MyConfiguration;
-import core.di.ComponentBeanScanner;
-import core.di.BeanScanner;
-import core.di.ConfigurationBeanScanner;
-import core.di.factory.BeanFactory;
+import core.di.ApplicationContext;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -20,7 +16,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
@@ -34,18 +29,12 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        configurationBeanScanner.registerConfiguration(MyConfiguration.class);
-        List<BeanScanner> scanners = Lists.newArrayList();
-        scanners.add(configurationBeanScanner);
-        scanners.add(new ComponentBeanScanner(beanFactory, configurationBeanScanner.getBasePackages()));
-        scanners.forEach(BeanScanner::scan);
-        beanFactory.initialize();
+
+        ApplicationContext applicationContext = (ApplicationContext) getServletContext().getAttribute(ApplicationContext.class.getName());
 
         handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getControllers()));
+        handlerMappingRegistry.addHandlerMapping(new RequestMapping());
+        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
 
         HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
