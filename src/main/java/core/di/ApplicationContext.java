@@ -30,6 +30,7 @@ public class ApplicationContext {
     private void initializeScanner(Class<?> configurationClass) {
         ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
         configurationBeanScanner.registerConfiguration(configurationClass);
+
         List<BeanScanner> scanners = Lists.newArrayList();
         scanners.add(configurationBeanScanner);
         scanners.add(new ClasspathBeanScanner(beanFactory, getComponentBasePackages(configurationClass)));
@@ -38,7 +39,8 @@ public class ApplicationContext {
 
     private Set<String> getComponentBasePackages(Class<?> configurationClass) {
         return Optional.ofNullable(configurationClass.getAnnotation(ComponentScan.class))
-                .map(componentScan -> Sets.newHashSet(componentScan.basePackages()))
+                .map(ComponentScan::basePackages)
+                .map(Sets::newHashSet)
                 .orElse(Sets.newHashSet());
     }
 }

@@ -30,11 +30,11 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init() {
 
-        ApplicationContext ac = new ApplicationContext(MyConfiguration.class);
+        ApplicationContext applicationContext = (ApplicationContext) getServletContext().getAttribute(ApplicationContext.class.getName());
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMapping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(ac));
+        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
 
         HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
