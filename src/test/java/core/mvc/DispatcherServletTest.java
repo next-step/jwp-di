@@ -1,16 +1,19 @@
 package core.mvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import core.di.factory.ApplicationContext;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.AppConfiguration;
+import next.controller.UserSessionUtils;
+import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import core.di.factory.ApplicationContext;
-import next.AppConfiguration;
-import next.controller.UserSessionUtils;
-import next.model.User;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DispatcherServletTest {
     private DispatcherServlet dispatcher;
@@ -21,8 +24,12 @@ class DispatcherServletTest {
     void setUp() {
     	
     	ApplicationContext applicationContext = new ApplicationContext(DataInitConfiguration.class, AppConfiguration.class);
-        dispatcher = new DispatcherServlet(applicationContext);
-        dispatcher.init();
+        dispatcher = new DispatcherServlet();
+
+        dispatcher.addHandlerMapping(new RequestMapping());
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
+        dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        dispatcher.addHandlerAdapter(new ControllerHandlerAdapter());
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
