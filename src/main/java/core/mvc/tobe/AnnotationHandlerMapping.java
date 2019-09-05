@@ -1,37 +1,34 @@
 package core.mvc.tobe;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import core.annotation.web.Controller;
+import core.annotation.web.RequestMapping;
+import core.annotation.web.RequestMethod;
+import core.di.factory.Context;
+import core.mvc.HandlerMapping;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
-import core.annotation.web.Controller;
-import core.annotation.web.RequestMapping;
-import core.annotation.web.RequestMethod;
-import core.di.factory.ApplicationContext;
-import core.mvc.HandlerMapping;
+import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Set;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private ApplicationContext applicationContext;
+    private Context context;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public AnnotationHandlerMapping(Context context) {
+        this.context = context;
     }
 
     public void initialize() {
-        Map<Class<?>, Object> controllers = applicationContext.getBeansByAnnotation(Controller.class);
+        Map<Class<?>, Object> controllers = context.getBeansByAnnotation(Controller.class);
         Set<Method> methods = getRequestMappingMethods(controllers.keySet());
         for (Method method : methods) {
             RequestMapping rm = method.getAnnotation(RequestMapping.class);

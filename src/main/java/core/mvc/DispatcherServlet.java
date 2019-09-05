@@ -1,51 +1,38 @@
 package core.mvc;
 
-import java.io.IOException;
-import java.util.Optional;
+import core.annotation.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-
-import core.di.factory.ApplicationContext;
-import core.mvc.asis.ControllerHandlerAdapter;
-import core.mvc.asis.RequestMapping;
-import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.HandlerExecutionHandlerAdapter;
-
+@Component
 public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private final ApplicationContext applicationContext;
+    private HandlerMappingRegistry handlerMappingRegistry = new HandlerMappingRegistry();
 
-    private HandlerMappingRegistry handlerMappingRegistry;
+    private HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
 
-    private HandlerAdapterRegistry handlerAdapterRegistry;
-
-    private HandlerExecutor handlerExecutor;
-
-    public DispatcherServlet(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-    }
+    private HandlerExecutor handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
 
     @Override
     public void init() {
+    }
 
-        handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(applicationContext));
+    public void addHandlerMapping(HandlerMapping handlerMapping) {
+        handlerMappingRegistry.addHandlerMpping(handlerMapping);
+    }
 
-        handlerAdapterRegistry = new HandlerAdapterRegistry();
-        handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
-        handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
-
-        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+    public void addHandlerAdapter(HandlerAdapter handlerAdapter) {
+        handlerAdapterRegistry.addHandlerAdapter(handlerAdapter);
     }
 
     @Override

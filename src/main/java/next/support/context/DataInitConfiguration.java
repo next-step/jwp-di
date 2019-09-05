@@ -1,4 +1,4 @@
-package core.mvc;
+package next.support.context;
 
 import core.annotation.Configuration;
 import core.annotation.Inject;
@@ -11,10 +11,10 @@ import javax.sql.DataSource;
 @Configuration
 public class DataInitConfiguration {
 
-	@Inject
-	public DataInitConfiguration(DataSource dataSource) {
-		ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-	    populator.addScript(new ClassPathResource("jwp.sql"));
-	    DatabasePopulatorUtils.execute(populator, dataSource);
-	}
+    @Inject
+    public DataInitConfiguration(DataSource dataSource) {
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+        populator.addScript(new ClassPathResource("jwp.sql"));
+        DatabasePopulatorUtils.execute(populator, dataSource);
+    }
 }

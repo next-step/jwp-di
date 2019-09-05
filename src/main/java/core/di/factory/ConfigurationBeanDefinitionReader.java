@@ -24,7 +24,7 @@ public class ConfigurationBeanDefinitionReader implements BeanDefinitionLoader<C
     public void loadBeanDefinitions(Class<?>... annotatedClasses){
         for(Class<?> clazz : annotatedClasses) {
             Set<BeanDefinition> beanDefinitions = getBeanDefinitions(clazz);
-            beanFactory.addBeandDefinitions(beanDefinitions);
+            beanFactory.addBeanDefinitions(beanDefinitions);
         }
     }
 

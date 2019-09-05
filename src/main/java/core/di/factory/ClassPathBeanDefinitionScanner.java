@@ -32,7 +32,7 @@ public class ClassPathBeanDefinitionScanner implements BeanDefinitionLoader<Obje
     @Override
     public void loadBeanDefinitions(Object... basePackage){
         for (Class<?> clazz : this.getPreInstanticateClasses(basePackage)) {
-            this.beanFactory.addBeandDefinition(new ClassBeanDefinition(clazz));
+            this.beanFactory.addBeanDefinition(new ClassBeanDefinition(clazz));
         }
     }
 

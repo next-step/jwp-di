@@ -1,7 +1,7 @@
 package next.dao;
 
-import core.jdbc.ConnectionManager;
 import core.jdbc.JdbcTemplate;
+import next.AppConfiguration;
 import next.model.Answer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,23 +11,25 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
+import javax.sql.DataSource;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnswerDaoTest {
     private static final Logger log = LoggerFactory.getLogger(AnswerDaoTest.class);
-
+    private static final DataSource dataSource = new AppConfiguration().dataSource();
     @BeforeEach
     public void setup() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+        DatabasePopulatorUtils.execute(populator, dataSource);
     }
 
     @Test
     public void addAnswer() throws Exception {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
-        AnswerDao dut = new AnswerDao(new JdbcTemplate(ConnectionManager.getDataSource()));
+        AnswerDao dut = new AnswerDao(new JdbcTemplate(dataSource));
         Answer answer = dut.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();

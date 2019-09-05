@@ -1,15 +1,14 @@
 package core.di.factory;
 
+import com.google.common.collect.Sets;
+import core.annotation.ComponentScan;
+import core.annotation.Configuration;
+
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
-
-import core.annotation.ComponentScan;
-import core.annotation.Configuration;
-
-public class ApplicationContext {
+public class ApplicationContext implements Context{
 
     private final BeanFactory beanFactory;
     
@@ -27,11 +26,13 @@ public class ApplicationContext {
 
         beanFactory.initialize();
     }
-    
+
+    @Override
     public <T> T getBean(Class<T> clazz) {
 		return beanFactory.getBean(clazz);
 	}
-    
+
+	@Override
     public Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotationClass){
     	return beanFactory.getBeansByAnnotation(annotationClass);
     }
