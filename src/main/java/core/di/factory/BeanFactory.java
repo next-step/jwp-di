@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.stream.Stream;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -48,40 +47,37 @@ public class BeanFactory {
     }
 
     private Object instantiateClass(Class<?> instanceType) {
-        Class<?> beanType = BeanFactoryUtils.findConcreteClass(instanceType, preInstantiateBeans);
-
-        if (beans.containsKey(beanType)) {
-            return getBean(beanType);
+        if (beans.containsKey(instanceType)) {
+            return getBean(instanceType);
         }
 
-        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(beanType);
+        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(instanceType);
 
         try {
             if (constructor == null) {
-                beans.put(beanType, beanType.newInstance());
-                return getBean(beanType);
+                beans.put(instanceType, instanceType.newInstance());
+                return getBean(instanceType);
             }
 
             Object bean = instantiateConstructor(constructor);
-            beans.put(beanType, bean);
-            return getBean(beanType);
+            beans.put(instanceType, bean);
+            return getBean(instanceType);
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error(e.toString());
+            throw new NoSuchElementException("wrong Type " + instanceType.toString());
         }
-
-        throw new NoSuchElementException("wrong Type " + beanType.toString());
     }
 
     private Object instantiateConstructor(Constructor<?> constructor) {
         Class<?>[] parameterTypes = constructor.getParameterTypes();
-        List<Object> parameters = Lists.newArrayList();
+        List<Object> instances = Lists.newArrayList();
 
-        Stream.of(parameterTypes)
-                .forEach(parameterType -> {
-                    Object parameter = instantiateClass(parameterType);
-                    parameters.add(parameter);
-                });
+        for (Class<?> parameterType : parameterTypes) {
+            Class<?> instanceType = BeanFactoryUtils.findConcreteClass(parameterType, preInstantiateBeans);
+            Object instance = instantiateClass(instanceType);
+            instances.add(instance);
+        }
 
-        return BeanUtils.instantiateClass(constructor, parameters.toArray());
+        return BeanUtils.instantiateClass(constructor, instances.toArray());
     }
 }
