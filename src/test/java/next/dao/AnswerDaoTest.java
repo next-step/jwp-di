@@ -1,6 +1,6 @@
 package next.dao;
 
-import core.di.config.AppConfiguration;
+import next.configuration.AppConfiguration;
 import core.jdbc.ConnectionManager;
 import next.model.Answer;
 import org.junit.jupiter.api.BeforeEach;

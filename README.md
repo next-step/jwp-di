@@ -17,3 +17,9 @@
     - [x] 초기화
 - [x] di적용 (JdbcTemplate)
 - [x] 테스트케이스 및 기타 수정
+
+# step4
+- [x] ConfigurationBeanScanner , test 만들기
+- [x] 설정 파일을 통해 등록한 Bean과 ClasspathBeanScanner를 통해 추가한 Bean 통합
+- [x] ApplicationContext 생성
+- [ ] BeanFactory에서 method 중복기능 정리

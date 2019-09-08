@@ -12,13 +12,20 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class BeanScanner {
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+public class ClassPathBeanScanner {
+    private static final Logger logger = LoggerFactory.getLogger(ClassPathBeanScanner.class);
 
     private Reflections reflections;
 
-    public BeanScanner(Object... basePackage) {
+    private BeanFactory beanFactory;
+
+    public ClassPathBeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public void doScan(Object...basePackage) {
         reflections = new Reflections(basePackage);
+        beanFactory.registerPreInstantiateBeans(getPreInstantiateBeans());
     }
 
     public Set<Class<?>> getPreInstantiateBeans() {

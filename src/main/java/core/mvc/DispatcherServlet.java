@@ -1,10 +1,11 @@
 package core.mvc;
 
-import core.di.config.AppConfiguration;
+import core.di.factory.ApplicationContext;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.configuration.AppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,9 +31,11 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
+        ApplicationContext ctx = new ApplicationContext(AppConfiguration.class);
+
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(AppConfiguration.class));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(ctx));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

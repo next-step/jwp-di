@@ -26,24 +26,28 @@ public class BeanFactory {
 
     private Map<Class<?>, Method> beanMethods = Maps.newHashMap();
 
-    public BeanFactory(Class<?> configuration) {
-        initializeBeanMethods(configuration);
-        initializePreInstantiateBeans(configuration);
+    private Class<?> configuration;
+
+    public void registerBeanMethods(Map<Class<?>, Method> beanMethods) {
+        this.beanMethods = beanMethods;
+    }
+
+    public void registerConfigurationClass(Class<?> configuration) {
+        this.configuration = configuration;
+    }
+
+    public void registerPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
+        this.preInstantiateBeans = preInstantiateBeans;
+    }
+
+    public void initializeConfigBeans() {
         initializeConfiguration(configuration);
     }
 
-    private void initializePreInstantiateBeans(Class<?> configuration) {
-        ComponentScan componentScan = configuration.getAnnotation(ComponentScan.class);
-        BeanScanner beanScanner = new BeanScanner(componentScan.basePackages());
-        preInstantiateBeans = beanScanner.getPreInstantiateBeans();
-    }
-
-    private void initializeBeanMethods(Class<?> configuration) {
-        Method[] methods = configuration.getDeclaredMethods();
-
-        beanMethods = Stream.of(methods)
-                .filter(method -> method.isAnnotationPresent(Bean.class))
-                .collect(Collectors.toMap(method -> method.getReturnType(), method -> method));
+    public void initializeClassPathBeans() {
+        for (Class instanceType : preInstantiateBeans) {
+            instantiateClass(instanceType);
+        }
     }
 
     @SuppressWarnings("unchecked")

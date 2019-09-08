@@ -1,6 +1,6 @@
 package next.dao;
 
-import core.di.config.AppConfiguration;
+import next.configuration.AppConfiguration;
 import core.jdbc.ConnectionManager;
 import next.dto.UserUpdatedDto;
 import next.model.User;

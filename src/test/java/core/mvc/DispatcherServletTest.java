@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DispatcherServletTest {
@@ -53,7 +55,7 @@ class DispatcherServletTest {
 
     @Test
     void legacy_login_success() throws Exception {
-        User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
+        User user = new User("jobi", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
 
         MockHttpServletRequest secondRequest = new MockHttpServletRequest();

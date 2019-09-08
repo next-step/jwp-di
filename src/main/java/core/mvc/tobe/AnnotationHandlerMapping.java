@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.factory.ApplicationContext;
 import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import org.reflections.ReflectionUtils;
@@ -22,9 +23,11 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private BeanFactory beanFactory;
 
-    public AnnotationHandlerMapping(Class<?> configuration) {
-        beanFactory = new BeanFactory(configuration);
-        beanFactory.initialize();
+    private ApplicationContext ctx;
+
+    public AnnotationHandlerMapping(ApplicationContext ctx) {
+        this.ctx = ctx;
+        beanFactory = ctx.initialize();
     }
 
     public void initialize() {
@@ -54,7 +57,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         }
         return requestMappingMethods;
     }
-
 
     public Object getHandler(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
