@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class ClasspathBeanScanner {
@@ -26,7 +28,12 @@ public class ClasspathBeanScanner {
     public void doScan(Object... basePackage) {
         reflections = new Reflections(basePackage);
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory.register(preInstanticateClazz);
+        Map<Class<?>, BeanDefinition> beanDefinitions = new HashMap<>();
+        for (Class<?> beanClass : preInstanticateClazz) {
+            beanDefinitions.put(beanClass, new DefaultBeanDefinition(beanClass));
+        }
+
+        beanFactory.register(beanDefinitions);
     }
 
     @SuppressWarnings("unchecked")
