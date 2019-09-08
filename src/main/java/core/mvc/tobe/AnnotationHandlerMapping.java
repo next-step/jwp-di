@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
 import core.mvc.HandlerMapping;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -23,9 +22,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private BeanFactory beanFactory;
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        BeanScanner beanScanner = new BeanScanner(basePackage);
-        beanFactory = new BeanFactory(beanScanner.getPreInstantiateBeans());
+    public AnnotationHandlerMapping(Class<?> configuration) {
+        beanFactory = new BeanFactory(configuration);
         beanFactory.initialize();
     }
 

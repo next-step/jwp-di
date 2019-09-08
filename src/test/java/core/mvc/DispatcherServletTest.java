@@ -35,7 +35,7 @@ class DispatcherServletTest {
 
     @Test
     void annotation_user_create() throws Exception {
-        User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
+        User user = new User("gobi", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
         assertThat(response.getRedirectedUrl()).isEqualTo("/");
     }
