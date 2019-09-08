@@ -7,3 +7,13 @@
 
 ## 온라인 코드 리뷰 과정
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
+
+
+# step3
+- [x] @Configuration 설정파일 생성
+    - [x] beanFactory에서 초기화 하기 (매개변수 : Configuration.class)
+    - [x] beanScanner에 @ComponentScan 경로 전달하기
+    - [x] dispatcherServlet에서 호출하도록 설정
+    - [x] 초기화
+- [x] di적용 (JdbcTemplate)
+- [x] 테스트케이스 및 기타 수정
