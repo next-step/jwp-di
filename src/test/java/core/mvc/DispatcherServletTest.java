@@ -1,10 +1,10 @@
 package core.mvc;
 
 import core.di.factory.BeanFactory;
+import core.di.scanner.ClasspathBeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.BeanScanner;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import next.controller.UserSessionUtils;
 import next.model.User;
@@ -22,9 +22,9 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        BeanScanner beanScanner = new BeanScanner("");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.getAllBeanClasses());
-        beanFactory.initialize();
+        BeanFactory beanFactory = new BeanFactory();
+        ClasspathBeanScanner beanScanner = new ClasspathBeanScanner(beanFactory);
+        beanScanner.doScan("");
 
         dispatcher = new DispatcherServlet();
         dispatcher.addHandlerMapping(new RequestMapping());

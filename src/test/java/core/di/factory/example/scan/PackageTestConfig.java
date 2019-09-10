@@ -1,10 +1,9 @@
-package core.mvc;
+package core.di.factory.example.scan;
 
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 
-@ComponentScan("tobe")
 @Configuration
-public class ComponentScanTestConfig {
-
+@ComponentScan
+public class PackageTestConfig {
 }

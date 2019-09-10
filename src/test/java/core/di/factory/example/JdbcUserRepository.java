@@ -3,6 +3,8 @@ package core.di.factory.example;
 import core.annotation.Inject;
 import core.annotation.Repository;
 
+import javax.sql.DataSource;
+
 @Repository
 public class JdbcUserRepository implements UserRepository {
 
@@ -15,5 +17,9 @@ public class JdbcUserRepository implements UserRepository {
 
     public MyJdbcTemplate getMyJdbcTemplate() {
         return myJdbcTemplate;
+    }
+
+    public DataSource getDataSource() {
+        return myJdbcTemplate.getDataSource();
     }
 }

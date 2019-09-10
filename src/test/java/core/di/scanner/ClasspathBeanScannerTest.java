@@ -1,13 +1,13 @@
-package core.mvc.tobe;
+package core.di.scanner;
 
 import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.mvc.ComponentScanTestConfig;
+import core.di.factory.BeanFactory;
+import core.mvc.tobe.MyController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,20 +18,14 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class BeanScannerTest {
+class ClasspathBeanScannerTest {
 
-    private BeanScanner beanScanner;
+    private ClasspathBeanScanner beanScanner;
 
     @BeforeEach
     void setup() {
-        this.beanScanner = new BeanScanner(ComponentScanTestConfig.class);
-    }
-
-    @Test
-    void getAllBeanClasses() throws Exception {
-        Set<Class<?>> beanClasses = beanScanner.getAllBeanClasses();
-
-        assertThat(beanClasses).contains(MyController.class, TestService.class, TestRepository.class, ComponentScanTestConfig.class);
+        beanScanner = new ClasspathBeanScanner(new BeanFactory());
+        beanScanner.doScan("core.mvc.tobe", "core.di.scanner");
     }
 
     @DisplayName("getBeanClassesWithAnnotation - 입력받은 타입의 클래스들을 반환한다.")
@@ -48,13 +42,17 @@ class BeanScannerTest {
                 Arguments.of(Controller.class, MyController.class),
                 Arguments.of(Service.class, TestService.class),
                 Arguments.of(Repository.class, TestRepository.class),
-                Arguments.of(Configuration.class, ComponentScanTestConfig.class)
+                Arguments.of(Configuration.class, TestConfig.class)
         );
     }
+
+    @Configuration
+    public static class TestConfig {}
 
     @Service
     public static class TestService {}
 
     @Repository
     public static class TestRepository {}
+
 }
