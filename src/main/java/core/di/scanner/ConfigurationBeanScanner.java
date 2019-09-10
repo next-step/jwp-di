@@ -1,5 +1,6 @@
 package core.di.scanner;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
@@ -21,6 +22,9 @@ public class ConfigurationBeanScanner {
     }
 
     public void register(Class<?> configClass) {
+        Preconditions.checkArgument(configClass.isAnnotationPresent(Configuration.class),
+                "Configuration 클래스만 가능합니다. class : [%s]", configClass);
+
         Set<Class<?>> configurationClasses = scanConfigurationClasses(configClass);
         basePackages.addAll(getDeclareBasePackages(configurationClasses));
         beanFactory.addAllBeanClasses(configurationClasses);
@@ -35,6 +39,13 @@ public class ConfigurationBeanScanner {
         return reflections.getTypesAnnotatedWith(Configuration.class);
     }
 
+    private Set<String> getDeclareBasePackages(Set<Class<?>> configurationClasses) {
+        return configurationClasses.stream().map(this::getBasePackages)
+                .filter(basePackages -> basePackages.length != 0)
+                .flatMap(Arrays::stream)
+                .collect(Collectors.toSet());
+    }
+
     private String[] getBasePackages(Class<?> configClass) {
         if (!configClass.isAnnotationPresent(ComponentScan.class)) {
             return new String[0];
@@ -43,16 +54,16 @@ public class ConfigurationBeanScanner {
         ComponentScan componentScan = configClass.getAnnotation(ComponentScan.class);
         String[] basePackages = componentScan.basePackages();
         if (basePackages.length == 0) {
-            return new String[] {configClass.getPackage().getName()};
+            return getValue(componentScan.value(), configClass);
         }
         return basePackages;
     }
 
-    private Set<String> getDeclareBasePackages(Set<Class<?>> configurationClasses) {
-        return configurationClasses.stream().map(this::getBasePackages)
-                .filter(basePackages -> basePackages.length != 0)
-                .flatMap(Arrays::stream)
-                .collect(Collectors.toSet());
+    private String[] getValue(String[] value, Class<?> configClass) {
+        if (value.length != 0) {
+            return value;
+        }
+        return new String[] {configClass.getPackage().getName()};
     }
 
     public String[] getBasePackages() {

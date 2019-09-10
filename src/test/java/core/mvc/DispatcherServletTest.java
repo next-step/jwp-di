@@ -1,7 +1,8 @@
 package core.mvc;
 
-import core.di.factory.BeanFactory;
-import core.di.scanner.ClasspathBeanScanner;
+import core.annotation.ComponentScan;
+import core.annotation.Configuration;
+import core.di.context.ApplicationContext;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -22,13 +23,11 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        BeanFactory beanFactory = new BeanFactory();
-        ClasspathBeanScanner beanScanner = new ClasspathBeanScanner(beanFactory);
-        beanScanner.doScan("");
+        ApplicationContext applicationContext = new ApplicationContext(Config.class);
 
         dispatcher = new DispatcherServlet();
         dispatcher.addHandlerMapping(new RequestMapping());
-        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(beanScanner, beanFactory));
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
 
         dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcher.addHandlerAdapter(new ControllerHandlerAdapter());
@@ -84,4 +83,8 @@ class DispatcherServletTest {
         assertThat(secondResponse.getRedirectedUrl()).isEqualTo("/");
         assertThat(UserSessionUtils.getUserFromSession(secondRequest.getSession())).isNotNull();
     }
+
+    @ComponentScan("")
+    @Configuration
+    private static class Config {}
 }

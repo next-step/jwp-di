@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.di.context.ApplicationContext;
 import core.di.factory.BeanFactory;
 import core.di.scanner.ClasspathBeanScanner;
 import core.di.scanner.ConfigurationBeanScanner;
@@ -16,17 +17,11 @@ public class WebApplicationInitializerImpl implements WebApplicationInitializer 
 
     @Override
     public void onStartup(ServletContext servletContext) {
-        BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        configurationBeanScanner.register(MyConfiguration.class);
-        beanFactory.initialize();
-
-        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
-        classpathBeanScanner.doScan(configurationBeanScanner.getBasePackages());
+        ApplicationContext applicationContext = new ApplicationContext(MyConfiguration.class);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet();
         dispatcherServlet.addHandlerMapping(new RequestMapping());
-        dispatcherServlet.addHandlerMapping(new AnnotationHandlerMapping(classpathBeanScanner, beanFactory));
+        dispatcherServlet.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
 
         dispatcherServlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcherServlet.addHandlerAdapter(new ControllerHandlerAdapter());

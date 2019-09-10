@@ -1,6 +1,9 @@
 package core.mvc.tobe;
 
+import core.annotation.ComponentScan;
+import core.annotation.Configuration;
 import core.db.DataBase;
+import core.di.context.ApplicationContext;
 import core.di.factory.BeanFactory;
 import core.di.scanner.ClasspathBeanScanner;
 import next.model.User;
@@ -20,7 +23,9 @@ public class AnnotationHandlerMappingTest {
         ClasspathBeanScanner beanScanner = new ClasspathBeanScanner(beanFactory);
         beanScanner.doScan("core.mvc.tobe");
 
-        handlerMapping = new AnnotationHandlerMapping(beanScanner, beanFactory);
+        ApplicationContext applicationContext = new ApplicationContext(Config.class);
+
+        handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
     }
 
@@ -48,5 +53,11 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
         execution.handle(request, response);
+    }
+
+    @Configuration
+    @ComponentScan
+    public static class Config {
+
     }
 }
