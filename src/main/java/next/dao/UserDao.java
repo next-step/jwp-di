@@ -5,8 +5,6 @@ import core.jdbc.JdbcTemplate;
 import core.jdbc.RowMapper;
 import next.model.User;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
