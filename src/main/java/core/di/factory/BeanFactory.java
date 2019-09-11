@@ -90,7 +90,7 @@ public class BeanFactory {
             return getBean(instanceType);
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error(e.toString());
-            throw new NoSuchElementException("wrong Type " + instanceType.toString());
+            throw new RuntimeException(e);
         }
     }
 
@@ -117,6 +117,7 @@ public class BeanFactory {
             }
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error(e.toString());
+            throw new RuntimeException(e);
         }
     }
 
