@@ -2,6 +2,7 @@ package core.di.factory;
 
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
+import core.di.tobe.bean.BeanDefinition;
 
 import java.lang.reflect.Constructor;
 import java.util.Set;
@@ -10,6 +11,7 @@ import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
 
 public class BeanFactoryUtils {
+
     /**
      * 인자로 전달하는 클래스의 생성자 중 @Inject 애노테이션이 설정되어 있는 생성자를 반환
      *
@@ -47,5 +49,27 @@ public class BeanFactoryUtils {
         }
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    public static Class<?> findConcreteClass2(Class<?> injectedClazz, Set<BeanDefinition> beanDefinitions) {
+        if (!injectedClazz.isInterface()) {
+            return injectedClazz;
+        }
+
+        for (BeanDefinition beanDefinition : beanDefinitions) {
+            Set<Class<?>> interfaces = Sets.newHashSet(beanDefinition.getClazz().getInterfaces());
+            if (interfaces.contains(injectedClazz)) {
+                return beanDefinition.getClazz();
+            }
+        }
+        throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    public static Class<?> findConcreteClass3(Class<?> injectedClazz, Set<BeanDefinition> beanDefinitions) {
+        return beanDefinitions.stream()
+                .filter(it -> it.getClazz().equals(injectedClazz))
+                .map(beanDefinition -> beanDefinition.getClazz())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(injectedClazz + "빈존재 X"));
     }
 }
