@@ -1,15 +1,18 @@
-package core.di.tobe;
+package core.di;
 
 import core.annotation.Repository;
+import core.di.bean.BeanDefinition;
+import core.di.factory.DefaultBeanFactory;
 import core.di.factory.example.*;
-import core.di.tobe.scanner.ConfigurationBeanScanner;
-import core.di.tobe.scanner.DefaultBeanScanner;
+import core.di.scanner.AnnotationBeanScanner;
+import core.di.scanner.DefaultBeanScanner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class DefaultBeanFactoryTest {
 
     private static final String DI_DEFAULT_PACKAGE = "core.di.factory.example";
-    private BeanFactory beanFactory;
+    private DefaultBeanFactory beanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -28,19 +31,19 @@ class DefaultBeanFactoryTest {
     @DisplayName("Configuration bean 주입")
     @Test
     public void registerBean() {
-        ConfigurationBeanScanner beanScanner = new ConfigurationBeanScanner(beanFactory, DI_DEFAULT_PACKAGE);
-        beanScanner.enroll();
+        AnnotationBeanScanner beanScanner = new AnnotationBeanScanner(DI_DEFAULT_PACKAGE);
+        beanFactory.registerBeans(beanScanner.scan());
         beanFactory.initialize();
 
         assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
         assertThat(beanFactory.getBean(MyJdbcTemplate.class)).isNotNull();
     }
 
-    @DisplayName("QnaController와 DI 빈 등록 성공")
+    @DisplayName("QnaController 와 DI 빈 등록 성공")
     @Test
     public void di() {
-        DefaultBeanScanner beanScanner2 = new DefaultBeanScanner(beanFactory, DI_DEFAULT_PACKAGE);
-        beanScanner2.enroll();
+        DefaultBeanScanner beanScanner = new DefaultBeanScanner(DI_DEFAULT_PACKAGE);
+        beanFactory.registerBeans(beanScanner.scan());
         beanFactory.initialize();
 
         QnaController qnaController = beanFactory.getBean(QnaController.class);
@@ -53,11 +56,11 @@ class DefaultBeanFactoryTest {
         assertNotNull(qnaService.getQuestionRepository());
     }
 
-    @DisplayName("Repository 어노테이션 붙은 빈을 모두 리턴받는다")
+    @DisplayName("Repository 어노테이션 붙은 모든 빈을 모두 리턴받는다")
     @Test
     public void getBeans() {
-        DefaultBeanScanner beanScanner = new DefaultBeanScanner(beanFactory, DI_DEFAULT_PACKAGE);
-        beanScanner.enroll();
+        DefaultBeanScanner beanScanner = new DefaultBeanScanner(DI_DEFAULT_PACKAGE);
+        beanFactory.registerBeans(beanScanner.scan());
         beanFactory.initialize();
 
         Map<Class<?>, Object> beans = beanFactory.getBeans(Repository.class);

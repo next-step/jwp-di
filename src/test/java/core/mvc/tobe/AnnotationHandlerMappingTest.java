@@ -1,11 +1,7 @@
 package core.mvc.tobe;
 
 import core.db.DataBase;
-import core.di.tobe.ApplicationContext;
-import core.di.tobe.BeanFactory;
-import core.di.tobe.DefaultBeanFactory;
-import core.di.tobe.scanner.BeanScanner;
-import core.di.tobe.scanner.DefaultBeanScanner;
+import core.di.ApplicationContext;
 import next.config.MyConfiguration;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;

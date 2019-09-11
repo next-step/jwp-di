@@ -1,7 +1,8 @@
-package core.di.tobe;
+package core.di;
 
 import core.annotation.Repository;
 import core.annotation.web.Controller;
+import core.di.ApplicationContext;
 import core.di.factory.example.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +21,7 @@ class ApplicationContextTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        applicationContext = new ApplicationContext(IntegrationConfig.class);
+        applicationContext = new ApplicationContext(ExampleConfig.class);
     }
 
     @DisplayName("Configuration bean 주입")
@@ -30,7 +31,7 @@ class ApplicationContextTest {
         assertThat(applicationContext.getBean(MyJdbcTemplate.class)).isNotNull();
     }
 
-    @DisplayName("QnaController와 DI 빈 등록 성공")
+    @DisplayName("QnaController 와 DI 빈 등록 성공")
     @Test
     public void di() {
         QnaController qnaController = applicationContext.getBean(QnaController.class);
@@ -42,17 +43,9 @@ class ApplicationContextTest {
         assertNotNull(qnaService.getQuestionRepository());
     }
 
-    @DisplayName("Repository 어노테이션 붙은 빈을 모두 리턴받는다")
+    @DisplayName("Controller 어노테이션 붙은 빈을 모두 리턴받는다")
     @Test
     public void getBeans() {
-        Map<Class<?>, Object> beans = applicationContext.getBeans(Repository.class);
-        assertThat(beans).hasSize(2);
-        assertThat(beans).containsKeys(JdbcUserRepository.class, JdbcQuestionRepository.class);
-    }
-
-    @DisplayName("Repository 어노테이션 붙은 빈을 모두 리턴받는다")
-    @Test
-    public void getBeans2() {
         Map<Class<?>, Object> beans = applicationContext.getBeans(Controller.class);
         assertThat(beans).hasSize(1);
         assertThat(beans).containsKeys(QnaController.class);

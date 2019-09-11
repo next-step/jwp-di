@@ -1,4 +1,4 @@
-package core.di.tobe.bean;
+package core.di.bean;
 
 public interface BeanDefinition {
 
@@ -6,4 +6,5 @@ public interface BeanDefinition {
 
     Class<?>[] getParameters();
 
+    Object register(Object[] parameters);
 }

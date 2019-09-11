@@ -1,8 +1,8 @@
-package core.di.tobe;
+package core.di.bean;
 
 import core.di.factory.example.*;
-import core.di.tobe.bean.BeanDefinition;
-import core.di.tobe.bean.DefaultBeanDefinition;
+import core.di.bean.BeanDefinition;
+import core.di.bean.DefaultBeanDefinition;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

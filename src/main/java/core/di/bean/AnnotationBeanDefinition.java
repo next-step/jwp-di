@@ -1,5 +1,6 @@
-package core.di.tobe.bean;
+package core.di.bean;
 
+import core.di.BeanRegister;
 import org.springframework.beans.factory.BeanCreationException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -7,33 +8,26 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ConfigurationBeanDefinition implements BeanDefinition {
+public class AnnotationBeanDefinition implements BeanDefinition {
 
     private Object target;
     private Class<?> clazz;
     private final Method method;
     private final Class<?>[] parameters;
 
-    public ConfigurationBeanDefinition(Class<?> clazz, Method method) {
-        try {
-            this.target = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+    public AnnotationBeanDefinition(Class<?> clazz, Method method) {
+        this.target = initTarget(clazz);
         this.clazz = method.getReturnType();
         this.method = method;
         this.parameters = initParameters(method);
     }
 
-    public Object newInstance(Object[] parameterList) {
+    private Object initTarget(Class<?> annotationClazz) {
         try {
-            Object invoke = method.invoke(target, parameterList);
-            this.clazz = method.getReturnType();
-            return invoke;
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            return annotationClazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new BeanCreationException("Annotation class create fail");
         }
-        return new BeanCreationException("Bean 생성 실패");
     }
 
     private Class<?>[] initParameters(Method method) {
@@ -45,36 +39,45 @@ public class ConfigurationBeanDefinition implements BeanDefinition {
         return clazz;
     }
 
-    public Method getMethod() {
-        return method;
-    }
-
     @Override
     public Class<?>[] getParameters() {
         return parameters;
     }
 
     @Override
+    public Object register(Object[] parameters) {
+        return ((BeanRegister) params -> {
+            try {
+                return method.invoke(target, params);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                return new BeanCreationException("Method Bean create fail");
+            }
+        }).newInstance(parameters);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConfigurationBeanDefinition that = (ConfigurationBeanDefinition) o;
-        return Objects.equals(clazz, that.clazz) &&
+        AnnotationBeanDefinition that = (AnnotationBeanDefinition) o;
+        return Objects.equals(target, that.target) &&
+                Objects.equals(clazz, that.clazz) &&
                 Objects.equals(method, that.method) &&
                 Arrays.equals(parameters, that.parameters);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(clazz, method);
+        int result = Objects.hash(target, clazz, method);
         result = 31 * result + Arrays.hashCode(parameters);
         return result;
     }
 
     @Override
     public String toString() {
-        return "ConfigurationBeanDefinition{" +
-                "clazz=" + clazz +
+        return "AnnotationBeanDefinition{" +
+                "target=" + target +
+                ", clazz=" + clazz +
                 ", method=" + method +
                 ", parameters=" + Arrays.toString(parameters) +
                 '}';

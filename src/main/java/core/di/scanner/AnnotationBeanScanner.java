@@ -1,39 +1,37 @@
-package core.di.tobe.scanner;
+package core.di.scanner;
 
 import com.google.common.collect.Sets;
 import core.annotation.Bean;
 import core.annotation.Configuration;
-import core.di.tobe.bean.BeanDefinition;
-import core.di.tobe.BeanFactory;
-import core.di.tobe.bean.ConfigurationBeanDefinition;
-import org.reflections.ReflectionUtils;
+import core.di.bean.AnnotationBeanDefinition;
+import core.di.bean.BeanDefinition;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-public class ConfigurationBeanScanner implements BeanScanner {
+import static org.reflections.ReflectionUtils.getMethods;
+import static org.reflections.ReflectionUtils.withAnnotation;
 
-    private final BeanFactory beanFactory;
+public class AnnotationBeanScanner implements BeanScanner {
+
     private final Reflections reflection;
 
-    public ConfigurationBeanScanner(BeanFactory beanFactory, Object... basePackage) {
-        this.beanFactory = beanFactory;
+    public AnnotationBeanScanner(Object... basePackage) {
         this.reflection = new Reflections(basePackage);
     }
 
-    public Set<BeanDefinition> enroll() {
+    public Set<BeanDefinition> scan() {
         Set<BeanDefinition> beanDefinitions = Sets.newHashSet();
+
         Set<Class<?>> annotatedWith = getTypesAnnotatedWith(Configuration.class);
         for (Class<?> clazz : annotatedWith) {
-            Set<Method> methods = ReflectionUtils.getMethods(clazz, ReflectionUtils.withAnnotation(Bean.class));
+            Set<Method> methods = getMethods(clazz, withAnnotation(Bean.class));
             for (Method method : methods) {
-                beanDefinitions.add(new ConfigurationBeanDefinition(clazz, method));
+                beanDefinitions.add(new AnnotationBeanDefinition(clazz, method));
             }
         }
-
-        beanFactory.registerBeans(beanDefinitions);
         return beanDefinitions;
     }
 

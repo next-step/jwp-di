@@ -1,6 +1,6 @@
 package next.init;
 
-import core.di.tobe.ApplicationContext;
+import core.di.ApplicationContext;
 import core.mvc.DispatcherServlet;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;

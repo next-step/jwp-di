@@ -1,13 +1,12 @@
-package core.di.tobe.scanner;
+package core.di.scanner;
 
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.bean.BeanDefinition;
+import core.di.bean.DefaultBeanDefinition;
 import core.di.factory.BeanFactoryUtils;
-import core.di.tobe.bean.BeanDefinition;
-import core.di.tobe.BeanFactory;
-import core.di.tobe.bean.DefaultBeanDefinition;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
@@ -16,15 +15,13 @@ import java.util.stream.Collectors;
 
 public class DefaultBeanScanner implements BeanScanner {
 
-    private final BeanFactory beanFactory;
     private final Reflections reflection;
 
-    public DefaultBeanScanner(BeanFactory beanFactory, Object... basePackage) {
-        this.beanFactory = beanFactory;
+    public DefaultBeanScanner(Object... basePackage) {
         this.reflection = new Reflections(basePackage);
     }
 
-    public Set<BeanDefinition> enroll() {
+    public Set<BeanDefinition> scan() {
         Set<Class<?>> annotatedWith = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
 
         Set<BeanDefinition> beanDefinitions = annotatedWith.stream()
@@ -32,7 +29,6 @@ public class DefaultBeanScanner implements BeanScanner {
                 .map(DefaultBeanDefinition::new)
                 .collect(Collectors.toSet());
 
-        beanFactory.registerBeans(beanDefinitions);
         return beanDefinitions;
     }
 

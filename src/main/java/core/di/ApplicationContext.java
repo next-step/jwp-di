@@ -1,22 +1,21 @@
-package core.di.tobe;
+package core.di;
 
 import core.annotation.ComponentScan;
-import core.di.tobe.scanner.BeanScanner;
-import core.di.tobe.scanner.ConfigurationBeanScanner;
-import core.di.tobe.scanner.DefaultBeanScanner;
+import core.di.factory.BeanFactory;
+import core.di.factory.DefaultBeanFactory;
+import core.di.scanner.AnnotationBeanScanner;
+import core.di.scanner.DefaultBeanScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 public class ApplicationContext {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationContext.class);
 
-    private List<BeanScanner> beanScanners;
     private final BeanFactory beanFactory;
 
     public ApplicationContext(Class<?>... clazz) {
@@ -24,10 +23,9 @@ public class ApplicationContext {
         log.debug("Component scan packages : {} ", packages);
 
         beanFactory = DefaultBeanFactory.getInstance();
-        beanScanners = Arrays.asList(new ConfigurationBeanScanner(beanFactory, packages),
-                new DefaultBeanScanner(beanFactory, packages));
+        beanFactory.registerBeans(new AnnotationBeanScanner(packages).scan());
+        beanFactory.registerBeans(new DefaultBeanScanner(packages).scan());
 
-        beanScanners.forEach(BeanScanner::enroll);
         beanFactory.initialize();
     }
 
@@ -46,5 +44,4 @@ public class ApplicationContext {
     public Map<Class<?>, Object> getBeans(Class<? extends Annotation> annotations) {
         return beanFactory.getBeans(annotations);
     }
-
 }

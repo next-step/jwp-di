@@ -1,6 +1,7 @@
-package core.di.tobe.bean;
+package core.di.bean;
 
 import core.di.factory.BeanFactoryUtils;
+import core.di.BeanRegister;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
@@ -32,12 +33,24 @@ public class DefaultBeanDefinition implements BeanDefinition {
                 .orElse(null);
     }
 
+    @Override
     public Class<?> getClazz() {
         return clazz;
     }
 
+    @Override
     public Class<?>[] getParameters() {
         return parameters;
+    }
+
+    @Override
+    public Object register(Object[] parameters) {
+        return ((BeanRegister) params -> {
+            if (constructor.isPresent()) {
+                return BeanUtils.instantiateClass(constructor.get(), params);
+            }
+            return BeanUtils.instantiateClass(clazz);
+        }).newInstance(parameters);
     }
 
     @Override
@@ -47,12 +60,14 @@ public class DefaultBeanDefinition implements BeanDefinition {
         DefaultBeanDefinition that = (DefaultBeanDefinition) o;
         return Objects.equals(clazz, that.clazz) &&
                 Objects.equals(constructor, that.constructor) &&
-                Objects.equals(parameters, that.parameters);
+                Arrays.equals(parameters, that.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(clazz, constructor, parameters);
+        int result = Objects.hash(clazz, constructor);
+        result = 31 * result + Arrays.hashCode(parameters);
+        return result;
     }
 
     @Override
