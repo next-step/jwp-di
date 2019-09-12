@@ -2,8 +2,6 @@ package core.di.factory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import core.annotation.Bean;
-import core.annotation.ComponentScan;
 import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +10,10 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -26,14 +24,18 @@ public class BeanFactory {
 
     private Map<Class<?>, Method> beanMethods = Maps.newHashMap();
 
-    private Class<?> configuration;
+    private Object configInstance;
 
     public void registerBeanMethods(Map<Class<?>, Method> beanMethods) {
         this.beanMethods = beanMethods;
     }
 
     public void registerConfigurationClass(Class<?> configuration) {
-        this.configuration = configuration;
+        try {
+            this.configInstance = configuration.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void registerPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
@@ -41,7 +43,10 @@ public class BeanFactory {
     }
 
     public void initializeConfigBeans() {
-        initializeConfiguration(configuration);
+        Iterator<Class<?>> types = beanMethods.keySet().iterator();
+        while (types.hasNext()) {
+            instantiateClass(types.next());
+        }
     }
 
     public void initializeClassPathBeans() {
@@ -55,12 +60,6 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
-        for (Class instanceType : preInstantiateBeans) {
-            instantiateClass(instanceType);
-        }
-    }
-
     public Map<Class<?>, Object> getControllers() {
         Map<Class<?>, Object> controllers = Maps.newHashMap();
         preInstantiateBeans.forEach(type -> {
@@ -72,23 +71,41 @@ public class BeanFactory {
         return controllers;
     }
 
-    private Object instantiateClass(Class<?> instanceType) {
-        if (beans.containsKey(instanceType)) {
-            return getBean(instanceType);
+    private Object instantiateClass(Class<?> clazz) {
+        if (beans.containsKey(clazz)) {
+            return getBean(clazz);
         }
 
-        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(instanceType);
+        if (beanMethods.containsKey(clazz)) {
+            Object bean = instantiateBean(beanMethods.get(clazz));
+            beans.put(clazz, bean);
+            return getBean(clazz);
+        }
+
+        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
 
         try {
             if (constructor == null) {
-                beans.put(instanceType, instanceType.newInstance());
-                return getBean(instanceType);
+                beans.put(clazz, clazz.newInstance());
+                return getBean(clazz);
             }
 
             Object bean = instantiateConstructor(constructor);
-            beans.put(instanceType, bean);
-            return getBean(instanceType);
+            beans.put(clazz, bean);
+            return getBean(clazz);
         } catch (InstantiationException | IllegalAccessException e) {
+            logger.error(e.toString());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object instantiateBean(Method beanMethod) {
+        Class<?>[] parameterTypes = beanMethod.getParameterTypes();
+        List<Object> parameters = instantiateParameters(parameterTypes);
+
+        try {
+            return beanMethod.invoke(configInstance, parameters.toArray());
+        } catch (InvocationTargetException | IllegalAccessException e) {
             logger.error(e.toString());
             throw new RuntimeException(e);
         }
@@ -96,57 +113,28 @@ public class BeanFactory {
 
     private Object instantiateConstructor(Constructor<?> constructor) {
         Class<?>[] parameterTypes = constructor.getParameterTypes();
-        List<Object> instances = Lists.newArrayList();
-
-        for (Class<?> parameterType : parameterTypes) {
-            Class<?> instanceType = BeanFactoryUtils.findConcreteClass(parameterType, preInstantiateBeans);
-            Object instance = instantiateClass(instanceType);
-            instances.add(instance);
-        }
+        List<Object> instances = instantiateParameters(parameterTypes);
 
         return BeanUtils.instantiateClass(constructor, instances.toArray());
     }
 
-    private void initializeConfiguration(Class<?> clazz) {
-        Collection<Method> methods = beanMethods.values();
+    private List<Object> instantiateParameters(Class<?>[] parameterTypes) {
+        List<Object> parameters = Lists.newArrayList();
 
-        try {
-            Object configuration = clazz.newInstance();
-            for (Method beanMethod : methods) {
-                instantiateBean(configuration, beanMethod);
-            }
-        } catch (InstantiationException | IllegalAccessException e) {
-            logger.error(e.toString());
-            throw new RuntimeException(e);
+        for (Class<?> parameterType : parameterTypes) {
+            parameterType = getConcreteClass(parameterType);
+
+            Object bean = instantiateClass(parameterType);
+            parameters.add(bean);
         }
+
+        return parameters;
     }
 
-    private Object instantiateBean(Object configuration, Method beanMethod) {
-        Class<?> beanType = beanMethod.getReturnType();
-
-        if (beans.containsKey(beanType)) {
-            return beans.get(beanType);
+    private Class<?> getConcreteClass(Class<?> parameterType) {
+        if (beanMethods.containsKey(parameterType)) {
+            return parameterType;
         }
-
-        try {
-            if (beanMethod.getParameterCount() == 0) {
-                beans.put(beanType, beanMethod.invoke(configuration));
-                return getBean(beanType);
-            }
-
-            List<Parameter> parameters = Arrays.asList(beanMethod.getParameters());
-            List<Object> beans = Lists.newArrayList();
-
-            for (Parameter parameter : parameters) {
-                Object bean = instantiateBean(configuration, beanMethods.get(parameter.getType()));
-                beans.add(bean);
-            }
-
-            this.beans.put(beanType, beanMethod.invoke(configuration, beans.toArray()));
-            return this.beans.get(beanType);
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            logger.error(e.toString());
-            throw new RuntimeException(e);
-        }
+        return BeanFactoryUtils.findConcreteClass(parameterType, preInstantiateBeans);
     }
 }
