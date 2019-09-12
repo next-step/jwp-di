@@ -23,11 +23,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private BeanFactory beanFactory;
 
-    private ApplicationContext ctx;
-
-    public AnnotationHandlerMapping(ApplicationContext ctx) {
-        this.ctx = ctx;
-        beanFactory = ctx.initialize();
+    public AnnotationHandlerMapping(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
     public void initialize() {

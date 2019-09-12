@@ -1,5 +1,7 @@
 package core.mvc;
 
+import core.di.factory.ApplicationContext;
+import next.configuration.AppConfiguration;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +20,9 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        dispatcher = new DispatcherServlet();
+        ApplicationContext ctx = new ApplicationContext(AppConfiguration.class);
+
+        dispatcher = new DispatcherServlet(ctx.initialize());
         dispatcher.init();
 
         request = new MockHttpServletRequest();
