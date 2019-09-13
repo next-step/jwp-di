@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DispatcherServletTest {

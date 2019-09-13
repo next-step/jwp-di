@@ -26,7 +26,7 @@ public class BeanFactoryTest {
     public void setup() {
         ApplicationContext ctx = new ApplicationContext(MyTestConfiguration.class);
         beanFactory = ctx.initialize();
-        beanFactory.initializeClassPathBeans();
+        beanFactory.initializeBeans();
     }
 
     @Test

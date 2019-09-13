@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class ApplicationContextTest {
     @Test
     void createApplicationContext() {
-        ApplicationContext ac = new ApplicationContext(AppConfiguration.class);
-        BeanFactory beanFactory = ac.initialize();
-        assertNotNull(ac);
+        ApplicationContext ctx = new ApplicationContext(AppConfiguration.class);
+        BeanFactory beanFactory = ctx.initialize();
+        assertNotNull(ctx);
         assertNotNull(beanFactory.getBean(DataSource.class));
     }
 }

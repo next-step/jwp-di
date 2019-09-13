@@ -19,21 +19,25 @@ public class ApplicationContext {
 
     public BeanFactory initialize() {
         BeanFactory beanFactory = new BeanFactory();
-        initializeConfigBeans(beanFactory);
-        initializeClassPathBeans(beanFactory);
+        PreInstanceBeanHandler pibh = new PreInstanceBeanHandler();
+        registerConfigBeans(pibh);
+        registerClassPathBeans(pibh);
+
+        beanFactory.registerConfigurationClass(configuration);
+        beanFactory.registerPreInstanceBeanHandler(pibh);
+        beanFactory.initializeBeans();
 
         return beanFactory;
     }
 
-    private void initializeConfigBeans(BeanFactory beanFactory) {
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+    private void registerConfigBeans(PreInstanceBeanHandler pibh) {
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(pibh);
         cbs.register(configuration);
-        beanFactory.initializeConfigBeans();
+
     }
 
-    private void initializeClassPathBeans(BeanFactory beanFactory) {
-        ClassPathBeanScanner cpbs = new ClassPathBeanScanner(beanFactory);
+    private void registerClassPathBeans(PreInstanceBeanHandler pibh) {
+        ClassPathBeanScanner cpbs = new ClassPathBeanScanner(pibh);
         cpbs.doScan(basePackages);
-        beanFactory.initializeClassPathBeans();
     }
 }

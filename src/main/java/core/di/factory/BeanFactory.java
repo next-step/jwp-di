@@ -10,7 +10,6 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,17 +17,11 @@ import java.util.Set;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstantiateBeans;
-
     private Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    private Map<Class<?>, Method> beanMethods = Maps.newHashMap();
 
     private Object configInstance;
 
-    public void registerBeanMethods(Map<Class<?>, Method> beanMethods) {
-        this.beanMethods = beanMethods;
-    }
+    private PreInstanceBeanHandler pibh;
 
     public void registerConfigurationClass(Class<?> configuration) {
         try {
@@ -38,21 +31,8 @@ public class BeanFactory {
         }
     }
 
-    public void registerPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
-        this.preInstantiateBeans = preInstantiateBeans;
-    }
-
-    public void initializeConfigBeans() {
-        Iterator<Class<?>> types = beanMethods.keySet().iterator();
-        while (types.hasNext()) {
-            instantiateClass(types.next());
-        }
-    }
-
-    public void initializeClassPathBeans() {
-        for (Class instanceType : preInstantiateBeans) {
-            instantiateClass(instanceType);
-        }
+    public void registerPreInstanceBeanHandler(PreInstanceBeanHandler pibh) {
+        this.pibh = pibh;
     }
 
     @SuppressWarnings("unchecked")
@@ -62,6 +42,8 @@ public class BeanFactory {
 
     public Map<Class<?>, Object> getControllers() {
         Map<Class<?>, Object> controllers = Maps.newHashMap();
+        Set<Class<?>> preInstantiateBeans = pibh.getClassPathBeans();
+
         preInstantiateBeans.forEach(type -> {
             if (type.isAnnotationPresent(Controller.class)) {
                 controllers.put(type, getBean(type));
@@ -71,13 +53,21 @@ public class BeanFactory {
         return controllers;
     }
 
+    public void initializeBeans() {
+        Set<Class<?>> preBeans = pibh.getPreInstanceBeans();
+
+        for (Class instanceType : preBeans) {
+            instantiateClass(instanceType);
+        }
+    }
+
     private Object instantiateClass(Class<?> clazz) {
         if (beans.containsKey(clazz)) {
             return getBean(clazz);
         }
 
-        if (beanMethods.containsKey(clazz)) {
-            Object bean = instantiateBean(beanMethods.get(clazz));
+        if (pibh.isConfigurationBean(clazz)) {
+            Object bean = instantiateBean(pibh.getMethod(clazz));
             beans.put(clazz, bean);
             return getBean(clazz);
         }
@@ -106,7 +96,7 @@ public class BeanFactory {
         try {
             return beanMethod.invoke(configInstance, parameters.toArray());
         } catch (InvocationTargetException | IllegalAccessException e) {
-            logger.error(e.toString());
+            logger.error("beanMethod : {} | error : {}", beanMethod.getName(), e.toString());
             throw new RuntimeException(e);
         }
     }
@@ -132,9 +122,9 @@ public class BeanFactory {
     }
 
     private Class<?> getConcreteClass(Class<?> parameterType) {
-        if (beanMethods.containsKey(parameterType)) {
+        if (pibh.isConfigurationBean(parameterType)) {
             return parameterType;
         }
-        return BeanFactoryUtils.findConcreteClass(parameterType, preInstantiateBeans);
+        return BeanFactoryUtils.findConcreteClass(parameterType, pibh.getClassPathBeans());
     }
 }

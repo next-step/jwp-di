@@ -17,15 +17,15 @@ public class ClassPathBeanScanner {
 
     private Reflections reflections;
 
-    private BeanFactory beanFactory;
+    private PreInstanceBeanHandler pibh;
 
-    public ClassPathBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public ClassPathBeanScanner(PreInstanceBeanHandler pibh) {
+        this.pibh = pibh;
     }
 
-    public void doScan(Object...basePackage) {
+    public void doScan(Object... basePackage) {
         reflections = new Reflections(basePackage);
-        beanFactory.registerPreInstantiateBeans(getPreInstantiateBeans());
+        pibh.registerPreInstantiateBeans(getPreInstantiateBeans());
     }
 
     public Set<Class<?>> getPreInstantiateBeans() {

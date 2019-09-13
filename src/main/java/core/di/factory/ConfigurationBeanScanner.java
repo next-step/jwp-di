@@ -8,20 +8,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ConfigurationBeanScanner {
-    private BeanFactory beanFactory;
+    private PreInstanceBeanHandler pibh;
 
-    public ConfigurationBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public ConfigurationBeanScanner(PreInstanceBeanHandler pibh) {
+        this.pibh = pibh;
     }
 
     public void register(Class<?> configuration) {
         Method[] methods = configuration.getDeclaredMethods();
 
-        Map<Class<?>, Method> beanMethods = Stream.of(methods)
+        Map<Class<?>, Method> configurationBeans = Stream.of(methods)
                 .filter(method -> method.isAnnotationPresent(Bean.class))
                 .collect(Collectors.toMap(method -> method.getReturnType(), method -> method));
 
-        beanFactory.registerBeanMethods(beanMethods);
-        beanFactory.registerConfigurationClass(configuration);
+        pibh.registerBeanMethods(configurationBeans);
     }
 }
