@@ -1,8 +1,8 @@
 package core.di.factory;
 
-import core.di.config.AppConfiguration;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import next.configuration.MyTestConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,8 +24,9 @@ public class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        beanFactory = new BeanFactory(AppConfiguration.class);
-        beanFactory.initialize();
+        ApplicationContext ctx = new ApplicationContext(MyTestConfiguration.class);
+        beanFactory = ctx.initialize();
+        beanFactory.initializeBeans();
     }
 
     @Test
@@ -43,8 +44,8 @@ public class BeanFactoryTest {
     @Test
     @DisplayName("instantiate @Bean instant")
     void beanAnnotation() throws Exception {
-        AppConfiguration appConfiguration = new AppConfiguration();
-        List<Method> methods = Arrays.asList(appConfiguration.getClass().getDeclaredMethods());
+        MyTestConfiguration configuration = new MyTestConfiguration();
+        List<Method> methods = Arrays.asList(configuration.getClass().getDeclaredMethods());
 
         for (Method method : methods) {
             logger.debug("{}", method.getReturnType());

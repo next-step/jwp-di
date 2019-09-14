@@ -1,5 +1,7 @@
 package core.mvc;
 
+import core.di.factory.ApplicationContext;
+import next.configuration.AppConfiguration;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +18,9 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        dispatcher = new DispatcherServlet();
+        ApplicationContext ctx = new ApplicationContext(AppConfiguration.class);
+
+        dispatcher = new DispatcherServlet(ctx.initialize());
         dispatcher.init();
 
         request = new MockHttpServletRequest();
@@ -53,7 +57,7 @@ class DispatcherServletTest {
 
     @Test
     void legacy_login_success() throws Exception {
-        User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
+        User user = new User("jobi", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
 
         MockHttpServletRequest secondRequest = new MockHttpServletRequest();

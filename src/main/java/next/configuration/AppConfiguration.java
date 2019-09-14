@@ -1,4 +1,4 @@
-package core.di.config;
+package next.configuration;
 
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
