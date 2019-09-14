@@ -1,8 +1,8 @@
 package core.mvc.tobe;
 
 import core.db.DataBase;
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.ApplicationContext;
+import next.config.MyConfiguration;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,14 +12,14 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnnotationHandlerMappingTest {
+
     private AnnotationHandlerMapping handlerMapping;
 
     @BeforeEach
     public void setup() {
-        BeanScanner scanner = new BeanScanner("core.mvc.tobe");
-        BeanFactory beanFactory = BeanFactory.initialize(scanner.enroll());
+        ApplicationContext applicationContext = new ApplicationContext(MyConfiguration.class);
 
-        handlerMapping = new AnnotationHandlerMapping(beanFactory);
+        handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
     }
 

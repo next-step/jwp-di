@@ -1,30 +1,20 @@
 package core.mvc;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
-import core.mvc.asis.ControllerHandlerAdapter;
-import core.mvc.asis.RequestMapping;
-import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
-
-    private static final String DEFAULT_SCAN_PACKAGE = "next";
 
     private HandlerMappingRegistry handlerMappingRegistry;
 
@@ -32,24 +22,14 @@ public class DispatcherServlet extends HttpServlet {
 
     private HandlerExecutor handlerExecutor;
 
-    @Override
-    public void init() {
-        BeanFactory beanFactory = beanInitializer();
-
-        handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory));
-
-        handlerAdapterRegistry = new HandlerAdapterRegistry();
-        handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
-        handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
-
-        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+    public DispatcherServlet() {
+        this.handlerMappingRegistry = new HandlerMappingRegistry();
+        this.handlerAdapterRegistry = new HandlerAdapterRegistry();
     }
 
-    private BeanFactory beanInitializer() {
-        BeanScanner beanScanner = new BeanScanner(DEFAULT_SCAN_PACKAGE);
-        return BeanFactory.initialize(beanScanner.enroll());
+    @Override
+    public void init() {
+        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
     }
 
     @Override
@@ -76,5 +56,13 @@ public class DispatcherServlet extends HttpServlet {
     private void render(ModelAndView mav, HttpServletRequest req, HttpServletResponse resp) throws Exception {
         View view = mav.getView();
         view.render(mav.getModel(), req, resp);
+    }
+
+    public void addHandlerMapping(HandlerMapping requestMapping) {
+        handlerMappingRegistry.addHandlerMpping(requestMapping);
+    }
+
+    public void addHandlerAdapter(HandlerAdapter handlerAdapter) {
+        handlerAdapterRegistry.addHandlerAdapter(handlerAdapter);
     }
 }
