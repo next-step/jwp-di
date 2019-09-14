@@ -1,6 +1,5 @@
 package next.dao;
 
-import core.db.MyConfiguration;
 import core.jdbc.ConnectionManager;
 import next.dto.UserUpdatedDto;
 import next.model.User;
@@ -24,8 +23,7 @@ public class UserDaoTest {
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
-        MyConfiguration myConfiguration = new MyConfiguration();
-        userDao = new UserDao(myConfiguration.dataSource());
+        userDao = new UserDao(ConnectionManager.getDataSource());
     }
 
     @Test

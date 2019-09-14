@@ -1,5 +1,6 @@
 package next.dao;
 
+import core.annotation.Inject;
 import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
@@ -17,6 +18,7 @@ public class QuestionDao {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @Inject
     public QuestionDao(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }

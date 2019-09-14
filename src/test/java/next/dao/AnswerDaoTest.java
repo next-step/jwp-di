@@ -1,6 +1,5 @@
 package next.dao;
 
-import core.db.MyConfiguration;
 import core.jdbc.ConnectionManager;
 import next.model.Answer;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +13,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnswerDaoTest {
+
     private static final Logger log = LoggerFactory.getLogger(AnswerDaoTest.class);
 
     @BeforeEach
@@ -28,8 +28,7 @@ public class AnswerDaoTest {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
 
-        MyConfiguration myConfiguration = new MyConfiguration();
-        AnswerDao dut = new AnswerDao(myConfiguration.dataSource());
+        AnswerDao dut = new AnswerDao(ConnectionManager.getDataSource());
         Answer answer = dut.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();
