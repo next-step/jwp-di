@@ -32,8 +32,10 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     }
 
     public void initialize() {
-        final BeanScanner beanScanner = new BeanScanner(basePackage);
-        final BeanFactory beanFactory = new BeanFactory(beanScanner.getTypesAnnotatedWith());
+        final AnnotationScanner beanScanner = new AnnotationScanner(basePackage);
+        final ConfigurationScanner configurationScanner = new ConfigurationScanner(basePackage);
+
+        final BeanFactory beanFactory = new BeanFactory(beanScanner, configurationScanner);
         beanFactory.initialize();
 
         handlerExecutions.putAll(createHandlerExecutions(beanFactory));

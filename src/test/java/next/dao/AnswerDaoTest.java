@@ -13,6 +13,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnswerDaoTest {
+
     private static final Logger log = LoggerFactory.getLogger(AnswerDaoTest.class);
 
     @BeforeEach
@@ -26,7 +27,8 @@ public class AnswerDaoTest {
     public void addAnswer() throws Exception {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
-        AnswerDao dut = new AnswerDao();
+
+        AnswerDao dut = new AnswerDao(ConnectionManager.getDataSource());
         Answer answer = dut.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();
