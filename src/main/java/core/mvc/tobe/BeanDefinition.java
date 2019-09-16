@@ -1,29 +1,11 @@
 package core.mvc.tobe;
 
-import java.lang.reflect.Method;
+import java.util.function.Function;
 
-public class BeanDefinition {
-    private Object configurationObject;
-    private Method beanCreateMethod;
+public interface BeanDefinition {
+    Class<?> getBeanClass();
 
-    public BeanDefinition(Object configurationObject, Method beanCreateMethod) {
-        this.configurationObject = configurationObject;
-        this.beanCreateMethod = beanCreateMethod;
-    }
+    Class<?>[] getParameterTypes();
 
-    public Object getConfigurationObject() {
-        return this.configurationObject;
-    }
-
-    public Method getBeanCreateMethod() {
-        return beanCreateMethod;
-    }
-
-    public Class<?> getBeanType() {
-        return this.beanCreateMethod.getReturnType();
-    }
-
-    public Class<?>[] getParameterTypes() {
-        return this.beanCreateMethod.getParameterTypes();
-    }
+    Function<Object[], Object> getInstantiateFunction();
 }

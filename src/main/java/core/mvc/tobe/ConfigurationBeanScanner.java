@@ -45,17 +45,17 @@ public class ConfigurationBeanScanner {
         Map<Class<?>, Method> beanMethod = getBeanTypes(clazz);
         Map<Class<?>, BeanDefinition> beanDefinitions = new HashMap<>();
         for (Map.Entry<Class<?>, Method> entry : beanMethod.entrySet()) {
-            BeanDefinition beanDefinition = getBeanDefinition(configurationObject, entry);
+            ConfigurationBeanDefinition configurationBeanDefinition = getBeanDefinition(configurationObject, entry);
             Class<?> beanType = entry.getKey();
-            beanDefinitions.put(beanType, beanDefinition);
+            beanDefinitions.put(beanType, configurationBeanDefinition);
         }
 
         return beanDefinitions;
     }
 
-    private BeanDefinition getBeanDefinition(Object configurationObject, Map.Entry<Class<?>, Method> entry) {
+    private ConfigurationBeanDefinition getBeanDefinition(Object configurationObject, Map.Entry<Class<?>, Method> entry) {
         Method beanCreateMethod = entry.getValue();
-        return new BeanDefinition(configurationObject, beanCreateMethod);
+        return new ConfigurationBeanDefinition(configurationObject, beanCreateMethod);
     }
 
     private Map<Class<?>, Method> getBeanTypes(Class<?> annotatedClasses) {
