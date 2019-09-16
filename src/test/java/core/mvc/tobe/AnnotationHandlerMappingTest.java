@@ -1,7 +1,11 @@
 package core.mvc.tobe;
 
+import core.annotation.ComponentScan;
+import core.annotation.Configuration;
 import core.db.DataBase;
+import core.di.context.ApplicationContext;
 import core.di.factory.BeanFactory;
+import core.di.scanner.ClasspathBeanScanner;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +19,13 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        BeanScanner beanScanner = new BeanScanner("core.mvc.tobe");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.getAllBeanClasses());
-        beanFactory.initialize();
-        handlerMapping = new AnnotationHandlerMapping(beanScanner, beanFactory);
+        BeanFactory beanFactory = new BeanFactory();
+        ClasspathBeanScanner beanScanner = new ClasspathBeanScanner(beanFactory);
+        beanScanner.doScan("core.mvc.tobe");
+
+        ApplicationContext applicationContext = new ApplicationContext(Config.class);
+
+        handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
     }
 
@@ -28,7 +35,7 @@ public class AnnotationHandlerMappingTest {
         createUser(user);
         assertThat(DataBase.findUserById(user.getUserId())).isEqualTo(user);
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/my_users");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
@@ -38,7 +45,7 @@ public class AnnotationHandlerMappingTest {
     }
 
     private void createUser(User user) throws Exception {
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/my_users");
         request.setParameter("userId", user.getUserId());
         request.setParameter("password", user.getPassword());
         request.setParameter("name", user.getName());
@@ -46,5 +53,11 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
         execution.handle(request, response);
+    }
+
+    @Configuration
+    @ComponentScan
+    public static class Config {
+
     }
 }
