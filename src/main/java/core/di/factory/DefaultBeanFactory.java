@@ -2,8 +2,6 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.di.bean.BeanDefinition;
-import core.di.bean.DefaultBeanDefinition;
-import core.mvc.tobe.AnnotationHandlerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +76,16 @@ public class DefaultBeanFactory implements BeanFactory {
         if (beans.containsKey(parameter)) {
             return beans.get(parameter);
         }
-        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameter, preBeanDefinitions.keySet());
-        registerBean(parameter, preBeanDefinitions.get(concreteClass));
+
+        registerBean(parameter, findBeanDefinition(parameter));
         return beans.get(parameter);
+    }
+
+    private BeanDefinition findBeanDefinition(Class<?> parameter) {
+        if (preBeanDefinitions.containsKey(parameter)) {
+            return preBeanDefinitions.get(parameter);
+        }
+        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameter, preBeanDefinitions.keySet());
+        return preBeanDefinitions.get(concreteClass);
     }
 }

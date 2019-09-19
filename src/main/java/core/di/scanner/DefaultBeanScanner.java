@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 public class DefaultBeanScanner implements BeanScanner {
 
+    private static final Class[] ANNOTATION_OF_COMPONENTS = {Controller.class, Service.class, Repository.class};
     private final Reflections reflection;
 
     public DefaultBeanScanner(Object... basePackage) {
@@ -22,7 +23,7 @@ public class DefaultBeanScanner implements BeanScanner {
     }
 
     public Set<BeanDefinition> scan() {
-        Set<Class<?>> annotatedWith = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        Set<Class<?>> annotatedWith = getTypesAnnotatedWith(ANNOTATION_OF_COMPONENTS);
 
         Set<BeanDefinition> beanDefinitions = annotatedWith.stream()
                 .map(clazz -> BeanFactoryUtils.findConcreteClass(clazz, annotatedWith))

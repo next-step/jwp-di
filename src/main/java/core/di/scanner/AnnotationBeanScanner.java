@@ -16,6 +16,8 @@ import static org.reflections.ReflectionUtils.withAnnotation;
 
 public class AnnotationBeanScanner implements BeanScanner {
 
+    private static final Class<? extends Annotation> ANNOTATION_OF_CONFIGURATION = Configuration.class;
+    
     private final Reflections reflection;
 
     public AnnotationBeanScanner(Object... basePackage) {
@@ -25,7 +27,7 @@ public class AnnotationBeanScanner implements BeanScanner {
     public Set<BeanDefinition> scan() {
         Set<BeanDefinition> beanDefinitions = Sets.newHashSet();
 
-        Set<Class<?>> annotatedWith = getTypesAnnotatedWith(Configuration.class);
+        Set<Class<?>> annotatedWith = getTypesAnnotatedWith(ANNOTATION_OF_CONFIGURATION);
         for (Class<?> clazz : annotatedWith) {
             Set<Method> methods = getMethods(clazz, withAnnotation(Bean.class));
             for (Method method : methods) {
