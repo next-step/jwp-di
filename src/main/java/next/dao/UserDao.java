@@ -3,7 +3,6 @@ package next.dao;
 import core.annotation.Inject;
 import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
-import core.jdbc.JdbcTemplate2;
 import core.jdbc.RowMapper;
 import next.model.User;
 
@@ -12,10 +11,10 @@ import java.util.List;
 @Repository
 public class UserDao {
 
-    private JdbcTemplate2 jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     @Inject
-    public UserDao(JdbcTemplate2 jdbcTemplate) {
+    public UserDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

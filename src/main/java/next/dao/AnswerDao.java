@@ -14,10 +14,10 @@ import java.util.List;
 public class AnswerDao {
     private static final Logger logger = LoggerFactory.getLogger( AnswerDao.class );
 
-    private JdbcTemplate2 jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     @Inject
-    public AnswerDao(JdbcTemplate2 jdbcTemplate) {
+    public AnswerDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

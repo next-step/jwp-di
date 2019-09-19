@@ -4,7 +4,6 @@ import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.jdbc.JdbcTemplate;
-import core.jdbc.JdbcTemplate2;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.sql.DataSource;
@@ -24,7 +23,7 @@ public class MyConfiguration {
     }
 
     @Bean
-    public JdbcTemplate2 jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate2(dataSource);
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 }

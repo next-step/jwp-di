@@ -1,6 +1,7 @@
 package next.repository.impl;
 
 
+import core.annotation.Inject;
 import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.RowMapper;
@@ -12,7 +13,12 @@ import java.util.List;
 @Repository
 public class JdbcUserRepository implements UserRepository {
 
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
+    private JdbcTemplate jdbcTemplate;
+
+    @Inject
+    public JdbcUserRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public void insert(User user) {

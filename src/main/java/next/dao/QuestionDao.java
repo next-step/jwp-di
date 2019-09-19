@@ -11,10 +11,10 @@ import java.util.List;
 @Repository
 public class QuestionDao {
 
-    private JdbcTemplate2 jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     @Inject
-    public QuestionDao(JdbcTemplate2 jdbcTemplate) {
+    public QuestionDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
