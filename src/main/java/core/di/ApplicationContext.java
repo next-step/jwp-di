@@ -25,7 +25,6 @@ public class ApplicationContext {
         beanFactory = DefaultBeanFactory.getInstance();
         beanFactory.registerBeans(new AnnotationBeanScanner(packages).scan());
         beanFactory.registerBeans(new DefaultBeanScanner(packages).scan());
-
         beanFactory.initialize();
     }
 
@@ -37,7 +36,7 @@ public class ApplicationContext {
                 .toArray();
     }
 
-    public <T> T getBean(Class<T> requiredType) {
+    <T> T getBean(Class<T> requiredType) {
         return beanFactory.getBean(requiredType);
     }
 

@@ -1,12 +1,15 @@
 package core.di;
 
-import core.annotation.Repository;
 import core.annotation.web.Controller;
-import core.di.ApplicationContext;
-import core.di.factory.example.*;
+import core.di.factory.example.IntegrationConfig;
+import core.di.factory.example.MyJdbcTemplate;
+import core.di.factory.example.MyQnaService;
+import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.util.Map;
@@ -16,17 +19,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ApplicationContextTest {
 
+    private static final Logger log = LoggerFactory.getLogger(ApplicationContext.class);
+
     private ApplicationContext applicationContext;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        applicationContext = new ApplicationContext(ExampleConfig.class);
+        applicationContext = new ApplicationContext(IntegrationConfig.class);
     }
 
     @DisplayName("Configuration bean 주입")
     @Test
     public void registerBean() {
+
+        log.debug("{}", applicationContext.getBean(DataSource.class));
+
         assertThat(applicationContext.getBean(DataSource.class)).isNotNull();
         assertThat(applicationContext.getBean(MyJdbcTemplate.class)).isNotNull();
     }

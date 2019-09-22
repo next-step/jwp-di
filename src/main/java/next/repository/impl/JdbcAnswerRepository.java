@@ -1,10 +1,8 @@
 package next.repository.impl;
 
+import core.annotation.Inject;
 import core.annotation.Repository;
-import core.jdbc.JdbcTemplate;
-import core.jdbc.KeyHolder;
-import core.jdbc.PreparedStatementCreator;
-import core.jdbc.RowMapper;
+import core.jdbc.*;
 import next.model.Answer;
 import next.repository.AnswerRepository;
 import org.slf4j.Logger;
@@ -18,7 +16,12 @@ import java.util.List;
 public class JdbcAnswerRepository implements AnswerRepository {
     private static final Logger logger = LoggerFactory.getLogger( JdbcAnswerRepository.class );
 
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
+    private JdbcTemplate jdbcTemplate;
+
+    @Inject
+    public JdbcAnswerRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public Answer insert(Answer answer) {

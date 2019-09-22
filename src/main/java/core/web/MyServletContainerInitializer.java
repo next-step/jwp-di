@@ -10,6 +10,7 @@ import java.util.Set;
 
 @HandlesTypes(WebApplicationInitializer.class)
 public class MyServletContainerInitializer implements ServletContainerInitializer {
+
     @Override
     public void onStartup(Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
             throws ServletException {

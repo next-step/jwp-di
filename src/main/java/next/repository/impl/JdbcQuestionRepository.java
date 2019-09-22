@@ -1,11 +1,9 @@
 package next.repository.impl;
 
 
+import core.annotation.Inject;
 import core.annotation.Repository;
-import core.jdbc.JdbcTemplate;
-import core.jdbc.KeyHolder;
-import core.jdbc.PreparedStatementCreator;
-import core.jdbc.RowMapper;
+import core.jdbc.*;
 import next.model.Question;
 import next.repository.QuestionRepository;
 
@@ -15,7 +13,12 @@ import java.util.List;
 @Repository
 public class JdbcQuestionRepository implements QuestionRepository {
 
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
+    private JdbcTemplate jdbcTemplate;
+
+    @Inject
+    public JdbcQuestionRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public Question insert(Question question) {

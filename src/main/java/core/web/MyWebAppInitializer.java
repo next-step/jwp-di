@@ -1,4 +1,4 @@
-package next.init;
+package core.web;
 
 import core.di.ApplicationContext;
 import core.mvc.DispatcherServlet;
@@ -6,10 +6,10 @@ import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
-import core.web.WebApplicationInitializer;
 import next.config.MyConfiguration;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 
 public class MyWebAppInitializer implements WebApplicationInitializer {
 
@@ -23,5 +23,9 @@ public class MyWebAppInitializer implements WebApplicationInitializer {
 
         dispatcherServlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcherServlet.addHandlerAdapter(new ControllerHandlerAdapter());
+
+        ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcherServlet", dispatcherServlet);
+        registration.addMapping("/");
+        registration.setLoadOnStartup(1);
     }
 }
