@@ -1,13 +1,10 @@
 package next.dao;
 
-import core.jdbc.ConnectionManager;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import support.test.DBInitializer;
 
 import java.util.List;
 
@@ -19,9 +16,7 @@ public class UserDaoTest {
 
     @BeforeEach
     public void setup() {
-        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+        DBInitializer.initialize();
 
         userDao = UserDao.getInstance();
     }
@@ -33,7 +28,7 @@ public class UserDaoTest {
         User actual = userDao.findByUserId(expected.getUserId());
         assertThat(actual).isEqualTo(expected);
 
-        expected.update(new UserUpdatedDto("password2", "name2", "sanjigi@email.com"));
+        expected.update(new UserUpdatedDto("userId", "password2", "name2", "sanjigi@email.com"));
         userDao.update(expected);
         actual = userDao.findByUserId(expected.getUserId());
         assertThat(actual).isEqualTo(expected);

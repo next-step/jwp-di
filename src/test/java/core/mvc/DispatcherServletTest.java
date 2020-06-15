@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import support.test.DBInitializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,6 +22,8 @@ class DispatcherServletTest {
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
+
+        DBInitializer.initialize();
     }
 
     @Test
@@ -41,7 +44,7 @@ class DispatcherServletTest {
     }
 
     private void createUser(User user) throws Exception {
-        request.setRequestURI("/users/create");
+        request.setRequestURI("/users");
         request.setMethod("POST");
         request.setParameter("userId", user.getUserId());
         request.setParameter("password", user.getPassword());
@@ -52,7 +55,7 @@ class DispatcherServletTest {
     }
 
     @Test
-    void legacy_login_success() throws Exception {
+    void login_success() throws Exception {
         User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
 
