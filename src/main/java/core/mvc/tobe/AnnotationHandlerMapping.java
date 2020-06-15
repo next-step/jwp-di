@@ -21,23 +21,18 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
     private ApplicationContext applicationContext;
+    private HandlerConverter handlerConverter;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
     public AnnotationHandlerMapping(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.handlerConverter = new HandlerConverter();
     }
 
     public void initialize() {
         Map<Class<?>, Object> controllers = getControllers(applicationContext);
-        Set<Method> methods = getRequestMappingMethods(controllers.keySet());
-        for (Method method : methods) {
-            RequestMapping rm = method.getAnnotation(RequestMapping.class);
-            logger.debug("register handlerExecution : url is {}, method is {}", rm.value(), method);
-            handlerExecutions.put(createHandlerKey(rm),
-                    new HandlerExecution(controllers.get(method.getDeclaringClass()), method));
-        }
-
+        handlerExecutions.putAll(handlerConverter.convert(controllers));
         logger.info("Initialized AnnotationHandlerMapping!");
     }
 
@@ -71,6 +66,16 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         String requestUri = request.getRequestURI();
         RequestMethod rm = RequestMethod.valueOf(request.getMethod().toUpperCase());
         logger.debug("requestUri : {}, requestMethod : {}", requestUri, rm);
-        return handlerExecutions.get(new HandlerKey(requestUri, rm));
+        return getHandlerInternal(new HandlerKey(requestUri, rm));
+    }
+
+    private HandlerExecution getHandlerInternal(HandlerKey requestHandlerKey) {
+        for (HandlerKey handlerKey : handlerExecutions.keySet()) {
+            if (handlerKey.isMatch(requestHandlerKey)) {
+                return handlerExecutions.get(handlerKey);
+            }
+        }
+
+        return null;
     }
 }
