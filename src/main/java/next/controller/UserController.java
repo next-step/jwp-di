@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -41,8 +40,12 @@ public class UserController extends AbstractNewController {
 
     @RequestMapping(value = "/users/profile", method = RequestMethod.GET)
     public ModelAndView profile(@RequestParam String userId) throws Exception {
+        log.debug("profile userId : {}", userId);
+
         ModelAndView mav = jspView("/user/profile.jsp");
-        mav.addObject("user", userDao.findByUserId(userId));
+        User user = userDao.findByUserId(userId);
+        log.debug("profile user : {}", user);
+        mav.addObject("user", user);
         return mav;
     }
 

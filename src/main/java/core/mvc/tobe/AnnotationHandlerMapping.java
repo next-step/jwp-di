@@ -1,21 +1,16 @@
 package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import core.annotation.web.Controller;
-import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.context.ApplicationContext;
 import core.mvc.HandlerMapping;
-import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Set;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
@@ -45,20 +40,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
             }
         }
         return controllers;
-    }
-
-    private HandlerKey createHandlerKey(RequestMapping rm) {
-        return new HandlerKey(rm.value(), rm.method());
-    }
-
-    @SuppressWarnings("unchecked")
-    private Set<Method> getRequestMappingMethods(Set<Class<?>> controlleers) {
-        Set<Method> requestMappingMethods = Sets.newHashSet();
-        for (Class<?> clazz : controlleers) {
-            requestMappingMethods
-                    .addAll(ReflectionUtils.getAllMethods(clazz, ReflectionUtils.withAnnotation(RequestMapping.class)));
-        }
-        return requestMappingMethods;
     }
 
     @Override

@@ -36,8 +36,6 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = handlerMapping.getHandler(request);
         execution.handle(request, response);
-
-        assertThat(request.getAttribute("user")).isEqualTo(user);
     }
 
     private void createUser(User user) throws Exception {
