@@ -20,9 +20,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(ApplicationContext applicationContext) {
+    public AnnotationHandlerMapping(ApplicationContext applicationContext, HandlerConverter handlerConverter) {
         this.applicationContext = applicationContext;
-        this.handlerConverter = new HandlerConverter();
+        this.handlerConverter = handlerConverter;
     }
 
     public void initialize() {

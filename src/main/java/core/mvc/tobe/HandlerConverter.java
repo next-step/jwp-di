@@ -1,7 +1,8 @@
 package core.mvc.tobe;
 
+import com.google.common.collect.Lists;
 import core.annotation.web.RequestMapping;
-import core.mvc.tobe.support.*;
+import core.mvc.tobe.support.ArgumentResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -10,22 +11,21 @@ import org.springframework.core.ParameterNameDiscoverer;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static core.util.ReflectionUtils.newInstance;
-import static java.util.Arrays.asList;
-
 public class HandlerConverter {
 
     private static final Logger logger = LoggerFactory.getLogger(HandlerConverter.class);
 
-    private static final List<ArgumentResolver> argumentResolvers = asList(
-                new HttpRequestArgumentResolver(),
-                new HttpResponseArgumentResolver(),
-                new RequestParamArgumentResolver(),
-                new PathVariableArgumentResolver(),
-                new ModelArgumentResolver()
-        );
+    private List<ArgumentResolver> argumentResolvers = Lists.newArrayList();
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
+
+    public void setArgumentResolvers(List<ArgumentResolver> argumentResolvers) {
+        this.argumentResolvers.addAll(argumentResolvers);
+    }
+
+    public void addArgumentResolver(ArgumentResolver argumentResolver) {
+        this.argumentResolvers.add(argumentResolver);
+    }
 
     public Map<HandlerKey, HandlerExecution> convert(Map<Class<?>, Object> controllers) {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();

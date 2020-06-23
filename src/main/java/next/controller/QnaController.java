@@ -12,6 +12,7 @@ import next.dao.QuestionDao;
 import next.model.Answer;
 import next.model.Question;
 import next.model.User;
+import next.security.LoginUser;
 import next.service.QnaService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,10 +33,7 @@ public class QnaController extends AbstractNewController {
     }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
-    public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        if (!UserSessionUtils.isLogined(req.getSession())) {
-            return jspView("redirect:/users/loginForm");
-        }
+    public ModelAndView createForm(@LoginUser User loginUser) throws Exception {
         return jspView("/qna/form.jsp");
     }
 
