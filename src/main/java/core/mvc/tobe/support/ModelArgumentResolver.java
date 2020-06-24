@@ -22,6 +22,9 @@ public class ModelArgumentResolver implements ArgumentResolver {
 
     @Override
     public boolean supports(MethodParameter methodParameter) {
+        if (methodParameter.hasAnnotation()) {
+            return false;
+        }
         return !isSimpleType(methodParameter.getType());
     }
 

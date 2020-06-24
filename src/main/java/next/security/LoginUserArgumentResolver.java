@@ -4,12 +4,15 @@ import core.mvc.tobe.MethodParameter;
 import core.mvc.tobe.support.AbstractAnnotationArgumentResolver;
 import next.controller.UserSessionUtils;
 import next.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 public class LoginUserArgumentResolver extends AbstractAnnotationArgumentResolver {
+    private static final Logger logger = LoggerFactory.getLogger(LoginUserArgumentResolver.class);
+
     @Override
     public boolean supports(MethodParameter methodParameter) {
         return supportAnnotation(methodParameter, LoginUser.class);
@@ -20,22 +23,16 @@ public class LoginUserArgumentResolver extends AbstractAnnotationArgumentResolve
                                   HttpServletRequest request,
                                   HttpServletResponse response) {
         if (UserSessionUtils.isLogined(request.getSession())) {
-            return UserSessionUtils.getUserFromSession(request.getSession());
+            User loginUser = UserSessionUtils.getUserFromSession(request.getSession());
+            logger.debug("Logined User : {}", loginUser);
+            return loginUser;
         }
 
         if (requiredLogin(methodParameter)) {
-            sendLoginPage(response);
+            throw new RequiredLoginException("Login Required!!");
         }
 
         return User.GUEST_USER;
-    }
-
-    private void sendLoginPage(HttpServletResponse response) {
-        try {
-            response.sendRedirect("/users/loginForm");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private boolean requiredLogin(MethodParameter methodParameter) {

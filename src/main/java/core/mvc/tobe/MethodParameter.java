@@ -29,6 +29,10 @@ public class MethodParameter {
         return annotations;
     }
 
+    public boolean hasAnnotation() {
+        return getAnnotations().length > 0;
+    }
+
     public boolean isString() {
         return type == String.class;
     }

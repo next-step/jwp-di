@@ -15,14 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HandlerExecution {
 
     private static final Map<Method, MethodParameter[]> methodParameterCache = new ConcurrentHashMap<>();
-    private List<ArgumentResolver> argumentResolver;
+    private List<ArgumentResolver> argumentResolvers;
     private ParameterNameDiscoverer parameterNameDiscoverer;
     private Object target;
     private Method method;
 
     public HandlerExecution(ParameterNameDiscoverer parameterNameDiscoverer, List<ArgumentResolver> argumentResolvers, Object target, Method method) {
         this.parameterNameDiscoverer = parameterNameDiscoverer;
-        this.argumentResolver = argumentResolvers;
+        this.argumentResolvers = argumentResolvers;
         this.target = target;
         this.method = method;
     }
@@ -58,7 +58,7 @@ public class HandlerExecution {
     }
 
     private Object getArguments(MethodParameter methodParameter, HttpServletRequest request, HttpServletResponse response) {
-        for (ArgumentResolver resolver : argumentResolver) {
+        for (ArgumentResolver resolver : argumentResolvers) {
             if (resolver.supports(methodParameter)) {
                 return resolver.resolveArgument(methodParameter, request, response);
             }
