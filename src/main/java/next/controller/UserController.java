@@ -1,15 +1,14 @@
 package next.controller;
 
 import core.annotation.Inject;
-import core.annotation.web.Controller;
-import core.annotation.web.RequestMapping;
-import core.annotation.web.RequestMethod;
-import core.annotation.web.RequestParam;
+import core.annotation.web.*;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
 import next.dao.UserDao;
+import next.dto.UserCreatedDto;
 import next.dto.UserUpdatedDto;
 import next.model.User;
+import next.security.LoginUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,11 +27,7 @@ public class UserController extends AbstractNewController {
     }
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
-    public ModelAndView list(HttpServletRequest request) throws Exception {
-        if (!UserSessionUtils.isLogined(request.getSession())) {
-            return jspView("redirect:/users/loginForm");
-        }
-
+    public ModelAndView list(@LoginUser User loginUser) throws Exception {
         ModelAndView mav = jspView("/user/list.jsp");
         mav.addObject("users", userDao.findAll());
         return mav;
@@ -54,23 +49,22 @@ public class UserController extends AbstractNewController {
         return jspView("/user/form.jsp");
     }
 
-    @RequestMapping(value = "/users/updateForm", method = RequestMethod.GET)
-    public ModelAndView updateForm(HttpServletRequest request) throws Exception {
-        User user = userDao.findByUserId(request.getParameter("userId"));
-
-        if (!UserSessionUtils.isSameUser(request.getSession(), user)) {
+    @RequestMapping(value = "/users/{userId}/form", method = RequestMethod.GET)
+    public ModelAndView updateForm(@LoginUser User loginUser, @PathVariable String userId) throws Exception {
+        if (!loginUser.isSameUser(userId)) {
             throw new IllegalStateException("다른 사용자의 정보를 수정할 수 없습니다.");
         }
         ModelAndView mav = jspView("/user/updateForm.jsp");
-        mav.addObject("user", user);
+        mav.addObject("user", loginUser);
         return mav;
     }
 
-    @RequestMapping(value = "/users/update", method = RequestMethod.POST)
-    public ModelAndView update(UserUpdatedDto updateUser, HttpServletRequest request) throws Exception {
+    @RequestMapping(value = "/users/{userId}", method = RequestMethod.POST)
+    public ModelAndView update(@LoginUser User loginUser,
+                               @PathVariable String userId,
+                               UserUpdatedDto updateUser) throws Exception {
         User user = userDao.findByUserId(updateUser.getUserId());
-
-        if (!UserSessionUtils.isSameUser(request.getSession(), user)) {
+        if (!loginUser.isSameUser(user)) {
             throw new IllegalStateException("다른 사용자의 정보를 수정할 수 없습니다.");
         }
 
@@ -81,8 +75,14 @@ public class UserController extends AbstractNewController {
     }
 
     @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public ModelAndView create(User user) throws Exception {
-        log.debug("User : {}", user);
+    public ModelAndView create(UserCreatedDto userCreatedDto) throws Exception {
+        log.debug("User : {}", userCreatedDto);
+        User user = new User(
+                userCreatedDto.getUserId(),
+                userCreatedDto.getPassword(),
+                userCreatedDto.getName(),
+                userCreatedDto.getEmail()
+        );
         userDao.insert(user);
         return jspView("redirect:/");
     }
