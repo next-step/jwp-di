@@ -83,7 +83,10 @@ public class BeanFactory {
 
     private void checkCircularDependency(Set<Class<?>> dependency, Class<?> type) {
         if (dependency.contains(type)) {
-            throw new CircularDependency(dependency);
+            List<Class<?>> circularDependency = new ArrayList<>(dependency);
+            circularDependency.add(type);
+
+            throw new CircularDependencyException(circularDependency);
         }
     }
 
