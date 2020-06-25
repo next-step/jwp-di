@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import core.di.exception.BeanDuplicationException;
 import core.di.factory.duplication.AnotherClass;
 import core.di.factory.duplication.OneClass;
 import org.junit.jupiter.api.DisplayName;

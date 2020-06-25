@@ -1,4 +1,4 @@
-package core.di.factory;
+package core.di.exception;
 
 import java.util.Collection;
 import java.util.stream.Collectors;

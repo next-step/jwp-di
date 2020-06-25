@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import core.di.exception.CircularDependencyException;
 import core.di.factory.circular.OneComponent;
 import core.di.factory.circular.ThreeComponent;
 import core.di.factory.circular.TwoComponent;

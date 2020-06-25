@@ -2,6 +2,8 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.Inject;
+import core.di.exception.BeanDuplicationException;
+import core.di.exception.CircularDependencyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
