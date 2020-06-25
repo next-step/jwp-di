@@ -75,10 +75,14 @@ public class BeanFactory {
     }
 
     private void putInContainer(Object instance, Class<?> type) {
+        if (beans.containsKey(type)) {
+            throw new BeanDuplicationException(type);
+        }
+
         beans.put(type, instance);
 
         Arrays.stream(type.getInterfaces())
-                .forEach(aInterface -> beans.put(aInterface, instance));
+                .forEach(aInterface -> putInContainer(instance, aInterface));
     }
 
     private void checkCircularDependency(Set<Class<?>> dependency, Class<?> type) {
