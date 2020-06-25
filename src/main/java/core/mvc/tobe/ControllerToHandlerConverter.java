@@ -1,28 +1,23 @@
 package core.mvc.tobe;
 
-import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
-import core.mvc.tobe.HandlerExecution;
-import core.mvc.tobe.HandlerKey;
 import core.mvc.tobe.support.*;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
-public class ControllerScanner {
+public class ControllerToHandlerConverter {
 
-    private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ControllerToHandlerConverter.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
@@ -34,20 +29,20 @@ public class ControllerScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+    private ControllerToHandlerConverter() {}
+
+    public static Map<HandlerKey, HandlerExecution> convert(Map<Class<?>, Object> controllers) {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
-        for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
+        for (Class<?> controller : controllers.keySet()) {
+            Object target = controllers.get(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
         }
 
         return handlers;
     }
 
-    private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
+    private static void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
                 .forEach(method -> {

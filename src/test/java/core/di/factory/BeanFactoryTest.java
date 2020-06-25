@@ -54,7 +54,7 @@ public class BeanFactoryTest {
     }
 
     @Test
-    @DisplayName("초기화된 컨트롤러들 가져오기 테스트")
+    @DisplayName("초기화 된 컨트롤러 가져오기 테스트")
     void getControllers() {
         Map<Class<?>, Object> controllers = beanFactory.getControllers();
 
