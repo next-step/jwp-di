@@ -12,16 +12,11 @@ import java.util.List;
 
 @Service
 public class QnaService {
-    private static QnaService qnaService = new QnaService();
 
     private QuestionDao questionDao = QuestionDao.getInstance();
     private AnswerDao answerDao = AnswerDao.getInstance();
 
     private QnaService() {
-    }
-
-    public static QnaService getInstance() {
-        return qnaService;
     }
 
     public Question findById(long questionId) {
