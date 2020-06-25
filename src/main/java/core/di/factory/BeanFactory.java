@@ -51,15 +51,13 @@ public class BeanFactory {
 
         checkCircularDependency(dependency, type);
 
-        dependency.add(type);
-        Object instance = newInstance(dependency, type);
-        dependency.remove(type);
-
-        return instance;
+        return newBean(dependency, type);
     }
 
-    private Object newInstance(Set<Class<?>> dependency, Class<?> type) {
+    private Object newBean(Set<Class<?>> dependency, Class<?> type) {
+        dependency.add(type);
         Object instance;
+
         try {
             // create constructor
             Constructor<?> constructor = getInjectAttachedConstructor(type);
@@ -78,6 +76,8 @@ public class BeanFactory {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new BeanCreateException("Fail to create bean of " + type.getName() + " cuz : " + e.getMessage());
         }
+
+        dependency.remove(type);
         return instance;
     }
 
