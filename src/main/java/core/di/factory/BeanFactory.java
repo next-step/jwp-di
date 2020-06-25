@@ -3,8 +3,7 @@ package core.di.factory;
 import com.google.common.collect.Maps;
 import core.annotation.Inject;
 import core.annotation.web.Controller;
-import core.di.exception.BeanDuplicationException;
-import core.di.exception.CircularDependencyException;
+import core.di.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +70,7 @@ public class BeanFactory {
             // add to bean container
             putInContainer(instance, type);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalArgumentException("Fail to create new instance of " + type.getName() + " cuz : " + e.getMessage());
+            throw new BeanCreateException("Fail to create bean of " + type.getName() + " cuz : " + e.getMessage());
         }
 
         dependency.remove(type);
@@ -83,7 +82,7 @@ public class BeanFactory {
                 .filter(type::isAssignableFrom)
                 .filter(clazz -> !clazz.isInterface())
                 .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new NoSuchImplementClassException(type));
     }
 
     private void putInContainer(Object instance, Class<?> type) {
@@ -117,7 +116,7 @@ public class BeanFactory {
         try {
             return type.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("There is no default constructor of : " + type.getName());
+            throw new NoDefaultConstructorException(type);
         }
     }
 }
