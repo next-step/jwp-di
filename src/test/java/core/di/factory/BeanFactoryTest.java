@@ -18,6 +18,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@DisplayName("빈 팩토리")
 public class BeanFactoryTest {
     private Reflections reflections;
     private BeanFactory beanFactory;
