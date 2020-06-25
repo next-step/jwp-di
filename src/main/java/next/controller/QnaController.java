@@ -20,13 +20,15 @@ import java.util.List;
 
 @Controller
 public class QnaController extends AbstractNewController {
-    private final QuestionDao questionDao = QuestionDao.getInstance();
-    private final AnswerDao answerDao = AnswerDao.getInstance();
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
     private final QnaService qnaService;
 
     @Inject
-    public QnaController(QnaService qnaService) {
+    public QnaController(QnaService qnaService, QuestionDao questionDao, AnswerDao answerDao) {
         this.qnaService = qnaService;
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
     }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
