@@ -2,6 +2,7 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.Inject;
+import core.annotation.web.Controller;
 import core.di.exception.BeanDuplicationException;
 import core.di.exception.CircularDependencyException;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -31,7 +33,14 @@ public class BeanFactory {
         preInstanticateBeans.forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
     }
 
-    public Object createBean(Set<Class<?>> dependency, Class<?> type) {
+    public Map<Class<?>, Object> getControllers() {
+        return beans.entrySet()
+                .stream()
+                .filter(map -> map.getKey().isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private Object createBean(Set<Class<?>> dependency, Class<?> type) {
         if (beans.containsKey(type)) {
             return beans.get(type);
         }
