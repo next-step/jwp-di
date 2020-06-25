@@ -65,6 +65,7 @@ public class BeanFactory {
                     .toArray();
 
             // create new instance
+            constructor.setAccessible(true);
             instance = constructor.newInstance(parameters);
 
             // add to bean container
@@ -114,7 +115,7 @@ public class BeanFactory {
 
     private Constructor<?> getDefaultConstructor(Class<?> type) {
         try {
-            return type.getConstructor();
+            return type.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("There is no default constructor of : " + type.getName());
         }
