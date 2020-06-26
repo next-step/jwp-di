@@ -7,14 +7,18 @@ import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@DisplayName("빈 팩토리")
 public class BeanFactoryTest {
     private Reflections reflections;
     private BeanFactory beanFactory;
@@ -29,6 +33,7 @@ public class BeanFactoryTest {
     }
 
     @Test
+    @DisplayName("의존성 주입 테스트")
     public void di() throws Exception {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
@@ -47,5 +52,15 @@ public class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    @Test
+    @DisplayName("초기화 된 컨트롤러 가져오기 테스트")
+    void getControllers() {
+        Map<Class<?>, Object> controllers = beanFactory.getControllers();
+
+        assertThat(controllers).isNotNull();
+        assertThat(controllers).hasSize(1);
+        assertThat(controllers.get(QnaController.class)).isNotNull();
     }
 }
