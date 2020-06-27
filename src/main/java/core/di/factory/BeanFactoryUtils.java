@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import core.annotation.Inject;
 import core.annotation.web.Controller;
 
+import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Map;
@@ -61,5 +62,9 @@ public class BeanFactoryUtils {
 
     public static Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotation) {
         return beanFactory.getBeansByAnnotation(annotation);
+    }
+
+    public static <T> T findByType(Class<T> type) {
+        return beanFactory.getBean(type);
     }
 }

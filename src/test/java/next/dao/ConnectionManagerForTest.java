@@ -1,4 +1,4 @@
-package core.jdbc;
+package next.dao;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -6,7 +6,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class ConnectionManager {
+public class ConnectionManagerForTest {
     private static final String DB_DRIVER = "org.h2.Driver";
     private static final String DB_URL = "jdbc:h2:mem://localhost/~/jwp-jdbc;DB_CLOSE_DELAY=-1";
     private static final String DB_USERNAME = "sa";

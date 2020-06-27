@@ -4,7 +4,6 @@ import core.annotation.ComponentScan;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanFactoryUtils;
 import core.di.factory.ComponentScanner;
-import core.jdbc.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -14,6 +13,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
@@ -24,8 +24,9 @@ public class ContextLoaderListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        initDatabase();
+        // order is important
         initBeans();
+        initDatabase();
 
         logger.info("Completed Load ServletContext!");
     }
@@ -33,7 +34,7 @@ public class ContextLoaderListener implements ServletContextListener {
     private void initDatabase() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+        DatabasePopulatorUtils.execute(populator, BeanFactoryUtils.findByType(DataSource.class));
     }
 
     private void initBeans() {
