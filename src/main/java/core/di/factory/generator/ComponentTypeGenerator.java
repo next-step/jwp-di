@@ -4,7 +4,6 @@ import core.di.factory.BeanFactory;
 import core.di.factory.BeanInitInfo;
 import core.di.factory.BeanType;
 
-import java.util.Map;
 import java.util.Set;
 
 public class ComponentTypeGenerator implements BeanGenerator {
