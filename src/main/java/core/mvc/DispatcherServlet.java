@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.annotation.web.Controller;
 import core.di.factory.BeanFactory;
 import core.di.factory.ComponentScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
@@ -38,7 +39,7 @@ public class DispatcherServlet extends HttpServlet {
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getControllers()));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getBeansByAnnotation(Controller.class)));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

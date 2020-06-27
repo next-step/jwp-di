@@ -2,11 +2,11 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.Inject;
-import core.annotation.web.Controller;
 import core.di.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -32,10 +32,10 @@ public class BeanFactory {
         preInstanticateBeans.forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
     }
 
-    public Map<Class<?>, Object> getControllers() {
+    public Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotation) {
         return beans.entrySet()
                 .stream()
-                .filter(map -> map.getKey().isAnnotationPresent(Controller.class))
+                .filter(map -> map.getKey().isAnnotationPresent(annotation))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
