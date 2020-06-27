@@ -41,7 +41,7 @@ public class BeanFactory {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Object createBean(Set<Class<?>> dependency, Class<?> type) {
+    public Object createBean(Set<Class<?>> dependency, Class<?> type) {
         if (beans.containsKey(type)) {
             return beans.get(type);
         }
