@@ -66,6 +66,12 @@ class BeanInitInfoExtractUtilTest {
                 .getDeclaredMethod("dataSource");
         BeanInitInfo beanClass = beanInitInfos.get(DataSource.class);
         assertThat(beanClass).isNotNull();
-        assertThat(beanClass).isEqualTo(new BeanInitInfo(DataSource.class, method, BeanType.BEAN));
+        assertThat(beanClass).isEqualTo(
+                new BeanInitInfo(
+                        DataSource.class,
+                        new MethodInfo(ExampleConfig.class, method),
+                        BeanType.BEAN
+                )
+        );
     }
 }

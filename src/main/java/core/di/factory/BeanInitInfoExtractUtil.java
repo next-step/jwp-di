@@ -19,7 +19,7 @@ public class BeanInitInfoExtractUtil {
         Map<Class<?>, BeanInitInfo> beanInitInfos = new HashMap<>();
 
         if (clazz.isAnnotationPresent(Configuration.class)) {
-            beanInitInfos.putAll(extractBeans(clazz.getDeclaredMethods()));
+            beanInitInfos.putAll(extractBeans(clazz));
         }
 
         BeanType beanType = extractBeanType(clazz);
@@ -39,16 +39,16 @@ public class BeanInitInfoExtractUtil {
                 .orElse(null);
     }
 
-    private static Map<Class<?>, BeanInitInfo> extractBeans(Method[] declaredMethods) {
-        return Arrays.stream(declaredMethods)
+    private static Map<Class<?>, BeanInitInfo> extractBeans(Class<?> clazz) {
+        return Arrays.stream(clazz.getDeclaredMethods())
                 .filter(method -> method.isAnnotationPresent(Bean.class))
-                .map(BeanInitInfoExtractUtil::methodToBeanInitInfo)
+                .map(method -> methodToBeanInitInfo(clazz, method))
                 .collect(Collectors.toMap(BeanInitInfo::getClassType, Function.identity()));
     }
 
-    private static BeanInitInfo methodToBeanInitInfo(Method method) {
+    private static BeanInitInfo methodToBeanInitInfo(Class<?> clazz, Method method) {
         Class<?> classType = method.getReturnType();
 
-        return new BeanInitInfo(classType, method, BeanType.BEAN);
+        return new BeanInitInfo(classType, new MethodInfo(clazz, method), BeanType.BEAN);
     }
 }
