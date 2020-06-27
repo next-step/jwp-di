@@ -1,9 +1,9 @@
 package core.di.factory.generator;
 
+import core.di.factory.BeanFactory;
 import core.di.factory.BeanInitInfo;
 import core.di.factory.BeanType;
 
-import java.util.Map;
 import java.util.Set;
 
 public class BeanTypeGenerator implements BeanGenerator {
@@ -13,7 +13,7 @@ public class BeanTypeGenerator implements BeanGenerator {
     }
 
     @Override
-    public Object generate(Set<Class<?>> dependency, Map<Class<?>, Object> beans, BeanInitInfo beanInitInfo) {
+    public Object generate(Set<Class<?>> dependency, BeanFactory beanFactory, BeanInitInfo beanInitInfo) {
         return null;
     }
 }
