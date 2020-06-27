@@ -1,5 +1,6 @@
 package next.support.context;
 
+import core.annotation.ComponentScan;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanFactoryUtils;
 import core.di.factory.ComponentScanner;
@@ -13,6 +14,8 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 
 @WebListener
@@ -34,11 +37,22 @@ public class ContextLoaderListener implements ServletContextListener {
     }
 
     private void initBeans() {
-        Set<Class<?>> classes = ComponentScanner.scan("next");
+        Set<Class<?>> classes = ComponentScanner.scan(getBasePackage());
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
 
         BeanFactoryUtils.setBeanFactory(beanFactory);
+    }
+
+    private String[] getBasePackage() {
+        Set<Class<?>> classes =
+                ComponentScanner.scan(Collections.singletonList(ComponentScan.class), "");
+
+        return classes.stream()
+                .map(clazz -> clazz.getDeclaredAnnotation(ComponentScan.class))
+                .map(ComponentScan::basePackages)
+                .flatMap(Arrays::stream)
+                .toArray(String[]::new);
     }
 
     @Override
