@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import core.annotation.Component;
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -17,8 +18,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ComponentScanner {
-    private static final List<Class<? extends Annotation>> targetAnnotations =
-            Arrays.asList(Component.class, Controller.class, Service.class, Repository.class);
+    public static final List<Class<? extends Annotation>> targetAnnotations =
+            Arrays.asList(Configuration.class, Component.class, Controller.class, Service.class, Repository.class);
 
     private ComponentScanner() {}
 

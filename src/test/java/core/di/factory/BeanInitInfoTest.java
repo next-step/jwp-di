@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class BeanInitInfoTest {
 
     @Test
-    @DisplayName("Bean이 붙은 메소드를 초기화를 하기 위해선 클래스 정보 뿐만 아니라 method 정보도 필요하다")
+    @DisplayName("BeanInitInfo 를 초기화 하기 위해서는 Class를 받아와야한다.")
     void field() {
 
     }
