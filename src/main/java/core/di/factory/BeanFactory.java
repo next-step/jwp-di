@@ -2,17 +2,14 @@ package core.di.factory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import core.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 public class BeanFactory {
@@ -22,7 +19,10 @@ public class BeanFactory {
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
-        log.debug("preInstanticateBeans: {}", preInstanticateBeans);
+
+        preInstanticateBeans.forEach(
+            clazz -> log.debug("preInstanticateBeans: {}", clazz.getSimpleName())
+        );
     }
 
     @SuppressWarnings("unchecked")
@@ -32,23 +32,61 @@ public class BeanFactory {
 
     public void initialize() {
         for (Class<?> beanClass : preInstanticateBeans) {
-            Set<Constructor> injectedConstructors = BeanFactoryUtils.getInjectedConstructors(beanClass);
-
-            for (Constructor constructor : injectedConstructors) {
-                List<Object> arguments = Lists.newArrayList();
-                for (Parameter parameter : constructor.getParameters()) {
-                    Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameter.getType(), preInstanticateBeans);
-                    if (beans.containsKey(concreteClass)) {
-                        arguments.add(beans.get(concreteClass));
-                    }
-                    else {
-
-                    }
-                }
-
-            }
-            log.debug("injectedConstructors: {}", injectedConstructors);
+            beans.put(beanClass, getBeanInstance(beanClass));
         }
+        beans.keySet().forEach(clazz -> log.debug("beanClassName: {}", clazz.getSimpleName()));
+    }
+
+    private Object getBeanInstance(Class<?> beanClass) {
+        Constructor constructor = BeanFactoryUtils.getInjectedConstructors(beanClass);
+
+        try {
+            if (hasNoArgument(constructor)) {
+                return getNoArgBeanInstance(beanClass, constructor);
+            }
+
+            return getArgBeanInstance(constructor);
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean hasNoArgument(Constructor constructor) {
+        return Objects.isNull(constructor) || ArrayUtils.isEmpty(constructor.getParameters());
+    }
+
+    private Object getNoArgBeanInstance(Class<?> beanClass, Constructor constructor) {
+        if (beans.containsKey(beanClass)) {
+            return beans.get(beanClass);
+        }
+
+        if (Objects.isNull(constructor)) {
+            return BeanUtils.instantiateClass(beanClass);
+        }
+
+        return BeanUtils.instantiateClass(constructor);
+    }
+
+    private Object getArgBeanInstance(Constructor constructor) {
+        Parameter[] parameters = constructor.getParameters();
+        List<Object> arguments = Lists.newArrayList();
+
+        for (Parameter parameter : parameters) {
+            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameter.getType(), preInstanticateBeans);
+
+            if (beans.containsKey(concreteClass)) {
+                arguments.add(beans.get(concreteClass));
+            }
+            else {
+                Object beanInstance = getBeanInstance(concreteClass);
+                beans.put(concreteClass, beanInstance);
+                arguments.add(beanInstance);
+            }
+        }
+
+        return BeanUtils.instantiateClass(constructor, arguments.toArray(new Object[0]));
     }
 }
 

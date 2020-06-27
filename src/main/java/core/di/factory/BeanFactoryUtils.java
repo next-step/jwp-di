@@ -1,15 +1,20 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.*;
 
+@Slf4j
 public class BeanFactoryUtils {
     /**
      * 인자로 전달하는 클래스의 생성자 중 @Inject 애노테이션이 설정되어 있는 생성자를 반환
@@ -19,13 +24,13 @@ public class BeanFactoryUtils {
      * @Inject 애노테이션이 설정되어 있는 생성자는 클래스당 하나로 가정한다.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Set<Constructor> getInjectedConstructors(Class<?> clazz) {
+    public static Constructor getInjectedConstructors(Class<?> clazz) {
         Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
             return null;
         }
 
-        return injectedConstructors;
+        return injectedConstructors.iterator().next();
     }
 
     public static Set<Method> getInjectedMethods(Class<?> clazz) {
