@@ -63,13 +63,11 @@ public class BeanFactory {
             Constructor<?> constructor = getInjectAttachedConstructor(type);
 
             // get bean of parameters to use as a argument
-            Object[] parameters = Arrays.stream(constructor.getParameterTypes())
-                    .map(parameterType -> createBean(dependency, parameterType))
-                    .toArray();
+            Object[] arguments = getArguments(dependency, constructor);
 
             // create new instance
             constructor.setAccessible(true);
-            instance = constructor.newInstance(parameters);
+            instance = constructor.newInstance(arguments);
 
             // add to bean container
             putInContainer(instance, type);
@@ -79,6 +77,12 @@ public class BeanFactory {
 
         dependency.remove(type);
         return instance;
+    }
+
+    private Object[] getArguments(Set<Class<?>> dependency, Constructor<?> constructor) {
+        return Arrays.stream(constructor.getParameterTypes())
+                .map(parameterType -> createBean(dependency, parameterType))
+                .toArray();
     }
 
     private Class<?> getImplementsClass(Class<?> type) {
