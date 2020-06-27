@@ -1,12 +1,14 @@
 package core.di.factory.generator;
 
 import core.annotation.Bean;
+import core.annotation.Component;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanInitInfo;
 import core.di.factory.BeanInitInfoExtractUtil;
 import core.di.factory.circular.OneComponent;
 import core.di.factory.example.*;
+import core.jdbc.JdbcTemplate;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,10 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +30,7 @@ class MethodTypeGeneratorTest {
     @BeforeEach
     private void setEnv() {
         beanFactory = new BeanFactory(new HashSet<>(
-                Arrays.asList(ExampleConfig.class, IntegrationConfig.class))
+                Collections.singletonList(IntegrationConfig.class))
         );
     }
 
@@ -81,7 +80,7 @@ class MethodTypeGeneratorTest {
     @DisplayName("빈 생성시 다른 빈이 필요한 경우")
     void generateChain() {
         Map<Class<?>, BeanInitInfo> beanInitInfos = BeanInitInfoExtractUtil.extractBeanInitInfo(BeanNeedClass.class);
-        BeanInitInfo beanInitInfo = beanInitInfos.get(DataSource.class);
+        BeanInitInfo beanInitInfo = beanInitInfos.get(MyJdbcTemplate.class);
 
         Object bean = generator.generate(
                 new LinkedHashSet<>(),
@@ -90,7 +89,7 @@ class MethodTypeGeneratorTest {
         );
 
         assertThat(bean).isNotNull();
-        assertThat(bean).isInstanceOf(DataSource.class);
+        assertThat(bean).isInstanceOf(MyJdbcTemplate.class);
     }
 
     // 빈 생성시 다른 @Bean 으로 생성된 빈이 필요한 경우는 종합 테스트에서!
@@ -98,8 +97,14 @@ class MethodTypeGeneratorTest {
     @Configuration
     public static class BeanNeedClass {
         @Bean
-        public DataSource test(JdbcUserRepository jdbcUserRepository) {
+        public DataSource test() {
             return new BasicDataSource();
         }
+
+        @Bean
+        public MyJdbcTemplate jdbcTemplate(DataSource dataSource) {
+            return new MyJdbcTemplate(dataSource);
+        }
     }
+
 }

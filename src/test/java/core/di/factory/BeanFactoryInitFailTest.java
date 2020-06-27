@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import core.annotation.Component;
 import core.di.exception.NoDefaultConstructorException;
 import core.di.exception.NoSuchImplementClassException;
 import org.junit.jupiter.api.DisplayName;
@@ -26,10 +27,11 @@ public class BeanFactoryInitFailTest {
     void noImplementClass() {
         BeanFactory beanFactory = new BeanFactory(Collections.singleton(NoImplementClassInterface.class));
 
-        assertThatExceptionOfType(NoSuchImplementClassException.class)
+        assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(beanFactory::initialize);
     }
 
+    @Component
     public class NoDefaultConstructor {
         private int num;
 

@@ -1,27 +1,42 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.Inject;
-import core.di.exception.*;
+import core.di.exception.BeanDuplicationException;
+import core.di.exception.CircularDependencyException;
+import core.di.exception.NoSuchImplementClassException;
+import core.di.factory.generator.BeanGenerators;
+import core.di.factory.generator.ConstructorTypeGenerator;
+import core.di.factory.generator.MethodTypeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
+    private static final BeanGenerators DEFAULT_BEAN_GENERATOR = new BeanGenerators(
+            Arrays.asList(new ConstructorTypeGenerator(), new MethodTypeGenerator())
+    );
 
     private final Set<Class<?>> preInstanticateBeans;
-    //private final Map<Class<?>>, BeanInitInfo> initInfos;
-
+    private final Map<Class<?>, BeanInitInfo> beanInitInfos;
+    private final BeanGenerators beanGenerators;
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
+    public BeanFactory(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
         this.preInstanticateBeans = preInstanticateBeans;
+        this.beanInitInfos = preInstanticateBeans.stream()
+                .map(BeanInitInfoExtractUtil::extractBeanInitInfo)
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        this.beanGenerators = beanGenerators;
+    }
+
+    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
+        this(preInstanticateBeans, DEFAULT_BEAN_GENERATOR);
     }
 
     @SuppressWarnings("unchecked")
@@ -47,46 +62,13 @@ public class BeanFactory {
         }
 
         // change interface to implement class
-        if (type.isInterface()) {
-            type = getImplementsClass(type);
-        }
+        type = BeanFactoryUtils.findConcreteClass(type, beanInitInfos);
 
         checkCircularDependency(dependency, type);
 
-        Object bean = newBean(dependency, type);
+        Object bean = beanGenerators.generate(dependency, this, beanInitInfos.get(type));
         putInContainer(bean, type);
         return bean;
-    }
-
-    private Object newBean(Set<Class<?>> dependency, Class<?> type) {
-        dependency.add(type);
-        Object instance;
-
-        try {
-            // create constructor
-            Constructor<?> constructor = getInjectAttachedConstructor(type);
-
-            // get bean of parameters to use as a argument
-            Object[] arguments = getArguments(dependency, constructor);
-
-            // create new instance
-            constructor.setAccessible(true);
-            instance = constructor.newInstance(arguments);
-
-            // add to bean container
-//            putInContainer(instance, type);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new BeanCreateException("Fail to create bean of " + type.getName() + " cuz : " + e.getMessage());
-        }
-
-        dependency.remove(type);
-        return instance;
-    }
-
-    private Object[] getArguments(Set<Class<?>> dependency, Constructor<?> constructor) {
-        return Arrays.stream(constructor.getParameterTypes())
-                .map(parameterType -> createBean(dependency, parameterType))
-                .toArray();
     }
 
     private Class<?> getImplementsClass(Class<?> type) {
@@ -114,21 +96,6 @@ public class BeanFactory {
             circularDependency.add(type);
 
             throw new CircularDependencyException(circularDependency);
-        }
-    }
-
-    private Constructor<?> getInjectAttachedConstructor(Class<?> type) {
-        return Arrays.stream(type.getDeclaredConstructors())
-                .filter(constructor -> constructor.isAnnotationPresent(Inject.class))
-                .findFirst()
-                .orElseGet(() -> getDefaultConstructor(type));
-    }
-
-    private Constructor<?> getDefaultConstructor(Class<?> type) {
-        try {
-            return type.getDeclaredConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new NoDefaultConstructorException(type);
         }
     }
 }

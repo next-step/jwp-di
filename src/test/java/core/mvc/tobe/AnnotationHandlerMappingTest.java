@@ -22,6 +22,7 @@ public class AnnotationHandlerMappingTest {
     @BeforeEach
     public void setup() {
         Set<Class<?>> classes = ComponentScanner.scan("core.mvc.tobe");
+        classes.add(UserDao.class);
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
 
