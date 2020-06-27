@@ -71,14 +71,6 @@ public class BeanFactory {
         return bean;
     }
 
-    private Class<?> getImplementsClass(Class<?> type) {
-        return preInstanticateBeans.stream()
-                .filter(type::isAssignableFrom)
-                .filter(clazz -> !clazz.isInterface())
-                .findFirst()
-                .orElseThrow(() -> new NoSuchImplementClassException(type));
-    }
-
     private void putInContainer(Object instance, Class<?> type) {
         if (beans.containsKey(type)) {
             throw new BeanDuplicationException(type);
