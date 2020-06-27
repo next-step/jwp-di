@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("일반 클래스의 빈을 생성하기 위한 제너레이터")
 class ConstructorTypeGeneratorTest {
-    private ConstructorTypeGenerator generator = new ConstructorTypeGenerator();
+    private final ConstructorTypeGenerator generator = new ConstructorTypeGenerator();
     private BeanFactory beanFactory;
 
     @BeforeEach
@@ -35,7 +35,7 @@ class ConstructorTypeGeneratorTest {
     }
 
     @Test
-    @DisplayName("일반 클래스 생성 테스트")
+    @DisplayName("추가적인 빈이 필요없는 클래스 생성 테스트")
     void generate() {
         Object bean = generator.generate(
                 new LinkedHashSet<>(),
