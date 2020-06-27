@@ -45,13 +45,16 @@ public class ControllerToHandlerConverter {
     private static void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
-                .forEach(method -> {
-                    RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-                    HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
-                    HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
-                    handlers.put(handlerKey, handlerExecution);
-                    logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
-                });
+                .forEach(method -> putHandler(handlers, target, method));
+    }
+
+    private static void putHandler(Map<HandlerKey, HandlerExecution> handlers, Object target, Method method) {
+        RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+        HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
+        HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
+
+        handlers.put(handlerKey, handlerExecution);
+        logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
     }
 
 }
