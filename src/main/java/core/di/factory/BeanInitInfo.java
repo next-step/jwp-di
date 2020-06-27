@@ -22,6 +22,10 @@ public class BeanInitInfo {
         return classType;
     }
 
+    public Method getMethod() {
+        return method;
+    }
+
     public BeanType getBeanType() {
         return beanType;
     }
