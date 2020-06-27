@@ -3,7 +3,6 @@ package core.di.factory;
 import com.google.common.collect.Maps;
 import core.di.exception.BeanDuplicationException;
 import core.di.exception.CircularDependencyException;
-import core.di.exception.NoSuchImplementClassException;
 import core.di.factory.generator.BeanGenerators;
 import core.di.factory.generator.ConstructorTypeGenerator;
 import core.di.factory.generator.MethodTypeGenerator;

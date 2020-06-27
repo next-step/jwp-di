@@ -34,7 +34,7 @@ public class ContextLoaderListener implements ServletContextListener {
     }
 
     private void initBeans() {
-        Set<Class<?>> classes = ComponentScanner.scan("next.controller");
+        Set<Class<?>> classes = ComponentScanner.scan("next");
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
 
