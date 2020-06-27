@@ -20,6 +20,6 @@ public class BeanGenerators {
                 .filter(generator -> generator.support(beanInitInfo))
                 .findFirst()
                 .map(generator -> generator.generate(dependency, beanFactory, beanInitInfo))
-                .orElseThrow(() -> new BeanCreateException("Fail to create bean"));
+                .orElseThrow(() -> new BeanCreateException("There is no generator that support : " + beanInitInfo));
     }
 }

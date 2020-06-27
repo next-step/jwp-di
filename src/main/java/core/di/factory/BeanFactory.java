@@ -18,7 +18,7 @@ public class BeanFactory {
     private final Set<Class<?>> preInstanticateBeans;
     //private final Map<Class<?>>, BeanInitInfo> initInfos;
 
-    private final Map<Class<?>, Object> beans = Maps.newHashMap();
+    private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -31,6 +31,7 @@ public class BeanFactory {
 
     public void initialize() {
         preInstanticateBeans.forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
+        beans = Collections.unmodifiableMap(beans);
     }
 
     public Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotation) {
@@ -52,7 +53,9 @@ public class BeanFactory {
 
         checkCircularDependency(dependency, type);
 
-        return newBean(dependency, type);
+        Object bean = newBean(dependency, type);
+        putInContainer(bean, type);
+        return bean;
     }
 
     private Object newBean(Set<Class<?>> dependency, Class<?> type) {
@@ -71,7 +74,7 @@ public class BeanFactory {
             instance = constructor.newInstance(arguments);
 
             // add to bean container
-            putInContainer(instance, type);
+//            putInContainer(instance, type);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new BeanCreateException("Fail to create bean of " + type.getName() + " cuz : " + e.getMessage());
         }

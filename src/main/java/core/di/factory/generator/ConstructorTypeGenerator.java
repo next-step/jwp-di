@@ -6,7 +6,7 @@ import core.di.factory.BeanType;
 
 import java.util.Set;
 
-public class ClassTypeGenerator implements BeanGenerator {
+public class ConstructorTypeGenerator implements BeanGenerator {
     @Override
     public boolean support(BeanInitInfo beanInitInfo) {
         BeanType beanType = beanInitInfo.getBeanType();
