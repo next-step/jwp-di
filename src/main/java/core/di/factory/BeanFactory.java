@@ -65,10 +65,6 @@ public class BeanFactory {
 
         checkCircularDependency(dependency, type);
 
-        System.out.println(type);
-        if (beanInitInfos.get(type) == null) {
-            System.out.println(type);
-        }
         Object bean = beanGenerators.generate(dependency, this, beanInitInfos.get(type));
         putInContainer(bean, type);
         return bean;
