@@ -2,14 +2,24 @@ package core.di.factory;
 
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
+import core.annotation.web.Controller;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.util.Map;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
 
 public class BeanFactoryUtils {
+    private static BeanFactory beanFactory;
+
+    public static void setBeanFactory(BeanFactory beanFactory) {
+        BeanFactoryUtils.beanFactory = beanFactory;
+    }
+
+
     /**
      * 인자로 전달하는 클래스의 생성자 중 @Inject 애노테이션이 설정되어 있는 생성자를 반환
      *
@@ -47,5 +57,9 @@ public class BeanFactoryUtils {
         }
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    public static Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotation) {
+        return beanFactory.getBeansByAnnotation(annotation);
     }
 }

@@ -1,5 +1,8 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
+import core.di.factory.BeanFactoryUtils;
+import core.di.factory.ComponentScanner;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import support.test.DBInitializer;
+
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,6 +22,11 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
+        Set<Class<?>> classes = ComponentScanner.scan("next.controller");
+        BeanFactory beanFactory = new BeanFactory(classes);
+        beanFactory.initialize();
+        BeanFactoryUtils.setBeanFactory(beanFactory);
+
         dispatcher = new DispatcherServlet();
         dispatcher.init();
 
