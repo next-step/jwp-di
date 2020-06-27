@@ -1,6 +1,8 @@
 package core.di.factory;
 
 import core.annotation.Component;
+import core.annotation.Inject;
+import core.di.exception.BeanCreateException;
 import core.di.exception.NoDefaultConstructorException;
 import core.di.exception.NoSuchImplementClassException;
 import org.junit.jupiter.api.DisplayName;
@@ -25,9 +27,9 @@ public class BeanFactoryInitFailTest {
     @Test
     @DisplayName("인터페이스를 구현한 클래스가 없는 경우 예외 발생")
     void noImplementClass() {
-        BeanFactory beanFactory = new BeanFactory(Collections.singleton(NoImplementClassInterface.class));
+        BeanFactory beanFactory = new BeanFactory(Collections.singleton(NoImplementInterfaceClass.class));
 
-        assertThatExceptionOfType(IllegalStateException.class)
+        assertThatExceptionOfType(BeanCreateException.class)
                 .isThrownBy(beanFactory::initialize);
     }
 
@@ -37,6 +39,14 @@ public class BeanFactoryInitFailTest {
 
         public NoDefaultConstructor(int num) {
             this.num = num;
+        }
+    }
+
+    @Component
+    public class NoImplementInterfaceClass {
+        @Inject
+        public NoImplementInterfaceClass(NoImplementClassInterface noImplementClassInterface) {
+
         }
     }
 
