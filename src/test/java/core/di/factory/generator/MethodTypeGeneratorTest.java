@@ -37,7 +37,7 @@ class MethodTypeGeneratorTest {
 
     @ParameterizedTest
     @MethodSource
-    @DisplayName("제너레이터가 일반적인 컴포넌트 어노테이션 타입의 빈 생성을 지원하는지")
+    @DisplayName("제너레이터가 일반적인 컴포넌트 어노테이션 타입의 빈 생성을 지원하지 않는지")
     void support(Class<?> clazz) {
         Map<Class<?>, BeanInitInfo> beanInitInfos = BeanInitInfoExtractUtil.extractBeanInitInfo(clazz);
         BeanInitInfo beanInitInfo = beanInitInfos.get(clazz);
