@@ -9,9 +9,7 @@ import java.util.Set;
 public class MethodTypeGenerator implements BeanGenerator {
     @Override
     public boolean support(BeanInitInfo beanInitInfo) {
-        BeanType beanType = beanInitInfo.getBeanType();
-
-        return beanType.isComponentType() || beanType == BeanType.CONFIGURATION;
+        return beanInitInfo.getBeanType() == BeanType.BEAN;
     }
 
     @Override

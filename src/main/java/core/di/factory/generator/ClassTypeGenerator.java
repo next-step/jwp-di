@@ -9,7 +9,9 @@ import java.util.Set;
 public class ClassTypeGenerator implements BeanGenerator {
     @Override
     public boolean support(BeanInitInfo beanInitInfo) {
-        return beanInitInfo.getBeanType() == BeanType.BEAN;
+        BeanType beanType = beanInitInfo.getBeanType();
+
+        return beanType.isComponentType() || beanType == BeanType.CONFIGURATION;
     }
 
     @Override
