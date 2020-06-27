@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import core.di.factory.circular.OneComponent;
+import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
@@ -10,6 +11,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import javax.sql.DataSource;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -38,5 +41,31 @@ class BeanInitInfoExtractUtilTest {
                 Arguments.of(JdbcUserRepository.class, BeanType.REPOSITORY),
                 Arguments.of(OneComponent.class, BeanType.COMPONENT)
         );
+    }
+
+    @Test
+    @DisplayName("어노테이션이 붙어있지 않은 클래스를 추출하려 할 경우")
+    void extractNotAnnotatedClass() {
+        Map<Class<?>, BeanInitInfo> beanInitInfos = BeanInitInfoExtractUtil.extractBeanInitInfo(BeanInitInfoTest.class);
+
+        assertThat(beanInitInfos).isEmpty();
+    }
+
+    @Test
+    @DisplayName("@Configuration 와 내부에 @Bean 어노테이션이 붙어있는 클래스의 경우")
+    void extractConfigurationAndBean() throws NoSuchMethodException {
+        Map<Class<?>, BeanInitInfo> beanInitInfos = BeanInitInfoExtractUtil.extractBeanInitInfo(ExampleConfig.class);
+
+        assertThat(beanInitInfos).hasSize(2);
+
+        BeanInitInfo configurationClass = beanInitInfos.get(ExampleConfig.class);
+        assertThat(configurationClass).isNotNull();
+        assertThat(configurationClass).isEqualTo(new BeanInitInfo(ExampleConfig.class, BeanType.CONFIGURATION));
+
+        Method method = ExampleConfig.class
+                .getDeclaredMethod("dataSource");
+        BeanInitInfo beanClass = beanInitInfos.get(DataSource.class);
+        assertThat(beanClass).isNotNull();
+        assertThat(beanClass).isEqualTo(new BeanInitInfo(DataSource.class, method, BeanType.BEAN));
     }
 }
