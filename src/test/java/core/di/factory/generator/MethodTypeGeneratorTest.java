@@ -5,19 +5,21 @@ import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanInitInfo;
 import core.di.factory.BeanInitInfoExtractUtil;
-import core.di.factory.example.ExampleConfig;
-import core.di.factory.example.IntegrationConfig;
-import core.di.factory.example.JdbcUserRepository;
+import core.di.factory.circular.OneComponent;
+import core.di.factory.example.*;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +33,32 @@ class MethodTypeGeneratorTest {
         beanFactory = new BeanFactory(new HashSet<>(
                 Arrays.asList(ExampleConfig.class, IntegrationConfig.class))
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    @DisplayName("제너레이터가 일반적인 컴포넌트 어노테이션 타입의 빈 생성을 지원하는지")
+    void support(Class<?> clazz) {
+        Map<Class<?>, BeanInitInfo> beanInitInfos = BeanInitInfoExtractUtil.extractBeanInitInfo(clazz);
+        BeanInitInfo beanInitInfo = beanInitInfos.get(clazz);
+
+        assertThat(generator.support(beanInitInfo)).isFalse();
+    }
+
+    private static Stream<Class<?>> support() {
+        return Stream.of(QnaController.class, MyQnaService.class, JdbcUserRepository.class, OneComponent.class);
+    }
+
+    @Test
+    @DisplayName("@Configuration 클래스는 지원 안 하고, @Bean 은 지원 하고")
+    void supportBeanButConfigurationNot() {
+        Map<Class<?>, BeanInitInfo> beanInitInfos = BeanInitInfoExtractUtil.extractBeanInitInfo(ExampleConfig.class);
+
+        BeanInitInfo configurationClass = beanInitInfos.get(ExampleConfig.class);
+        assertThat(generator.support(configurationClass)).isFalse();
+
+        BeanInitInfo beanMethod = beanInitInfos.get(DataSource.class);
+        assertThat(generator.support(beanMethod)).isTrue();
     }
 
     @Test
