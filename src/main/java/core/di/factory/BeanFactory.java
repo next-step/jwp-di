@@ -16,6 +16,7 @@ public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
     private final Set<Class<?>> preInstanticateBeans;
+    //private final Map<Class<?>>, BeanInitInfo> initInfos;
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 

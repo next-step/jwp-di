@@ -6,12 +6,10 @@ import core.di.factory.BeanType;
 
 import java.util.Set;
 
-public class ComponentTypeGenerator implements BeanGenerator {
+public class ClassTypeGenerator implements BeanGenerator {
     @Override
     public boolean support(BeanInitInfo beanInitInfo) {
-        BeanType beanType = beanInitInfo.getBeanType();
-
-        return beanType.isComponentType() || beanType == BeanType.CONFIGURATION;
+        return beanInitInfo.getBeanType() == BeanType.BEAN;
     }
 
     @Override
