@@ -3,6 +3,7 @@ package core.di.factory;
 import core.annotation.*;
 import core.annotation.web.Controller;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -29,7 +30,8 @@ class BeanTypeTest {
                 Arguments.of(Repository.class, BeanType.REPOSITORY),
                 Arguments.of(Component.class, BeanType.COMPONENT),
                 Arguments.of(Configuration.class, BeanType.CONFIGURATION),
-                Arguments.of(Bean.class, BeanType.BEAN)
+                Arguments.of(Bean.class, BeanType.BEAN),
+                Arguments.of(Test.class, null)
         );
     }
 }
