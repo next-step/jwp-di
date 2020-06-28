@@ -1,10 +1,10 @@
-package core.mvc.tobe;
+package core.di.factory;
 
 import core.annotation.web.RequestMapping;
-import core.di.factory.BeanFactory;
+import core.mvc.tobe.HandlerExecution;
+import core.mvc.tobe.HandlerKey;
 import core.mvc.tobe.support.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
@@ -16,9 +16,8 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 
+@Slf4j
 public class BeanScanner {
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
-
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
                 new HttpResponseArgumentResolver(),
@@ -53,8 +52,7 @@ public class BeanScanner {
                     HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
                     HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
                     handlers.put(handlerKey, handlerExecution);
-                    logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
+                    log.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
                 });
     }
-
 }

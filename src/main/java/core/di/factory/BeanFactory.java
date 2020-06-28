@@ -19,18 +19,15 @@ import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 public class BeanFactory {
-    private static final Class CONTROLLER_CLASS = Controller.class;
-    private static final Class[] TARGET_BEAN_CLASSES = new Class[]{Controller.class, Service.class, Repository.class};
+    public static final Class CONTROLLER_CLASS = Controller.class;
 
-    private final Reflections reflections;
     private final Set<Class<?>> preInstanticateBeans;
     private final List<BeanGetter> beanGetters;
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(String ...basePackages) {
-        this.reflections = new Reflections(basePackages, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        this.preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, TARGET_BEAN_CLASSES);
-        this.beanGetters = Arrays.asList(new ConstructorBeanGetter(preInstanticateBeans, beans));
+    public BeanFactory(Set<Class<?>> preInstantiatedBeans) {
+        this.preInstanticateBeans = preInstantiatedBeans;
+        this.beanGetters = Arrays.asList(new ConstructorBeanGetter(preInstantiatedBeans, beans));
     }
 
     @SuppressWarnings("unchecked")
