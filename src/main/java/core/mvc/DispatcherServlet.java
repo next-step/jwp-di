@@ -1,7 +1,7 @@
 package core.mvc;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.ComponentScanner;
+import core.annotation.web.Controller;
+import core.di.factory.BeanFactoryUtils;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Set;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
@@ -32,13 +31,9 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        Set<Class<?>> classes = ComponentScanner.scan("next.controller");
-        BeanFactory beanFactory = new BeanFactory(classes);
-        beanFactory.initialize();
-
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getControllers()));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(BeanFactoryUtils.getBeansByAnnotation(Controller.class)));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
@@ -58,7 +53,6 @@ public class DispatcherServlet extends HttpServlet {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
                 return;
             }
-
 
             ModelAndView mav = handlerExecutor.handle(req, resp, maybeHandler.get());
             render(mav, req, resp);
