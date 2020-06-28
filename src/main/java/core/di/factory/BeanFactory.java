@@ -1,21 +1,33 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import core.annotation.Repository;
+import core.annotation.Service;
+import core.annotation.web.Controller;
+import core.util.ReflectionUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.springframework.util.CollectionUtils;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
+@Slf4j
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
+    public static final Class CONTROLLER_CLASS = Controller.class;
 
-    private Set<Class<?>> preInstanticateBeans;
+    private final Set<Class<?>> preInstanticateBeans;
+    private final List<BeanGetter> beanGetters;
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory(Set<Class<?>> preInstantiatedBeans) {
+        this.preInstanticateBeans = preInstantiatedBeans;
+        this.beanGetters = Arrays.asList(new ConstructorBeanGetter(preInstantiatedBeans, beans));
     }
 
     @SuppressWarnings("unchecked")
@@ -24,6 +36,21 @@ public class BeanFactory {
     }
 
     public void initialize() {
+        for (Class<?> beanClass : preInstanticateBeans) {
+            for (BeanGetter beanGetter : beanGetters) {
+                beans.put(beanClass, beanGetter.getBean(beanClass));
+            }
+        }
 
+        beans.keySet().forEach(
+            clazz -> log.debug("beanClassName: {}", clazz.getSimpleName())
+        );
+    }
+
+    public Set<? extends Map.Entry<Class<?>, Object>> getControllers() {
+        return beans.entrySet()
+                .stream()
+                .filter(bean -> bean.getKey().isAnnotationPresent(CONTROLLER_CLASS))
+                .collect(toSet());
     }
 }

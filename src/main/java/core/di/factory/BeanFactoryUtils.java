@@ -1,14 +1,20 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
-import java.lang.reflect.Constructor;
+import java.lang.reflect.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-import static org.reflections.ReflectionUtils.getAllConstructors;
-import static org.reflections.ReflectionUtils.withAnnotation;
+import static org.reflections.ReflectionUtils.*;
 
+@Slf4j
 public class BeanFactoryUtils {
     /**
      * 인자로 전달하는 클래스의 생성자 중 @Inject 애노테이션이 설정되어 있는 생성자를 반환
@@ -18,13 +24,33 @@ public class BeanFactoryUtils {
      * @Inject 애노테이션이 설정되어 있는 생성자는 클래스당 하나로 가정한다.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Constructor<?> getInjectedConstructor(Class<?> clazz) {
+    public static Constructor getInjectedConstructors(Class<?> clazz) {
         Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
             return null;
         }
+
         return injectedConstructors.iterator().next();
     }
+
+    public static Set<Method> getInjectedMethods(Class<?> clazz) {
+        Set<Method> injectedMethods = getAllMethods(clazz, withAnnotation(Inject.class));
+        if (injectedMethods.isEmpty()) {
+            return null;
+        }
+
+        return injectedMethods;
+    }
+
+    public static Set<Field> getInjectedFields(Class<?> clazz) {
+        Set<Field> injectedFields = getAllFields(clazz, withAnnotation(Inject.class));
+        if (injectedFields.isEmpty()) {
+            return null;
+        }
+
+        return injectedFields;
+    }
+
 
     /**
      * 인자로 전달되는 클래스의 구현 클래스. 만약 인자로 전달되는 Class가 인터페이스가 아니면 전달되는 인자가 구현 클래스,
