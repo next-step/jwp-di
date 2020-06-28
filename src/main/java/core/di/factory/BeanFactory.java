@@ -1,27 +1,35 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.Repository;
+import core.annotation.Service;
+import core.annotation.web.Controller;
+import core.util.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.springframework.util.CollectionUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 public class BeanFactory {
-    private Set<Class<?>> preInstanticateBeans;
+    private static final Class CONTROLLER_CLASS = Controller.class;
+    private static final Class[] TARGET_BEAN_CLASSES = new Class[]{Controller.class, Service.class, Repository.class};
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
-    private List<BeanGetter> beanGetters;
+    private final Reflections reflections;
+    private final Set<Class<?>> preInstanticateBeans;
+    private final List<BeanGetter> beanGetters;
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-
-        preInstanticateBeans.forEach(
-            clazz -> log.debug("preInstanticateBeans: {}", clazz.getSimpleName())
-        );
-
+    public BeanFactory(String ...basePackages) {
+        this.reflections = new Reflections(basePackages, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+        this.preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, TARGET_BEAN_CLASSES);
         this.beanGetters = Arrays.asList(new ConstructorBeanGetter(preInstanticateBeans, beans));
     }
 
@@ -41,5 +49,11 @@ public class BeanFactory {
             clazz -> log.debug("beanClassName: {}", clazz.getSimpleName())
         );
     }
-}
 
+    public Set<? extends Map.Entry<Class<?>, Object>> getControllers() {
+        return beans.entrySet()
+                .stream()
+                .filter(bean -> bean.getKey().isAnnotationPresent(CONTROLLER_CLASS))
+                .collect(toSet());
+    }
+}

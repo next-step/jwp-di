@@ -1,6 +1,5 @@
 package core.mvc.asis;
 
-import core.mvc.DispatcherServlet;
 import core.mvc.HandlerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RequestMapping implements HandlerMapping {
-    private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
+    private static final Logger logger = LoggerFactory.getLogger(RequestMapping.class);
     private Map<String, Controller> mappings = new HashMap<>();
 
     public void initialize() {
