@@ -28,7 +28,7 @@ public class ContextLoaderListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         // order is important
         BeanFactory beanFactory = initBeans();
-        initDatabase();
+        initDatabase(beanFactory);
         initDispatcherServlet(sce, beanFactory);
 
         logger.info("Completed Load ServletContext!");
@@ -41,10 +41,10 @@ public class ContextLoaderListener implements ServletContextListener {
         dispatcher.setLoadOnStartup(1);
     }
 
-    private void initDatabase() {
+    private void initDatabase(BeanFactory beanFactory) {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, BeanFactoryUtils.findByType(DataSource.class));
+        DatabasePopulatorUtils.execute(populator, beanFactory.getBean(DataSource.class));
     }
 
     private BeanFactory initBeans() {
@@ -52,7 +52,6 @@ public class ContextLoaderListener implements ServletContextListener {
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
 
-        BeanFactoryUtils.setBeanFactory(beanFactory);
         return beanFactory;
     }
 
