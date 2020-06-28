@@ -7,10 +7,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 public class ConstructorBeanGetter implements BeanGetter {
@@ -24,14 +21,14 @@ public class ConstructorBeanGetter implements BeanGetter {
 
     @Override
     public Object getBean(Class<?> beanClass) {
-        Constructor constructor = BeanFactoryUtils.getInjectedConstructors(beanClass);
-
         try {
-            if (hasNoArgument(constructor)) {
-                return getNoArgBeanInstance(beanClass, constructor);
+            Optional<Constructor> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(beanClass);
+
+            if (hasNoArgument(injectedConstructor)) {
+                return getNoArgBeanInstance(beanClass, injectedConstructor);
             }
 
-            return getArgBeanInstance(constructor);
+            return getArgBeanInstance(injectedConstructor.get());
         }
         catch (Exception e) {
             log.error(e.getMessage());
@@ -39,20 +36,18 @@ public class ConstructorBeanGetter implements BeanGetter {
         }
     }
 
-    private boolean hasNoArgument(Constructor constructor) {
-        return Objects.isNull(constructor) || ArrayUtils.isEmpty(constructor.getParameters());
+    private boolean hasNoArgument(Optional<Constructor> constructor) {
+        return !constructor.isPresent() || ArrayUtils.isEmpty(constructor.get().getParameters());
     }
 
-    private Object getNoArgBeanInstance(Class<?> beanClass, Constructor constructor) {
+    private Object getNoArgBeanInstance(Class<?> beanClass, Optional<Constructor> constructor) {
         if (beans.containsKey(beanClass)) {
             return beans.get(beanClass);
         }
 
-        if (Objects.isNull(constructor)) {
-            return BeanUtils.instantiateClass(beanClass);
-        }
-
-        return BeanUtils.instantiateClass(constructor);
+        return constructor
+                .map(c -> BeanUtils.instantiateClass(c))
+                .orElseGet(() -> BeanUtils.instantiateClass(beanClass));
     }
 
     private Object getArgBeanInstance(Constructor constructor) {
