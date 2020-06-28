@@ -1,7 +1,7 @@
 package core.mvc;
 
 import core.annotation.web.Controller;
-import core.di.factory.BeanFactoryUtils;
+import core.di.factory.BeanFactory;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -11,31 +11,26 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private HandlerMappingRegistry handlerMappingRegistry;
+    private final HandlerMappingRegistry handlerMappingRegistry;
 
-    private HandlerAdapterRegistry handlerAdapterRegistry;
+    private final HandlerExecutor handlerExecutor;
 
-    private HandlerExecutor handlerExecutor;
-
-    @Override
-    public void init() {
+    public DispatcherServlet(BeanFactory beanFactory) {
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(BeanFactoryUtils.getBeansByAnnotation(Controller.class)));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getBeansByAnnotation(Controller.class)));
 
-        handlerAdapterRegistry = new HandlerAdapterRegistry();
+        HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 

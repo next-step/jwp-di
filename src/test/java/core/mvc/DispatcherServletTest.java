@@ -27,8 +27,7 @@ class DispatcherServletTest {
         beanFactory.initialize();
         BeanFactoryUtils.setBeanFactory(beanFactory);
 
-        dispatcher = new DispatcherServlet();
-        dispatcher.init();
+        dispatcher = new DispatcherServlet(beanFactory);
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();

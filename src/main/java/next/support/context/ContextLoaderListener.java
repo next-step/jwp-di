@@ -4,6 +4,7 @@ import core.annotation.ComponentScan;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanFactoryUtils;
 import core.di.factory.ComponentScanner;
+import core.mvc.DispatcherServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -12,6 +13,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
 import javax.sql.DataSource;
 import java.util.Arrays;
@@ -25,10 +27,18 @@ public class ContextLoaderListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // order is important
-        initBeans();
+        BeanFactory beanFactory = initBeans();
         initDatabase();
+        initDispatcherServlet(sce, beanFactory);
 
         logger.info("Completed Load ServletContext!");
+    }
+
+    private void initDispatcherServlet(ServletContextEvent sce, BeanFactory beanFactory) {
+        ServletRegistration.Dynamic dispatcher =
+                sce.getServletContext().addServlet("dispatcher", new DispatcherServlet(beanFactory));
+        dispatcher.addMapping("/");
+        dispatcher.setLoadOnStartup(1);
     }
 
     private void initDatabase() {
@@ -37,12 +47,13 @@ public class ContextLoaderListener implements ServletContextListener {
         DatabasePopulatorUtils.execute(populator, BeanFactoryUtils.findByType(DataSource.class));
     }
 
-    private void initBeans() {
+    private BeanFactory initBeans() {
         Set<Class<?>> classes = ComponentScanner.scan(getBasePackage());
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
 
         BeanFactoryUtils.setBeanFactory(beanFactory);
+        return beanFactory;
     }
 
     private String[] getBasePackage() {
