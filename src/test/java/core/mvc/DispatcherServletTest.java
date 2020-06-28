@@ -1,7 +1,6 @@
 package core.mvc;
 
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanFactoryUtils;
 import core.di.factory.ComponentScanner;
 import next.controller.UserSessionUtils;
 import next.model.User;
@@ -25,7 +24,6 @@ class DispatcherServletTest {
         Set<Class<?>> classes = ComponentScanner.scan("next");
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
-        BeanFactoryUtils.setBeanFactory(beanFactory);
 
         dispatcher = new DispatcherServlet(beanFactory);
 
