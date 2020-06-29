@@ -3,6 +3,8 @@ package core.mvc.tobe;
 import core.annotation.web.Controller;
 import core.di.factory.BeanFactory;
 import core.di.factory.ComponentScanner;
+import core.jdbc.JdbcTemplate;
+import next.configuration.CommonConfig;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +24,10 @@ public class AnnotationHandlerMappingTest {
     @BeforeEach
     public void setup() {
         Set<Class<?>> classes = ComponentScanner.scan("core.mvc.tobe");
+        classes.add(UserDao.class);
+        classes.add(JdbcTemplate.class);
+        classes.add(CommonConfig.class);
+
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
 

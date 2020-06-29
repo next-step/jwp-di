@@ -1,7 +1,6 @@
 package core.mvc;
 
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanFactoryUtils;
 import core.di.factory.ComponentScanner;
 import next.controller.UserSessionUtils;
 import next.model.User;
@@ -22,13 +21,11 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        Set<Class<?>> classes = ComponentScanner.scan("next.controller");
+        Set<Class<?>> classes = ComponentScanner.scan("next");
         BeanFactory beanFactory = new BeanFactory(classes);
         beanFactory.initialize();
-        BeanFactoryUtils.setBeanFactory(beanFactory);
 
-        dispatcher = new DispatcherServlet();
-        dispatcher.init();
+        dispatcher = new DispatcherServlet(beanFactory);
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();

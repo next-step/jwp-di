@@ -1,26 +1,40 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.Inject;
-import core.di.exception.*;
+import core.di.exception.BeanCreateException;
+import core.di.exception.BeanDuplicationException;
+import core.di.exception.CircularDependencyException;
+import core.di.factory.generator.BeanGenerators;
+import core.di.factory.generator.ConstructorTypeGenerator;
+import core.di.factory.generator.MethodTypeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
+    private static final BeanGenerators DEFAULT_BEAN_GENERATOR = new BeanGenerators(
+            Arrays.asList(new ConstructorTypeGenerator(), new MethodTypeGenerator())
+    );
 
-    private final Set<Class<?>> preInstanticateBeans;
+    private final Map<Class<?>, BeanInitInfo> beanInitInfos;
+    private final BeanGenerators beanGenerators;
+    private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    private final Map<Class<?>, Object> beans = Maps.newHashMap();
+    public BeanFactory(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
+        this.beanInitInfos = preInstanticateBeans.stream()
+                .map(BeanInitInfoExtractUtil::extractBeanInitInfo)
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        this.beanGenerators = beanGenerators;
+    }
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+        this(preInstanticateBeans, DEFAULT_BEAN_GENERATOR);
     }
 
     @SuppressWarnings("unchecked")
@@ -29,7 +43,9 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        preInstanticateBeans.forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
+        beanInitInfos.keySet()
+                .forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
+        beans = Collections.unmodifiableMap(beans);
     }
 
     public Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotation) {
@@ -39,54 +55,27 @@ public class BeanFactory {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Object createBean(Set<Class<?>> dependency, Class<?> type) {
+    public Object createBean(Set<Class<?>> dependency, Class<?> type) {
         if (beans.containsKey(type)) {
             return beans.get(type);
         }
 
         // change interface to implement class
-        if (type.isInterface()) {
-            type = getImplementsClass(type);
-        }
+        type = BeanFactoryUtils.findConcreteClass(type, beanInitInfos);
 
         checkCircularDependency(dependency, type);
 
-        return newBean(dependency, type);
+        Object bean = beanGenerators.generate(dependency, this, getBeanInitInfo(type));
+        putInContainer(bean, type);
+        return bean;
     }
 
-    private Object newBean(Set<Class<?>> dependency, Class<?> type) {
-        dependency.add(type);
-        Object instance;
-
-        try {
-            // create constructor
-            Constructor<?> constructor = getInjectAttachedConstructor(type);
-
-            // get bean of parameters to use as a argument
-            Object[] parameters = Arrays.stream(constructor.getParameterTypes())
-                    .map(parameterType -> createBean(dependency, parameterType))
-                    .toArray();
-
-            // create new instance
-            constructor.setAccessible(true);
-            instance = constructor.newInstance(parameters);
-
-            // add to bean container
-            putInContainer(instance, type);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new BeanCreateException("Fail to create bean of " + type.getName() + " cuz : " + e.getMessage());
+    private BeanInitInfo getBeanInitInfo(Class<?> type) {
+        if (!beanInitInfos.containsKey(type)) {
+            throw new BeanCreateException("No such type bean init info : " + type);
         }
 
-        dependency.remove(type);
-        return instance;
-    }
-
-    private Class<?> getImplementsClass(Class<?> type) {
-        return preInstanticateBeans.stream()
-                .filter(type::isAssignableFrom)
-                .filter(clazz -> !clazz.isInterface())
-                .findFirst()
-                .orElseThrow(() -> new NoSuchImplementClassException(type));
+        return beanInitInfos.get(type);
     }
 
     private void putInContainer(Object instance, Class<?> type) {
@@ -106,21 +95,6 @@ public class BeanFactory {
             circularDependency.add(type);
 
             throw new CircularDependencyException(circularDependency);
-        }
-    }
-
-    private Constructor<?> getInjectAttachedConstructor(Class<?> type) {
-        return Arrays.stream(type.getDeclaredConstructors())
-                .filter(constructor -> constructor.isAnnotationPresent(Inject.class))
-                .findFirst()
-                .orElseGet(() -> getDefaultConstructor(type));
-    }
-
-    private Constructor<?> getDefaultConstructor(Class<?> type) {
-        try {
-            return type.getDeclaredConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new NoDefaultConstructorException(type);
         }
     }
 }
