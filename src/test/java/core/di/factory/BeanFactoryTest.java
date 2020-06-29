@@ -41,7 +41,7 @@ public class BeanFactoryTest {
 
     @Test
     void getControllers() {
-        Set<? extends Map.Entry<Class<?>, Object>> controllers = beanFactory.getControllers();
+        Map<Class<?>, Object> controllers = beanFactory.getControllers();
 
         assertThat(controllers).isNotNull();
         assertThat(controllers).hasSize(1);

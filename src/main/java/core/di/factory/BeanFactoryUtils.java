@@ -1,15 +1,15 @@
 package core.di.factory;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import core.annotation.Inject;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.*;
@@ -24,19 +24,16 @@ public class BeanFactoryUtils {
      * @Inject 애노테이션이 설정되어 있는 생성자는 클래스당 하나로 가정한다.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Constructor getInjectedConstructors(Class<?> clazz) {
-        Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
-        if (injectedConstructors.isEmpty()) {
-            return null;
-        }
-
-        return injectedConstructors.iterator().next();
+    public static Optional<Constructor> getInjectedConstructor(Class<?> clazz) {
+        return Optional.of(getAllConstructors(clazz, withAnnotation(Inject.class)))
+                .filter(constructors -> !CollectionUtils.isEmpty(constructors))
+                .map(constructors -> constructors.iterator().next());
     }
 
     public static Set<Method> getInjectedMethods(Class<?> clazz) {
         Set<Method> injectedMethods = getAllMethods(clazz, withAnnotation(Inject.class));
         if (injectedMethods.isEmpty()) {
-            return null;
+            return Collections.EMPTY_SET;
         }
 
         return injectedMethods;
@@ -45,7 +42,7 @@ public class BeanFactoryUtils {
     public static Set<Field> getInjectedFields(Class<?> clazz) {
         Set<Field> injectedFields = getAllFields(clazz, withAnnotation(Inject.class));
         if (injectedFields.isEmpty()) {
-            return null;
+            return Collections.EMPTY_SET;
         }
 
         return injectedFields;
