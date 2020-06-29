@@ -37,7 +37,7 @@ public class BeanScanner {
     public Map<HandlerKey, HandlerExecution> scan() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        for (Map.Entry<Class<?>, Object> controllerEntry : beanFactory.getControllers()) {
+        for (Map.Entry<Class<?>, Object> controllerEntry : beanFactory.getControllers().entrySet()) {
             addHandlerExecution(handlers, controllerEntry.getValue(), controllerEntry.getKey().getMethods());
         }
 
