@@ -23,7 +23,7 @@ class BeanGeneratorsTest {
 
     @BeforeEach
     private void setEnv() {
-        beanFactory = new BeanFactory(new HashSet<>(
+        beanFactory = BeanFactory.init(new HashSet<>(
                 Collections.singletonList(ExampleConfig.class))
         );
     }

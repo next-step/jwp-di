@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.ComponentScan;
 import core.di.exception.BeanCreateException;
 import core.di.exception.BeanDuplicationException;
 import core.di.exception.CircularDependencyException;
@@ -24,17 +25,49 @@ public class BeanFactory {
     private final BeanGenerators beanGenerators;
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
-        this.beanInitInfos = preInstanticateBeans.stream()
+    private BeanFactory(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
+        this.beanInitInfos = createBeanInitInfos(preInstanticateBeans);
+        this.beanGenerators = beanGenerators;
+
+        initialize();
+    }
+
+    public static BeanFactory init(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
+        return new BeanFactory(preInstanticateBeans, beanGenerators);
+    }
+
+    public static BeanFactory init(String basePackage, BeanGenerators beanGenerators) {
+        return new BeanFactory(ComponentScanner.scan(getBasePackage(basePackage)), beanGenerators);
+    }
+
+    public static BeanFactory init(Set<Class<?>> preInstanticateBeans) {
+        return new BeanFactory(preInstanticateBeans, DEFAULT_BEAN_GENERATOR);
+    }
+
+    public static BeanFactory init(String basePackage) {
+        return new BeanFactory(ComponentScanner.scan(getBasePackage(basePackage)), DEFAULT_BEAN_GENERATOR);
+    }
+
+    public static BeanFactory init() {
+        return BeanFactory.init("");
+    }
+
+    private static String[] getBasePackage(String basePackage) {
+        Set<Class<?>> classes =
+                ComponentScanner.scan(Collections.singletonList(ComponentScan.class), basePackage);
+
+        return classes.stream()
+                .map(clazz -> clazz.getDeclaredAnnotation(ComponentScan.class))
+                .map(ComponentScan::basePackages)
+                .flatMap(Arrays::stream)
+                .toArray(String[]::new);
+    }
+
+    private Map<Class<?>, BeanInitInfo> createBeanInitInfos(Set<Class<?>> preInstanticateBeans) {
+        return preInstanticateBeans.stream()
                 .map(BeanInitInfoExtractUtil::extractBeanInitInfo)
                 .flatMap(map -> map.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        this.beanGenerators = beanGenerators;
-    }
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this(preInstanticateBeans, DEFAULT_BEAN_GENERATOR);
     }
 
     @SuppressWarnings("unchecked")
@@ -42,7 +75,7 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
+    private void initialize() {
         beanInitInfos.keySet()
                 .forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
         beans = Collections.unmodifiableMap(beans);

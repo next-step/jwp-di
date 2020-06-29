@@ -28,8 +28,7 @@ public class AnnotationHandlerMappingTest {
         classes.add(JdbcTemplate.class);
         classes.add(CommonConfig.class);
 
-        BeanFactory beanFactory = new BeanFactory(classes);
-        beanFactory.initialize();
+        BeanFactory beanFactory = BeanFactory.init(classes);
 
         handlerMapping = new AnnotationHandlerMapping(beanFactory.getBeansByAnnotation(Controller.class));
         handlerMapping.initialize();

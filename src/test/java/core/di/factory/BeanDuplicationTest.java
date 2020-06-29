@@ -17,13 +17,9 @@ public class BeanDuplicationTest {
     @Test
     @DisplayName("하나의 인터페이스를 구현하는 두개의 구현 클래스가 있는 경우 예외 발생")
     void beanDuplicationTest() {
-        BeanFactory beanFactory = new BeanFactory(
-                new LinkedHashSet<>(
-                        Arrays.asList(OneClass.class, AnotherClass.class)
-                )
-        );
-
         assertThatExceptionOfType(BeanDuplicationException.class)
-                .isThrownBy(beanFactory::initialize);
+                .isThrownBy(() -> BeanFactory.init(
+                        new LinkedHashSet<>(Arrays.asList(OneClass.class, AnotherClass.class))
+                ));
     }
 }

@@ -22,8 +22,7 @@ class DispatcherServletTest {
     @BeforeEach
     void setUp() {
         Set<Class<?>> classes = ComponentScanner.scan("next");
-        BeanFactory beanFactory = new BeanFactory(classes);
-        beanFactory.initialize();
+        BeanFactory beanFactory = BeanFactory.init(classes);
 
         dispatcher = new DispatcherServlet(beanFactory);
 

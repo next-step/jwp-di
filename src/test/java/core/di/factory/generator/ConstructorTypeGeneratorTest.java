@@ -28,7 +28,7 @@ class ConstructorTypeGeneratorTest {
 
     @BeforeEach
     private void setEnv() {
-        beanFactory = new BeanFactory(
+        beanFactory = BeanFactory.init(
                 new HashSet<>(
                         Arrays.asList(
                                 QnaController.class,
