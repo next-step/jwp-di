@@ -22,6 +22,13 @@ public class BeanScanner {
     private final Reflections reflections;
     private final Map<Class<? extends Annotation>, Set<Class<?>>> cache = new HashMap<>();
 
+    public BeanScanner(String prefix) {
+        reflections = new Reflections(ConfigurationBuilder
+                .build(prefix)
+                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(false))
+        );
+    }
+
     public BeanScanner(Object... basePackages) {
         reflections = new Reflections(ConfigurationBuilder
                 .build(basePackages)
