@@ -2,6 +2,7 @@ package core.di.factory;
 
 import org.springframework.lang.Nullable;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +16,7 @@ public class DefaultBeanDefinition implements BeanDefinition {
 
     private final Class<?> originClass;
     private final List<Class<?>> dependencies = new ArrayList<>();
+    private Constructor<?> beanConstructor;
 
     public DefaultBeanDefinition(Class<?> originClass) {
         this.originClass = originClass;
@@ -23,6 +25,17 @@ public class DefaultBeanDefinition implements BeanDefinition {
     @Override
     public Class<?> getOriginalClass() {
         return originClass;
+    }
+
+    @Override
+    @Nullable
+    public Constructor<?> getBeanConstructor() {
+        return beanConstructor;
+    }
+
+    @Override
+    public void setBeanConstructor(Constructor<?> constructor) {
+        this.beanConstructor = constructor;
     }
 
     @Override

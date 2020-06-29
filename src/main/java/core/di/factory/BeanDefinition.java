@@ -2,6 +2,7 @@ package core.di.factory;
 
 import org.springframework.lang.Nullable;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 
 /**
@@ -17,6 +18,16 @@ public interface BeanDefinition {
      * @return class
      */
     Class<?> getOriginalClass();
+
+    /**
+     * @return Constructor that is annotated with Inject annotation.
+     */
+    Constructor<?> getBeanConstructor();
+
+    /**
+     * @param constructor Constructor that is annotated with Inject annotation.
+     */
+    void setBeanConstructor(Constructor<?> constructor);
 
     /**
      * @return dependencies of this bean!
