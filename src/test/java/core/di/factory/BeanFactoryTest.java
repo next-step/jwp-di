@@ -29,7 +29,6 @@ public class BeanFactoryTest {
         assertThat(rawClasses).isNotNull();
         log.debug("classes: {}", rawClasses);
         beanFactory = new BeanFactory(rawClasses);
-        beanFactory.initialize();
     }
 
     @Test
