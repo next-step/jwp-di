@@ -3,9 +3,7 @@ package core.di.factory;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.beans.BeanUtils;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -26,10 +24,10 @@ public class ConstructorBeanDefinitionResolver implements BeanDefinitionResolver
             Optional<Constructor> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(beanClass);
 
             if (hasNoArgument(injectedConstructor)) {
-                return getNoArgBeanInstance(beanClass, injectedConstructor);
+                return getNonParameterizedBeanDefinition(beanClass, injectedConstructor);
             }
 
-            return getArgumentedBeanDefinitions(beanClass, injectedConstructor.get());
+            return getParameterizedBeanDefinition(beanClass, injectedConstructor.get());
         }
         catch (Exception e) {
             log.error(e.getMessage());
@@ -41,7 +39,7 @@ public class ConstructorBeanDefinitionResolver implements BeanDefinitionResolver
         return !constructor.isPresent() || ArrayUtils.isEmpty(constructor.get().getParameters());
     }
 
-    private BeanDefinition getNoArgBeanInstance(Class<?> beanClass, Optional<Constructor> constructor) {
+    private BeanDefinition getNonParameterizedBeanDefinition(Class<?> beanClass, Optional<Constructor> constructor) {
         if (beanDefinitions.containsKey(beanClass)) {
             return beanDefinitions.get(beanClass);
         }
@@ -51,7 +49,7 @@ public class ConstructorBeanDefinitionResolver implements BeanDefinitionResolver
                 .orElseGet(() -> buildBeanDefinition(beanClass, null, null));
     }
 
-    private BeanDefinition getArgumentedBeanDefinitions(Class<?> type, Constructor constructor) {
+    private BeanDefinition getParameterizedBeanDefinition(Class<?> type, Constructor constructor) {
         Parameter[] parameters = constructor.getParameters();
         List<BeanDefinition> arguments = Lists.newArrayList();
 
