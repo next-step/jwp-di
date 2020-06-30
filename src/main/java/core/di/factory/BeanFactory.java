@@ -55,7 +55,7 @@ public class BeanFactory {
             try {
                 constructor = preInstanticateBean.getConstructor();
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("인스턴스 생성 실패 : 생성자를 찾을 수 없음.");
+                throw new RuntimeException("인스턴스 생성 실패 : 생성자를 찾을 수 없음. class: " + preInstanticateBean.toString());
             }
         }
         return constructor;
