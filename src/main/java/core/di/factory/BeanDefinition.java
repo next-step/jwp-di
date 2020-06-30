@@ -8,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -15,17 +16,19 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 
 @Getter
-public class BeanDefinition {
-    private Class<?> type;
-    private Set<Class<? extends Annotation>> annotations = Sets.newHashSet();
-    private Constructor constructor;
-    private List<BeanDefinition> children = Lists.newArrayList();
+public class BeanDefinition<T> {
+    private final Class<?> type;
+    private final Constructor constructor;
+    private final Method method;
+    private final Set<Class<? extends Annotation>> annotations = Sets.newHashSet();
+    private final List<BeanDefinition> children = Lists.newArrayList();
 
     @Builder
     public BeanDefinition(
         Class<?> type,
         List<Annotation> annotations,
         Constructor constructor,
+        Method method,
         List<BeanDefinition> children
     ) {
         if (Objects.isNull(type)) {
@@ -39,6 +42,7 @@ public class BeanDefinition {
         }
 
         this.constructor = constructor;
+        this.method = method;
 
         if (!CollectionUtils.isEmpty(children)) {
             this.children.addAll(children);

@@ -1,8 +1,10 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
+import core.annotation.Bean;
 import core.annotation.Inject;
 import lombok.extern.slf4j.Slf4j;
+import org.reflections.ReflectionUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Constructor;
@@ -30,24 +32,9 @@ public class BeanFactoryUtils {
                 .map(constructors -> constructors.iterator().next());
     }
 
-    public static Set<Method> getInjectedMethods(Class<?> clazz) {
-        Set<Method> injectedMethods = getAllMethods(clazz, withAnnotation(Inject.class));
-        if (injectedMethods.isEmpty()) {
-            return Collections.EMPTY_SET;
-        }
-
-        return injectedMethods;
+    public static Set<Method> getAnnotatedBeanMethod(Class<?> clazz) {
+        return ReflectionUtils.getAllMethods(clazz, withAnnotation(Bean.class));
     }
-
-    public static Set<Field> getInjectedFields(Class<?> clazz) {
-        Set<Field> injectedFields = getAllFields(clazz, withAnnotation(Inject.class));
-        if (injectedFields.isEmpty()) {
-            return Collections.EMPTY_SET;
-        }
-
-        return injectedFields;
-    }
-
 
     /**
      * 인자로 전달되는 클래스의 구현 클래스. 만약 인자로 전달되는 Class가 인터페이스가 아니면 전달되는 인자가 구현 클래스,
