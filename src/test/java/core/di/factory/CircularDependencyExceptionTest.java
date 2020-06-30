@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
+import static core.utils.Generator.beanFactoryOf;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @DisplayName("circular dependency")
@@ -22,7 +23,7 @@ public class CircularDependencyExceptionTest {
     @DisplayName("의존성이 물리고 물려서 생성이 안되는 경우 테스트")
     void circularDependency() {
         assertThatExceptionOfType(CircularDependencyException.class)
-                .isThrownBy(() -> BeanFactory.init(
+                .isThrownBy(() -> beanFactoryOf(
                         new LinkedHashSet<>(Arrays.asList(OneComponent.class, TwoComponent.class, ThreeComponent.class))
                 )).withMessageStartingWith("There is circular dependency");
     }

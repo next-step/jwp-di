@@ -1,7 +1,6 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.ComponentScan;
 import core.di.exception.BeanCreateException;
 import core.di.exception.BeanDuplicationException;
 import core.di.exception.CircularDependencyException;
@@ -11,9 +10,7 @@ import core.di.factory.generator.MethodTypeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -23,69 +20,24 @@ public class BeanFactory {
 
     private final Map<Class<?>, BeanInitInfo> beanInitInfos;
     private final BeanGenerators beanGenerators;
+
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    private BeanFactory(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
-        this.beanInitInfos = createBeanInitInfos(preInstanticateBeans);
+    public BeanFactory(Map<Class<?>, BeanInitInfo> beanInitInfos, BeanGenerators beanGenerators) {
+        this.beanInitInfos = beanInitInfos;
         this.beanGenerators = beanGenerators;
 
         initialize();
     }
 
-    public static BeanFactory init(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
-        return new BeanFactory(preInstanticateBeans, beanGenerators);
-    }
-
-    public static BeanFactory init(String basePackage, BeanGenerators beanGenerators) {
-        return new BeanFactory(ComponentScanner.scan(getBasePackage(basePackage)), beanGenerators);
-    }
-
-    public static BeanFactory init(Set<Class<?>> preInstanticateBeans) {
-        return new BeanFactory(preInstanticateBeans, DEFAULT_BEAN_GENERATOR);
-    }
-
-    public static BeanFactory init(String basePackage) {
-        return new BeanFactory(ComponentScanner.scan(getBasePackage(basePackage)), DEFAULT_BEAN_GENERATOR);
-    }
-
-    public static BeanFactory init() {
-        return BeanFactory.init("");
-    }
-
-    private static String[] getBasePackage(String basePackage) {
-        Set<Class<?>> classes =
-                ComponentScanner.scan(Collections.singletonList(ComponentScan.class), basePackage);
-
-        return classes.stream()
-                .map(clazz -> clazz.getDeclaredAnnotation(ComponentScan.class))
-                .map(ComponentScan::basePackages)
-                .flatMap(Arrays::stream)
-                .toArray(String[]::new);
-    }
-
-    private Map<Class<?>, BeanInitInfo> createBeanInitInfos(Set<Class<?>> preInstanticateBeans) {
-        return preInstanticateBeans.stream()
-                .map(BeanInitInfoExtractUtil::extractBeanInitInfo)
-                .flatMap(map -> map.entrySet().stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
+    public BeanFactory(Map<Class<?>, BeanInitInfo> beanInitInfos) {
+        this(beanInitInfos, DEFAULT_BEAN_GENERATOR);
     }
 
     private void initialize() {
         beanInitInfos.keySet()
                 .forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
         beans = Collections.unmodifiableMap(beans);
-    }
-
-    public Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotation) {
-        return beans.entrySet()
-                .stream()
-                .filter(map -> map.getKey().isAnnotationPresent(annotation))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Object createBean(Set<Class<?>> dependency, Class<?> type) {
@@ -129,5 +81,9 @@ public class BeanFactory {
 
             throw new CircularDependencyException(circularDependency);
         }
+    }
+
+    public Map<Class<?>, Object> getInitializedBeans() {
+        return Collections.unmodifiableMap(beans);
     }
 }

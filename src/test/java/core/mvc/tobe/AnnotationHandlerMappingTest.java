@@ -1,7 +1,7 @@
 package core.mvc.tobe;
 
 import core.annotation.web.Controller;
-import core.di.factory.BeanFactory;
+import core.di.ApplicationContext;
 import core.di.factory.ComponentScanner;
 import core.jdbc.JdbcTemplate;
 import next.configuration.CommonConfig;
@@ -15,6 +15,7 @@ import support.test.DBInitializer;
 
 import java.util.Set;
 
+import static core.utils.Generator.appContextOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnnotationHandlerMappingTest {
@@ -28,13 +29,13 @@ public class AnnotationHandlerMappingTest {
         classes.add(JdbcTemplate.class);
         classes.add(CommonConfig.class);
 
-        BeanFactory beanFactory = BeanFactory.init(classes);
+        ApplicationContext appContext = appContextOf(classes);
 
-        handlerMapping = new AnnotationHandlerMapping(beanFactory.getBeansByAnnotation(Controller.class));
+        handlerMapping = new AnnotationHandlerMapping(appContext.getBeansByAnnotation(Controller.class));
         handlerMapping.initialize();
 
         DBInitializer.initialize();
-        userDao = beanFactory.getBean(UserDao.class);
+        userDao = appContext.getBean(UserDao.class);
     }
 
     @Test

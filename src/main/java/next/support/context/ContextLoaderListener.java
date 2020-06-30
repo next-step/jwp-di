@@ -1,6 +1,6 @@
 package next.support.context;
 
-import core.di.factory.BeanFactory;
+import core.di.ApplicationContext;
 import core.mvc.DispatcherServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,24 +21,24 @@ public class ContextLoaderListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // order is important
-        BeanFactory beanFactory = BeanFactory.init();
-        initDatabase(beanFactory);
-        initDispatcherServlet(sce, beanFactory);
+        ApplicationContext appContext = new ApplicationContext();
+        initDatabase(appContext);
+        initDispatcherServlet(sce, appContext);
 
         logger.info("Completed Load ServletContext!");
     }
 
-    private void initDispatcherServlet(ServletContextEvent sce, BeanFactory beanFactory) {
+    private void initDispatcherServlet(ServletContextEvent sce, ApplicationContext appContext) {
         ServletRegistration.Dynamic dispatcher =
-                sce.getServletContext().addServlet("dispatcher", new DispatcherServlet(beanFactory));
+                sce.getServletContext().addServlet("dispatcher", new DispatcherServlet(appContext));
         dispatcher.addMapping("/");
         dispatcher.setLoadOnStartup(1);
     }
 
-    private void initDatabase(BeanFactory beanFactory) {
+    private void initDatabase(ApplicationContext appContext) {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, beanFactory.getBean(DataSource.class));
+        DatabasePopulatorUtils.execute(populator, appContext.getBean(DataSource.class));
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.ApplicationContext;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,26 +16,27 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 
+import static core.utils.Generator.appContextOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("빈 팩토리")
 public class BeanFactoryTest {
     private Reflections reflections;
-    private BeanFactory beanFactory;
+    private ApplicationContext appContext;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = BeanFactory.init(preInstanticateClazz);
+        appContext = appContextOf(preInstanticateClazz);
     }
 
     @Test
     @DisplayName("의존성 주입 테스트")
     public void di() throws Exception {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
+        QnaController qnaController = appContext.getBean(QnaController.class);
 
         assertNotNull(qnaController);
         assertNotNull(qnaController.getQnaService());
@@ -56,7 +58,7 @@ public class BeanFactoryTest {
     @Test
     @DisplayName("초기화 된 컨트롤러 가져오기 테스트")
     void getControllers() {
-        Map<Class<?>, Object> controllers = beanFactory.getBeansByAnnotation(Controller.class);
+        Map<Class<?>, Object> controllers = appContext.getBeansByAnnotation(Controller.class);
 
         assertThat(controllers).isNotNull();
         assertThat(controllers).hasSize(1);
