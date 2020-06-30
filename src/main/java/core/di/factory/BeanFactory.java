@@ -8,14 +8,14 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
-
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
+    private final Set<Class<?>> preInstanticateBeans;
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -43,22 +43,20 @@ public class BeanFactory {
     }
 
     private <T> T makeInstance(Class<T> preInstanticateBean) {
-        final Constructor<T> injectedConstructor = getInjectedConstructor(preInstanticateBean);
+        final Constructor<T> injectedConstructor = getInjectedConstructor(preInstanticateBean)
+                .orElseThrow(() -> new RuntimeException("인스턴스 생성 실패 : 생성자를 찾을 수 없음. class: " + preInstanticateBean.toString()));
+
         final Object[] parameters = getParameters(injectedConstructor);
 
         return BeanUtils.instantiateClass(injectedConstructor, parameters);
     }
 
-    private <T> Constructor<T> getInjectedConstructor(Class<T> preInstanticateBean) {
-        Constructor<T> constructor = (Constructor<T>) BeanFactoryUtils.getInjectedConstructor(preInstanticateBean);
-        if (constructor == null) {
-            try {
-                constructor = preInstanticateBean.getConstructor();
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException("인스턴스 생성 실패 : 생성자를 찾을 수 없음. class: " + preInstanticateBean.toString());
-            }
+    private <T> Optional<Constructor<T>> getInjectedConstructor(Class<T> preInstanticateBean) {
+        try {
+            return Optional.of(preInstanticateBean.getConstructor());
+        } catch (NoSuchMethodException e) {
+            return Optional.ofNullable((Constructor<T>) BeanFactoryUtils.getInjectedConstructor(preInstanticateBean));
         }
-        return constructor;
     }
 
     private Object[] getParameters(Constructor<?> constructor) {
