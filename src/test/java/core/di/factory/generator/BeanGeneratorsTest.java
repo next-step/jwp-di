@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
+import static core.utils.Generator.beanFactoryOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -23,7 +24,7 @@ class BeanGeneratorsTest {
 
     @BeforeEach
     private void setEnv() {
-        beanFactory = new BeanFactory(new HashSet<>(
+        beanFactory = beanFactoryOf(new HashSet<>(
                 Collections.singletonList(ExampleConfig.class))
         );
     }

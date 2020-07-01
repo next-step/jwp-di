@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static core.utils.Generator.beanFactoryOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("일반 클래스의 빈을 생성하기 위한 제너레이터")
@@ -28,7 +29,7 @@ class ConstructorTypeGeneratorTest {
 
     @BeforeEach
     private void setEnv() {
-        beanFactory = new BeanFactory(
+        beanFactory = beanFactoryOf(
                 new HashSet<>(
                         Arrays.asList(
                                 QnaController.class,

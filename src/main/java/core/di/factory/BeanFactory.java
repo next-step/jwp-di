@@ -10,9 +10,7 @@ import core.di.factory.generator.MethodTypeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -22,37 +20,24 @@ public class BeanFactory {
 
     private final Map<Class<?>, BeanInitInfo> beanInitInfos;
     private final BeanGenerators beanGenerators;
+
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans, BeanGenerators beanGenerators) {
-        this.beanInitInfos = preInstanticateBeans.stream()
-                .map(BeanInitInfoExtractUtil::extractBeanInitInfo)
-                .flatMap(map -> map.entrySet().stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
+    public BeanFactory(Map<Class<?>, BeanInitInfo> beanInitInfos, BeanGenerators beanGenerators) {
+        this.beanInitInfos = beanInitInfos;
         this.beanGenerators = beanGenerators;
+
+        initialize();
     }
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this(preInstanticateBeans, DEFAULT_BEAN_GENERATOR);
+    public BeanFactory(Map<Class<?>, BeanInitInfo> beanInitInfos) {
+        this(beanInitInfos, DEFAULT_BEAN_GENERATOR);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
-    }
-
-    public void initialize() {
+    private void initialize() {
         beanInitInfos.keySet()
                 .forEach(beanType -> createBean(new LinkedHashSet<>(), beanType));
         beans = Collections.unmodifiableMap(beans);
-    }
-
-    public Map<Class<?>, Object> getBeansByAnnotation(Class<? extends Annotation> annotation) {
-        return beans.entrySet()
-                .stream()
-                .filter(map -> map.getKey().isAnnotationPresent(annotation))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Object createBean(Set<Class<?>> dependency, Class<?> type) {
@@ -96,5 +81,9 @@ public class BeanFactory {
 
             throw new CircularDependencyException(circularDependency);
         }
+    }
+
+    public Map<Class<?>, Object> getInitializedBeans() {
+        return Collections.unmodifiableMap(beans);
     }
 }

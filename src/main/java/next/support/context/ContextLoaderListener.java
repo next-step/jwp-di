@@ -1,9 +1,6 @@
 package next.support.context;
 
-import core.annotation.ComponentScan;
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanFactoryUtils;
-import core.di.factory.ComponentScanner;
+import core.di.ApplicationContext;
 import core.mvc.DispatcherServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +13,6 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
 
 @WebListener
 public class ContextLoaderListener implements ServletContextListener {
@@ -27,43 +21,24 @@ public class ContextLoaderListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // order is important
-        BeanFactory beanFactory = initBeans();
-        initDatabase(beanFactory);
-        initDispatcherServlet(sce, beanFactory);
+        ApplicationContext appContext = new ApplicationContext();
+        initDatabase(appContext);
+        initDispatcherServlet(sce, appContext);
 
         logger.info("Completed Load ServletContext!");
     }
 
-    private void initDispatcherServlet(ServletContextEvent sce, BeanFactory beanFactory) {
+    private void initDispatcherServlet(ServletContextEvent sce, ApplicationContext appContext) {
         ServletRegistration.Dynamic dispatcher =
-                sce.getServletContext().addServlet("dispatcher", new DispatcherServlet(beanFactory));
+                sce.getServletContext().addServlet("dispatcher", new DispatcherServlet(appContext));
         dispatcher.addMapping("/");
         dispatcher.setLoadOnStartup(1);
     }
 
-    private void initDatabase(BeanFactory beanFactory) {
+    private void initDatabase(ApplicationContext appContext) {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, beanFactory.getBean(DataSource.class));
-    }
-
-    private BeanFactory initBeans() {
-        Set<Class<?>> classes = ComponentScanner.scan(getBasePackage());
-        BeanFactory beanFactory = new BeanFactory(classes);
-        beanFactory.initialize();
-
-        return beanFactory;
-    }
-
-    private String[] getBasePackage() {
-        Set<Class<?>> classes =
-                ComponentScanner.scan(Collections.singletonList(ComponentScan.class), "");
-
-        return classes.stream()
-                .map(clazz -> clazz.getDeclaredAnnotation(ComponentScan.class))
-                .map(ComponentScan::basePackages)
-                .flatMap(Arrays::stream)
-                .toArray(String[]::new);
+        DatabasePopulatorUtils.execute(populator, appContext.getBean(DataSource.class));
     }
 
     @Override

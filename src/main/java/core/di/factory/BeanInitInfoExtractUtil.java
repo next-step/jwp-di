@@ -8,12 +8,20 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BeanInitInfoExtractUtil {
 
     private BeanInitInfoExtractUtil() {}
+
+    public static Map<Class<?>, BeanInitInfo> createBeanInitInfos(Set<Class<?>> preInstanticateBeans) {
+        return preInstanticateBeans.stream()
+                .map(BeanInitInfoExtractUtil::extractBeanInitInfo)
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 
     public static Map<Class<?>, BeanInitInfo> extractBeanInitInfo(Class<?> clazz) {
         Map<Class<?>, BeanInitInfo> beanInitInfos = new HashMap<>();

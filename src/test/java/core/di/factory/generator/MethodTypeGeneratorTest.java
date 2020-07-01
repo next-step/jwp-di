@@ -1,14 +1,12 @@
 package core.di.factory.generator;
 
 import core.annotation.Bean;
-import core.annotation.Component;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanInitInfo;
 import core.di.factory.BeanInitInfoExtractUtil;
 import core.di.factory.circular.OneComponent;
 import core.di.factory.example.*;
-import core.jdbc.JdbcTemplate;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,9 +15,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import static core.utils.Generator.beanFactoryOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("@Bean 과 같이 메소드로 정의되어있는 빈을 생성하기 위한 제너레이터")
@@ -29,7 +31,7 @@ class MethodTypeGeneratorTest {
 
     @BeforeEach
     private void setEnv() {
-        beanFactory = new BeanFactory(new HashSet<>(
+        beanFactory = beanFactoryOf(new HashSet<>(
                 Collections.singletonList(IntegrationConfig.class))
         );
     }

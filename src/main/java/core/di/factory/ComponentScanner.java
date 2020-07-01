@@ -1,9 +1,6 @@
 package core.di.factory;
 
-import core.annotation.Component;
-import core.annotation.Configuration;
-import core.annotation.Repository;
-import core.annotation.Service;
+import core.annotation.*;
 import core.annotation.web.Controller;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -11,10 +8,7 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ComponentScanner {
@@ -31,6 +25,21 @@ public class ComponentScanner {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
 
         return loadComponents(targetAnnotations, reflections);
+    }
+
+    public static Set<Class<?>> scanAfterComponentScan(String componentScanBasePackage) {
+        return scan(findBasePackages(componentScanBasePackage));
+    }
+
+    private static String[] findBasePackages(String basePackage) {
+        Set<Class<?>> classes =
+                ComponentScanner.scan(Collections.singletonList(ComponentScan.class), basePackage);
+
+        return classes.stream()
+                .map(clazz -> clazz.getDeclaredAnnotation(ComponentScan.class))
+                .map(ComponentScan::basePackages)
+                .flatMap(Arrays::stream)
+                .toArray(String[]::new);
     }
 
     private static Set<Class<?>> loadComponents(List<Class<? extends Annotation>> targetAnnotations, Reflections reflections) {
