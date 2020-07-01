@@ -3,18 +3,23 @@ package core.di.factory;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import core.util.ReflectionUtils;
+import next.dao.AnswerDaoTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
 
-import static core.mvc.DispatcherServlet.TARGET_BEAN_CLASSES;
+import static core.mvc.DispatcherServlet.ALL_TARGET_TYPES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
+    private static final Logger log = LoggerFactory.getLogger(BeanFactoryTest.class);
+
     private Reflections reflections;
     private BeanFactory beanFactory;
 
@@ -22,8 +27,13 @@ public class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstanticateClazz = ReflectionUtils.getTypesAnnotatedWith(reflections, TARGET_BEAN_CLASSES);
-        beanFactory = new BeanFactory(preInstanticateClazz);
+
+        Set<Class<?>> rootTypes = ReflectionUtils.getTypesAnnotatedWith(reflections, ALL_TARGET_TYPES);
+        rootTypes.forEach(
+            rootType -> log.debug("rootTypes: {}", rootType.getSimpleName())
+        );
+
+        beanFactory = new BeanFactory(rootTypes);
         beanFactory.initialize();
     }
 

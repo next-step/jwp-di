@@ -1,14 +1,15 @@
 package core.mvc;
 
 import core.annotation.Component;
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.BeanFactory;
+import core.di.factory.BeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
-import core.di.factory.BeanScanner;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import core.util.ReflectionUtils;
 import org.reflections.Reflections;
@@ -30,7 +31,7 @@ import java.util.Set;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
-    public static final Class[] TARGET_BEAN_CLASSES = new Class[]{Controller.class, Service.class, Repository.class, Component.class};
+    public static final Class[] ALL_TARGET_TYPES = new Class[] {Controller.class, Service.class, Repository.class, Component.class, Configuration.class};
 
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
@@ -46,8 +47,8 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init() {
         Reflections reflections = new Reflections("next.controller", new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Set<Class<?>> preInstantiatedClazz = ReflectionUtils.getTypesAnnotatedWith(reflections, TARGET_BEAN_CLASSES);
-        beanFactory = new BeanFactory(preInstantiatedClazz);
+        Set<Class<?>> rootTypes = ReflectionUtils.getTypesAnnotatedWith(reflections, ALL_TARGET_TYPES);
+        beanFactory = new BeanFactory(rootTypes);
         beanFactory.initialize();
 
         handlerMappingRegistry = new HandlerMappingRegistry();

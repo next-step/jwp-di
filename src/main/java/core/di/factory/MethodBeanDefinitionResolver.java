@@ -1,41 +1,43 @@
 package core.di.factory;
 
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.util.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
-public class MethodBeanDefinitionResolver implements BeanDefinitionResolver {
-    private Set<Class<?>> preInstanticateBeans;
-    private Map<Class<?>, BeanDefinition> beanDefinitions;
+public class MethodBeanDefinitionResolver extends AbstractBeanDefinitionResolver<Method> {
+    private final Method method;
+    private final Object parent;
 
-    public MethodBeanDefinitionResolver(Set<Class<?>> preInstanticateBeans, Map<Class<?>, BeanDefinition> beanDefinitions) {
-        this.preInstanticateBeans = preInstanticateBeans;
-        this.beanDefinitions = beanDefinitions;
+    public MethodBeanDefinitionResolver(
+        Set<Class<?>> rootTypes,
+        Class<?> type,
+        Map<Class<?>, BeanDefinition> beanDefinitions,
+        Map<Class<?>, BeanDefinitionResolver> resolvers,
+        Method method,
+        Object parent
+    ) {
+        super(rootTypes, type, beanDefinitions, resolvers);
+        this.parent = parent;
+        this.method = method;
     }
 
     @Override
-    public BeanDefinition resolve(Class<?> beanClass) {
+    public BeanDefinition resolve() {
         try {
-            Set<Method> methods = BeanFactoryUtils.getAnnotatedBeanMethod(beanClass);
-
-            if (CollectionUtils.isEmpty(methods)) {
-                return null;
+            if (ArrayUtils.isEmpty(method.getParameters())) {
+                return buildBeanDefinition(null);
             }
 
-            for (Method method : methods) {
-                Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(method.getReturnType(), preInstanticateBeans);
-
-                if (!beanDefinitions.containsKey(concreteClass)) {
-                    beanDefinitions.put(concreteClass, resolve(concreteClass, method));
-                }
-            }
+            return getParameterizedBeanDefinition(method.getParameters());
         }
         catch (Exception e) {
             log.error(e.getMessage());
@@ -43,46 +45,28 @@ public class MethodBeanDefinitionResolver implements BeanDefinitionResolver {
         }
     }
 
-    private BeanDefinition resolve(Class<?> type, Method method) {
-        if (ArrayUtils.isEmpty(method.getParameters())) {
-            return buildBeanDefinition(type, null, method, null);
-        }
-
-        return getParameterizedBeanDefinition(type, method);
+    @Override
+    public Constructor getConstructor() {
+        return null;
     }
 
-    private BeanDefinition getParameterizedBeanDefinition(Class<?> type, Method method) {
-        Parameter[] parameters = method.getParameters();
-        List<BeanDefinition> arguments = Lists.newArrayList();
-
-        for (Parameter parameter : parameters) {
-            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameter.getType(), preInstanticateBeans);
-
-            if (beanDefinitions.containsKey(concreteClass)) {
-                arguments.add(beanDefinitions.get(concreteClass));
-            }
-            else {
-                BeanDefinition beanDefinition = resolve(concreteClass);
-                beanDefinitions.put(concreteClass, beanDefinition);
-                arguments.add(beanDefinition);
-            }
-        }
-
-        return buildBeanDefinition(type, constructor, arguments);
+    @Override
+    public Method getMethod() {
+        return method;
     }
 
-    private BeanDefinition buildBeanDefinition(
-        Class<?> type,
-        Constructor constructor,
-        Method method,
-        List<BeanDefinition> arguments
-    ) {
-        return BeanDefinition.builder()
-            .type(type)
-            .annotations(Arrays.asList(type.getDeclaredAnnotations()))
-            .constructor(constructor)
-            .method(method)
-            .children(arguments)
-            .build();
+    @Override
+    public Object getParent() {
+        return parent;
+    }
+
+    @Override
+    public Class<?> getType() {
+        return type;
+    }
+
+    @Override
+    List<Annotation> getAnnotations() {
+        return Arrays.asList(method.getAnnotations());
     }
 }

@@ -1,5 +1,6 @@
 package core.di.factory;
 
-public interface BeanDefinitionResolver {
-    BeanDefinition resolve(Class<?> beanClass);
+public interface BeanDefinitionResolver<T> {
+    Class<?> getType();
+    BeanDefinition resolve();
 }

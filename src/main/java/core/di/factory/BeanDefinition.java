@@ -16,8 +16,9 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 
 @Getter
-public class BeanDefinition<T> {
+public class BeanDefinition {
     private final Class<?> type;
+    private final Object parent;
     private final Constructor constructor;
     private final Method method;
     private final Set<Class<? extends Annotation>> annotations = Sets.newHashSet();
@@ -26,6 +27,7 @@ public class BeanDefinition<T> {
     @Builder
     public BeanDefinition(
         Class<?> type,
+        Object parent,
         List<Annotation> annotations,
         Constructor constructor,
         Method method,
@@ -36,6 +38,7 @@ public class BeanDefinition<T> {
         }
 
         this.type = type;
+        this.parent = parent;
 
         if (!CollectionUtils.isEmpty(annotations)) {
             this.annotations.addAll(buildAnnotations(annotations));

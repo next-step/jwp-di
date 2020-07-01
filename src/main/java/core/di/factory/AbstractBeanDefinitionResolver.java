@@ -2,83 +2,108 @@ package core.di.factory;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
+import static core.di.factory.BeanFactory.TARGET_ANNOTATION_TYPES;
+
 @Slf4j
-public abstract class AbstractBeanDefinitionResolver implements BeanDefinitionResolver {
-    protected final Set<Class<?>> preInstanticateBeans;
+public abstract class AbstractBeanDefinitionResolver<T> implements BeanDefinitionResolver<T> {
+    protected final Map<Class<?>, BeanDefinitionResolver> resolvers;
+    protected final Set<Class<?>> rootTypes;
+    protected final Class<?> type;
+
     protected final Map<Class<?>, BeanDefinition> beanDefinitions;
 
-    public AbstractBeanDefinitionResolver(Set<Class<?>> preInstanticateBeans, Map<Class<?>, BeanDefinition> beanDefinitions) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public AbstractBeanDefinitionResolver(
+        Set<Class<?>> rootTypes,
+        Class<?> type,
+        Map<Class<?>, BeanDefinition> beanDefinitions,
+        Map<Class<?>, BeanDefinitionResolver> resolvers) {
+        this.rootTypes = rootTypes;
+        this.type = type;
         this.beanDefinitions = beanDefinitions;
+        this.resolvers = resolvers;
     }
 
-    @Override
-    public BeanDefinition resolve(Class<?> beanClass) {
-        try {
-            Optional<Constructor> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(beanClass);
-
-            if (hasNoArgument(injectedConstructor)) {
-                return getNonParameterizedBeanDefinition(beanClass, injectedConstructor);
-            }
-
-            return getParameterizedBeanDefinition(beanClass, injectedConstructor.get());
-        }
-        catch (Exception e) {
-            log.error(e.getMessage());
-            return null;
-        }
-    }
-
-    private boolean hasNoArgument(Optional<Constructor> constructor) {
-        return !constructor.isPresent() || ArrayUtils.isEmpty(constructor.get().getParameters());
-    }
-
-    private BeanDefinition getNonParameterizedBeanDefinition(Class<?> beanClass, Optional<Constructor> constructor) {
-        if (beanDefinitions.containsKey(beanClass)) {
-            return beanDefinitions.get(beanClass);
-        }
-
-        return constructor
-                .map(c -> buildBeanDefinition(beanClass, c,null))
-                .orElseGet(() -> buildBeanDefinition(beanClass, null, null));
-    }
-
-    private BeanDefinition getParameterizedBeanDefinition(Class<?> type, Constructor constructor) {
-        Parameter[] parameters = constructor.getParameters();
+    protected BeanDefinition getParameterizedBeanDefinition(Parameter[] parameters) {
         List<BeanDefinition> arguments = Lists.newArrayList();
 
         for (Parameter parameter : parameters) {
-            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameter.getType(), preInstanticateBeans);
+            Class<?> parameterType = getParameterType(parameter);
 
-            if (beanDefinitions.containsKey(concreteClass)) {
-                arguments.add(beanDefinitions.get(concreteClass));
+            if (beanDefinitions.containsKey(parameterType)) {
+                arguments.add(beanDefinitions.get(parameterType));
             }
             else {
-                BeanDefinition beanDefinition = resolve(concreteClass);
-                beanDefinitions.put(concreteClass, beanDefinition);
+                BeanDefinition beanDefinition = getResolver(parameterType).resolve();
+                beanDefinitions.put(parameterType, beanDefinition);
                 arguments.add(beanDefinition);
             }
         }
 
-        return buildBeanDefinition(type, constructor, arguments);
+        return buildBeanDefinition(arguments);
     }
 
-    private BeanDefinition buildBeanDefinition(
-        Class<?> type,
-        Constructor constructor,
+    private Class<?> getParameterType(Parameter parameter) {
+        Class<?> type = BeanFactoryUtils.findConcreteClass(parameter.getType(), rootTypes);
+
+        if (Objects.nonNull(type)) {
+            return type;
+        }
+
+        return parameter.getType();
+    }
+
+    private BeanDefinitionResolver getResolver(Class<?> type) {
+        if (resolvers.containsKey(type)) {
+            return resolvers.get(type);
+        }
+
+        return getNewResolver(type);
+    }
+
+    private BeanDefinitionResolver getNewResolver(Class<?> type) {
+        BeanDefinitionResolver resolver = null;
+
+        if (TARGET_ANNOTATION_TYPES.contains(type)) {
+            resolver = new ConstructorBeanDefinitionResolver(rootTypes, type, beanDefinitions, resolvers);
+            resolvers.put(type, resolver);
+        }
+        else {
+            Set<Method> methods = BeanFactoryUtils.getAnnotatedBeanMethods(type);
+            Object parent = BeanUtils.instantiateClass(type);
+
+            for (Method method : methods) {
+                resolver = new MethodBeanDefinitionResolver(rootTypes, type, beanDefinitions, resolvers, method, parent);
+                resolvers.put(type, resolver);
+            }
+        }
+
+        return resolver;
+    }
+
+    protected BeanDefinition buildBeanDefinition(
         List<BeanDefinition> arguments
     ) {
+        log.debug("type: {}, parent: {}, constructor: {}, method: {}", getType(), getParent(), getConstructor(), getMethod());
         return BeanDefinition.builder()
-            .type(type)
-            .annotations(Arrays.asList(type.getDeclaredAnnotations()))
-            .constructor(constructor)
+            .type(getType())
+            .parent(getParent())
+            .annotations(getAnnotations())
+            .constructor(getConstructor())
+            .method(getMethod())
             .children(arguments)
             .build();
     }
+
+    abstract Constructor getConstructor();
+    abstract Method getMethod();
+    abstract Object getParent();
+    abstract List<Annotation> getAnnotations();
 }

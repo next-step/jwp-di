@@ -12,7 +12,7 @@ import support.test.DBInitializer;
 import java.util.List;
 import java.util.Set;
 
-import static core.mvc.DispatcherServlet.TARGET_BEAN_CLASSES;
+import static core.mvc.DispatcherServlet.ALL_TARGET_TYPES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserDaoTest {
@@ -26,7 +26,7 @@ public class UserDaoTest {
         DBInitializer.initialize();
 
         Reflections reflections = new Reflections("next.controller");
-        Set<Class<?>> preInstanticateClazz = ReflectionUtils.getTypesAnnotatedWith(reflections, TARGET_BEAN_CLASSES);
+        Set<Class<?>> preInstanticateClazz = ReflectionUtils.getTypesAnnotatedWith(reflections, ALL_TARGET_TYPES);
         beanFactory = new BeanFactory(preInstanticateClazz);
         beanFactory.initialize();
 
