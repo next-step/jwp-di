@@ -1,25 +1,22 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
+import core.di.factory.example.BoardService;
+import core.di.factory.example.MockBoardRepository;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
-
-import java.lang.annotation.Annotation;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
-    private BeanFactory beanFactory;
+    private DefaultBeanFactory beanFactory;
     private BeanScanner beanScanner;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     public void setup() {
-        beanFactory = new BeanFactory();
+        beanFactory = new DefaultBeanFactory();
         beanScanner = new BeanScanner(beanFactory);
 
         beanScanner.scan("core.di.factory.example");
@@ -38,12 +35,11 @@ public class BeanFactoryTest {
         assertNotNull(qnaService.getQuestionRepository());
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
+    @Test
+    public void qualifierTest() {
+        BoardService boardService = beanFactory.getBean(BoardService.class);
+
+        Assertions.assertThat(boardService.getBoardRepository()).isInstanceOf(MockBoardRepository.class);
     }
+
 }

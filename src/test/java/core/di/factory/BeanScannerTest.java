@@ -13,12 +13,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class BeanScannerTest {
 
-    private BeanFactory beanFactory;
+    private DefaultBeanFactory beanFactory;
     private BeanScanner beanScanner;
 
     @BeforeEach
     public void setUp() {
-        beanFactory = new BeanFactory();
+        beanFactory = new DefaultBeanFactory();
         beanScanner = new BeanScanner(beanFactory);
     }
 
