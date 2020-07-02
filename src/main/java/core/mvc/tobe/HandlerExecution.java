@@ -1,7 +1,8 @@
 package core.mvc.tobe;
 
 import core.mvc.ModelAndView;
-import core.mvc.tobe.support.ArgumentResolver;
+import core.mvc.tobe.support.*;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,17 +13,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Arrays.asList;
+
 public class HandlerExecution {
 
     private static final Map<Method, MethodParameter[]> methodParameterCache = new ConcurrentHashMap<>();
-    private List<ArgumentResolver> argumentResolver;
-    private ParameterNameDiscoverer parameterNameDiscoverer;
-    private Object target;
-    private Method method;
+    private static final ParameterNameDiscoverer parameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
+    private static final List<ArgumentResolver> argumentResolver = asList(
+            new HttpRequestArgumentResolver(),
+            new HttpResponseArgumentResolver(),
+            new RequestParamArgumentResolver(),
+            new PathVariableArgumentResolver(),
+            new ModelArgumentResolver()
+    );
 
-    public HandlerExecution(ParameterNameDiscoverer parameterNameDiscoverer, List<ArgumentResolver> argumentResolvers, Object target, Method method) {
-        this.parameterNameDiscoverer = parameterNameDiscoverer;
-        this.argumentResolver = argumentResolvers;
+    private final Object target;
+    private final Method method;
+
+    public HandlerExecution(Object target, Method method) {
         this.target = target;
         this.method = method;
     }
