@@ -41,5 +41,4 @@ public class BeanFactoryTest {
 
         Assertions.assertThat(boardService.getBoardRepository()).isInstanceOf(MockBoardRepository.class);
     }
-
 }

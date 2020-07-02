@@ -67,8 +67,9 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
         Object[] parameters = getParameters(methodParameters);
 
         Object instance = BeanUtils.instantiateClass(constructor, parameters);
-        logger.info("bean " + instance.getClass() + " instantiate");
         beans.put(beanDefinition.getName(), instance);
+
+        logger.info("bean " + instance.getClass() + " instantiate");
     }
 
     private Object[] getParameters(MethodParameter[] methodParameters) {
