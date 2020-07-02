@@ -7,14 +7,22 @@ import core.annotation.Component;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.util.ReflectionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static core.di.factory.ClasspathBeanScanner.CLASSPATH_TARGET_TYPES;
 import static java.util.stream.Collectors.toMap;
 
 @Slf4j
@@ -25,8 +33,46 @@ public class BeanFactory {
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
     private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
     private Map<Class<?>, BeanDefinitionResolver> resolvers = Maps.newHashMap();
+    private Set<String> basePackages = Sets.newHashSet();
+    private Set<Class<?>> configurationTypes = Sets.newHashSet();
 
-    public BeanFactory(Set<Class<?>> rootTypes) {
+    public void initialize() {
+        if (!CollectionUtils.isEmpty(configurationTypes)) {
+            registerBeanDefinitions(configurationTypes);
+        }
+    }
+
+    public void registerConfigurationTypes(Class<?> configurationType) {
+        if (Objects.nonNull(configurationType)) {
+            configurationTypes.add(configurationType);
+        }
+    }
+
+    public Set<Class<?>> getClassPathRootTypes() {
+        Set<Class<?>> rootTypes = Sets.newHashSet();
+
+        TypeAnnotationsScanner typeAnnotationsScanner = new TypeAnnotationsScanner();
+        SubTypesScanner subTypesScanner = new SubTypesScanner();
+        MethodAnnotationsScanner methodAnnotationsScanner = new MethodAnnotationsScanner();
+
+        for (String basePackage : basePackages) {
+            Reflections reflections = new Reflections(basePackage, typeAnnotationsScanner, subTypesScanner, methodAnnotationsScanner);
+            rootTypes.addAll(ReflectionUtils.getTypesAnnotatedWith(reflections, CLASSPATH_TARGET_TYPES));
+        }
+
+        return rootTypes;
+    }
+
+    public void registerBeanDefinitions(Set<Class<?>> rootTypes) {
+        if (CollectionUtils.isEmpty(rootTypes)) {
+            return;
+        }
+
+        registerResolvers(rootTypes);
+        registerBeanDefinitions();
+    }
+
+    public void registerResolvers(Set<Class<?>> rootTypes) {
         for (Class<?> type : rootTypes) {
             if (!resolvers.containsKey(type)) {
                 putResolvers(rootTypes, type);
@@ -36,6 +82,12 @@ public class BeanFactory {
         resolvers.values().forEach(
             resolver -> log.debug("resolvers: {}", resolver.getType())
         );
+    }
+
+    public void registerBasePackages(String[] basePackages) {
+        if (!ArrayUtils.isEmpty(basePackages)) {
+            this.basePackages.addAll(Arrays.asList(basePackages));
+        }
     }
 
     private void putResolvers(Set<Class<?>> rootTypes, Class<?> type) {
@@ -57,6 +109,25 @@ public class BeanFactory {
         }
     }
 
+    private void registerBeanDefinitions() {
+        if (CollectionUtils.isEmpty(resolvers)) {
+            return;
+        }
+
+        for (Map.Entry<Class<?>, BeanDefinitionResolver> resolverEntry : resolvers.entrySet()) {
+            if (beanDefinitions.containsKey(resolverEntry.getKey())) {
+                continue;
+            }
+
+            BeanDefinition beanDefinition = resolverEntry.getValue().resolve();
+
+            if (Objects.nonNull(beanDefinition)) {
+                beanDefinitions.put(resolverEntry.getKey(), beanDefinition);
+                log.debug("beanDefinitions: {}, {}", beanDefinition.getType().getSimpleName(), beanDefinition.getAnnotations());
+            }
+        }
+    }
+
     private boolean isAnnotatedType(Class<?> type) {
         return TARGET_ANNOTATION_TYPES
             .stream()
@@ -65,21 +136,17 @@ public class BeanFactory {
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.getOrDefault(requiredType, getBeanFromDefinition(requiredType));
-    }
-
-    public void initialize() {
-        for (Map.Entry<Class<?>, BeanDefinitionResolver> resolverEntry : resolvers.entrySet()) {
-            if (beanDefinitions.containsKey(resolverEntry.getKey())) {
-                continue;
-            }
-
-            beanDefinitions.put(resolverEntry.getKey(), resolverEntry.getValue().resolve());
+        if (beans.containsKey(requiredType)) {
+            return (T) beans.get(requiredType);
         }
 
-        beanDefinitions.values().forEach(
-            beanDefinition -> log.debug("beanDefinitions: {}, {}", beanDefinition.getType().getSimpleName(), beanDefinition.getAnnotations())
-        );
+        Object bean = getBeanFromDefinition(requiredType);
+
+        if (Objects.nonNull(bean)) {
+            beans.put(requiredType, bean);
+        }
+
+        return (T)bean;
     }
 
     private <T> Object getBeanFromDefinition(Class<T> type) {
@@ -91,28 +158,36 @@ public class BeanFactory {
 
         try {
             if (Objects.isNull(beanDefinition.getMethod())) {
-                if (Objects.isNull(beanDefinition.getConstructor())) {
-                    return BeanUtils.instantiateClass(beanDefinition.getType());
-                }
-
-                if (CollectionUtils.isEmpty(beanDefinition.getChildren())) {
-                    return BeanUtils.instantiateClass(beanDefinition.getConstructor());
-                }
-
-                return getParameterizedBean(beanDefinition);
+                return getBeanByConstructor(beanDefinition);
             }
             else {
-                if (CollectionUtils.isEmpty(beanDefinition.getChildren())) {
-                    return beanDefinition.getMethod().invoke(beanDefinition.getParent(), beanDefinition.getChildren().toArray(new Object[0]));
-                }
-
-                return getParameterizedBean(beanDefinition);
+                return getBeanByMethodInvocation(beanDefinition);
             }
         }
         catch (Exception e) {
             log.error(e.getMessage());
             return null;
         }
+    }
+
+    private Object getBeanByConstructor(BeanDefinition beanDefinition) {
+        if (Objects.isNull(beanDefinition.getConstructor())) {
+            return BeanUtils.instantiateClass(beanDefinition.getType());
+        }
+
+        if (CollectionUtils.isEmpty(beanDefinition.getChildren())) {
+            return BeanUtils.instantiateClass(beanDefinition.getConstructor());
+        }
+
+        return getParameterizedBean(beanDefinition);
+    }
+
+    private Object getBeanByMethodInvocation(BeanDefinition beanDefinition) throws IllegalAccessException, InvocationTargetException {
+        if (CollectionUtils.isEmpty(beanDefinition.getChildren())) {
+            return beanDefinition.getMethod().invoke(beanDefinition.getParent());
+        }
+
+        return getParameterizedBean(beanDefinition);
     }
 
     private Object getParameterizedBean(BeanDefinition beanDefinition) {
@@ -151,5 +226,13 @@ public class BeanFactory {
             .stream()
             .filter(entry -> entry.getValue().getAnnotations().contains(CONTROLLER_CLASS))
             .collect(toMap(Map.Entry::getKey, entry -> getBean(entry.getKey())));
+    }
+
+    public void registerBean(Class<?> type, Object bean) {
+        if (Objects.isNull(bean)) {
+            return;
+        }
+
+        this.beans.put(type, bean);
     }
 }

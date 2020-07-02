@@ -1,25 +1,20 @@
 package core.mvc;
 
-import core.annotation.Component;
-import core.annotation.Configuration;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
+import core.config.MyConfiguration;
+import core.di.factory.ApplicationContext;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.HandlerBeanScanner;
+import core.di.factory.ConfigurationBeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
-import core.util.ReflectionUtils;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
+import next.support.context.ContextLoaderListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -27,12 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Set;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
-    public static final Class[] ALL_TARGET_TYPES = new Class[] {Controller.class, Service.class, Repository.class, Component.class, Configuration.class};
-
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
@@ -42,18 +34,15 @@ public class DispatcherServlet extends HttpServlet {
 
     private HandlerExecutor handlerExecutor;
 
-    private BeanFactory beanFactory;
-
     @Override
     public void init() {
-        Reflections reflections = new Reflections("next.controller", new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Set<Class<?>> rootTypes = ReflectionUtils.getTypesAnnotatedWith(reflections, ALL_TARGET_TYPES);
-        beanFactory = new BeanFactory(rootTypes);
-        beanFactory.initialize();
-
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(new BeanScanner(beanFactory)));
+
+        AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping(ContextLoaderListener.applicationContext);
+        handlerMapping.initialize();
+
+        handlerMappingRegistry.addHandlerMpping(handlerMapping);
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
