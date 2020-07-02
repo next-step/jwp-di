@@ -61,9 +61,4 @@ public class ConstructorBeanDefinitionResolver extends AbstractBeanDefinitionRes
     public Class<?> getType() {
         return type;
     }
-
-    @Override
-    List<Annotation> getAnnotations() {
-        return Arrays.asList(type.getAnnotations());
-    }
 }

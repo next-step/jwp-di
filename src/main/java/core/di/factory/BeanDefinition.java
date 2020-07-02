@@ -1,7 +1,6 @@
 package core.di.factory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.util.CollectionUtils;
@@ -9,11 +8,7 @@ import org.springframework.util.CollectionUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import static java.util.stream.Collectors.toSet;
+import java.util.*;
 
 @Getter
 public class BeanDefinition {
@@ -21,14 +16,12 @@ public class BeanDefinition {
     private final Object parent;
     private final Constructor constructor;
     private final Method method;
-    private final Set<Class<? extends Annotation>> annotations = Sets.newHashSet();
     private final List<BeanDefinition> children = Lists.newArrayList();
 
     @Builder
     public BeanDefinition(
         Class<?> type,
         Object parent,
-        List<Annotation> annotations,
         Constructor constructor,
         Method method,
         List<BeanDefinition> children
@@ -40,10 +33,6 @@ public class BeanDefinition {
         this.type = type;
         this.parent = parent;
 
-        if (!CollectionUtils.isEmpty(annotations)) {
-            this.annotations.addAll(buildAnnotations(annotations));
-        }
-
         this.constructor = constructor;
         this.method = method;
 
@@ -52,10 +41,11 @@ public class BeanDefinition {
         }
     }
 
-    private Set<? extends Class<? extends Annotation>> buildAnnotations(List<Annotation> annotations) {
-        return annotations
-            .stream()
-            .map(Annotation::annotationType)
-            .collect(toSet());
+    public Set<Annotation> getAnnotations() {
+        if (Objects.nonNull(method)) {
+            return new HashSet<>(Arrays.asList(method.getAnnotations()));
+        }
+
+        return new HashSet<>(Arrays.asList(type.getAnnotations()));
     }
 }

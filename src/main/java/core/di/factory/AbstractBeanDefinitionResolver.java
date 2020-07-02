@@ -98,7 +98,6 @@ public abstract class AbstractBeanDefinitionResolver<T> implements BeanDefinitio
         return BeanDefinition.builder()
             .type(getType())
             .parent(getParent())
-            .annotations(getAnnotations())
             .constructor(getConstructor())
             .method(getMethod())
             .children(arguments)
@@ -108,5 +107,4 @@ public abstract class AbstractBeanDefinitionResolver<T> implements BeanDefinitio
     abstract Constructor getConstructor();
     abstract Method getMethod();
     abstract Object getParent();
-    abstract List<Annotation> getAnnotations();
 }

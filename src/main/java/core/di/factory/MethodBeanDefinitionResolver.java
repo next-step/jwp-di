@@ -64,9 +64,4 @@ public class MethodBeanDefinitionResolver extends AbstractBeanDefinitionResolver
     public Class<?> getType() {
         return type;
     }
-
-    @Override
-    List<Annotation> getAnnotations() {
-        return Arrays.asList(method.getAnnotations());
-    }
 }

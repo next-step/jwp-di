@@ -123,7 +123,7 @@ public class BeanFactory {
 
             if (Objects.nonNull(beanDefinition)) {
                 beanDefinitions.put(resolverEntry.getKey(), beanDefinition);
-                log.debug("beanDefinitions: {}, {}", beanDefinition.getType().getSimpleName(), beanDefinition.getAnnotations());
+                log.debug("beanDefinitions: {}, {}", beanDefinition.getType().getSimpleName());
             }
         }
     }
