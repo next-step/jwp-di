@@ -224,15 +224,11 @@ public class BeanFactory {
     public Map<Class<?>, Object> getControllers() {
         return beanDefinitions.entrySet()
             .stream()
-            .filter(entry -> entry.getValue().getAnnotations().contains(CONTROLLER_CLASS))
+            .filter(entry -> Objects.nonNull(entry.getValue()) && entry.getValue().getAnnotations().contains(CONTROLLER_CLASS))
             .collect(toMap(Map.Entry::getKey, entry -> getBean(entry.getKey())));
     }
 
-    public void registerBean(Class<?> type, Object bean) {
-        if (Objects.isNull(bean)) {
-            return;
-        }
-
-        this.beans.put(type, bean);
+    public void clearResolvers() {
+        resolvers.clear();
     }
 }

@@ -25,8 +25,7 @@ public class ApplicationContext {
 
         classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
         classpathBeanScanner.doScan(basePackages);
-
-        beanFactory.registerBean(BeanFactory.class, beanFactory);
+        clearResolvers();
     }
 
     public Map<HandlerKey, HandlerExecution> scan() {
@@ -38,7 +37,7 @@ public class ApplicationContext {
         return beanFactory.getBean(requiredType);
     }
 
-    public void registerBean(Class<?> type, Object bean) {
-        beanFactory.registerBean(type, bean);
+    private void clearResolvers() {
+        beanFactory.clearResolvers();
     }
 }

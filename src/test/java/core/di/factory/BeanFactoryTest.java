@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +22,12 @@ public class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         beanFactory = new BeanFactory();
-        ClasspathBeanScanner cbs = new ClasspathBeanScanner(beanFactory);
-        cbs.doScan("core.di.factory.example");
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+        cbs.register(ExampleConfig.class);
+        beanFactory.initialize();
+
+        ClasspathBeanScanner cpbs = new ClasspathBeanScanner(beanFactory);
+        cpbs.doScan("core.di.factory.example");
     }
 
     @Test
