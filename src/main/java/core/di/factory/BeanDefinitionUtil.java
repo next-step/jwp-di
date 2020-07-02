@@ -7,7 +7,6 @@ import org.springframework.lang.Nullable;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * TODO: 써보다가 마음에 안들면 책임을 DefaultBeanDefinition으로 이동하자.
@@ -30,9 +29,8 @@ public final class BeanDefinitionUtil {
 
     public static BeanDefinition buildBeanDefinition(Class<?> clazz) {
         final DefaultBeanDefinition beanDefinition = new DefaultBeanDefinition(clazz);
-        final Optional<Constructor<?>> maybeCtor = Optional.ofNullable(findBeanConstructor(clazz));
-        if (maybeCtor.isPresent()) {
-            final Constructor<?> ctor = maybeCtor.get();
+        final Constructor<?> ctor = findBeanConstructor(clazz);
+        if (ctor != null) {
             beanDefinition.setDependencies(ctor.getParameterTypes());
             beanDefinition.setBeanConstructor(ctor);
         }
