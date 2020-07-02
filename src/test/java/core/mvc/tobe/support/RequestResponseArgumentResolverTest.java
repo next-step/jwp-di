@@ -36,7 +36,7 @@ class RequestResponseArgumentResolverTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        MethodParameter mp = new MethodParameter(null, HttpServletRequest.class, new Annotation[0], "");
+        MethodParameter mp = new MethodParameter(HttpServletRequest.class, new Annotation[0], "");
         Object result = resolveArgument(mp, request, response);
 
         assertThat(result).isEqualTo(request);
@@ -48,7 +48,7 @@ class RequestResponseArgumentResolverTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        MethodParameter mp = new MethodParameter(null, HttpServletResponse.class, new Annotation[0], "");
+        MethodParameter mp = new MethodParameter(HttpServletResponse.class, new Annotation[0], "");
         Object result = resolveArgument(mp, request, response);
 
         assertThat(result).isEqualTo(response);

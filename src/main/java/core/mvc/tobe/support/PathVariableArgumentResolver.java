@@ -33,7 +33,7 @@ public class PathVariableArgumentResolver extends AbstractAnnotationArgumentReso
     }
 
     private String getPattern(MethodParameter methodParameter) {
-        Method method = methodParameter.getMethod();
+        Method method = (Method) methodParameter.getExecutable();
         if (method.isAnnotationPresent(RequestMapping.class)) {
             final RequestMapping annotation = method.getAnnotation(RequestMapping.class);
             return annotation.value();

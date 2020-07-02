@@ -24,6 +24,7 @@ public class JdbcTemplate {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pss.setParameters(pstmt);
             pstmt.executeUpdate();
+            logger.info(sql);
         } catch (SQLException e) {
             throw new DataAccessException(e);
         }
@@ -66,6 +67,7 @@ public class JdbcTemplate {
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pss.setParameters(pstmt);
+            logger.info(sql);
             return mapResultSetToObject(rm, pstmt);
         } catch (SQLException e) {
             throw new DataAccessException(e);
