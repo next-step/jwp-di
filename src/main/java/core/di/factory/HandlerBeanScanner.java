@@ -17,7 +17,7 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 
 @Slf4j
-public class BeanScanner {
+public class HandlerBeanScanner {
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
                 new HttpResponseArgumentResolver(),
@@ -30,7 +30,7 @@ public class BeanScanner {
 
     private final BeanFactory beanFactory;
 
-    public BeanScanner(BeanFactory beanFactory) {
+    public HandlerBeanScanner(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 

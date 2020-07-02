@@ -1,36 +1,31 @@
 package next.dao;
 
+import core.config.MyConfiguration;
+import core.di.factory.ApplicationContext;
 import core.di.factory.BeanFactory;
-import core.util.ReflectionUtils;
+import core.di.factory.ClasspathBeanScanner;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 import support.test.DBInitializer;
 
+import javax.sql.DataSource;
 import java.util.List;
-import java.util.Set;
 
-import static core.mvc.DispatcherServlet.TARGET_BEAN_CLASSES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserDaoTest {
 
     private UserDao userDao;
 
-    private BeanFactory beanFactory;
+    private ApplicationContext applicationContext;
 
     @BeforeEach
     public void setup() {
-        DBInitializer.initialize();
-
-        Reflections reflections = new Reflections("next.controller");
-        Set<Class<?>> preInstanticateClazz = ReflectionUtils.getTypesAnnotatedWith(reflections, TARGET_BEAN_CLASSES);
-        beanFactory = new BeanFactory(preInstanticateClazz);
-        beanFactory.initialize();
-
-        userDao = beanFactory.getBean(UserDao.class);
+        applicationContext = new ApplicationContext(MyConfiguration.class);
+        DBInitializer.initialize(applicationContext.getBean(DataSource.class));
+        userDao = applicationContext.getBean(UserDao.class);
     }
 
     @Test

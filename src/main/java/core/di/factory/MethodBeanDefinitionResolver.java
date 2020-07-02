@@ -3,34 +3,41 @@ package core.di.factory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
-public class ConstructorBeanDefinitionResolver extends AbstractBeanDefinitionResolver<Constructor> {
-    private final Constructor constructor;
+public class MethodBeanDefinitionResolver extends AbstractBeanDefinitionResolver<Method> {
+    private final Method method;
+    private final Object parent;
 
-    public ConstructorBeanDefinitionResolver(
+    public MethodBeanDefinitionResolver(
         Set<Class<?>> rootTypes,
         Class<?> type,
         Map<Class<?>, BeanDefinition> beanDefinitions,
-        Map<Class<?>, BeanDefinitionResolver> resolvers) {
+        Map<Class<?>, BeanDefinitionResolver> resolvers,
+        Method method,
+        Object parent
+    ) {
         super(rootTypes, type, beanDefinitions, resolvers);
-        this.constructor = BeanFactoryUtils.getInjectedConstructor(type);
+        this.parent = parent;
+        this.method = method;
     }
 
     @Override
     public BeanDefinition resolve() {
         try {
-            if (hasNoArgument(constructor)) {
+            if (ArrayUtils.isEmpty(method.getParameters())) {
                 return buildBeanDefinition(null);
             }
 
-            return getParameterizedBeanDefinition(constructor.getParameters());
+            return getParameterizedBeanDefinition(method.getParameters());
         }
         catch (Exception e) {
             log.error(e.getMessage());
@@ -38,23 +45,19 @@ public class ConstructorBeanDefinitionResolver extends AbstractBeanDefinitionRes
         }
     }
 
-    private boolean hasNoArgument(Constructor constructor) {
-        return Objects.isNull(constructor) || ArrayUtils.isEmpty(constructor.getParameters());
-    }
-
     @Override
     public Constructor getConstructor() {
-        return constructor;
+        return null;
     }
 
     @Override
     public Method getMethod() {
-        return null;
+        return method;
     }
 
     @Override
     public Object getParent() {
-        return null;
+        return parent;
     }
 
     @Override
@@ -64,6 +67,6 @@ public class ConstructorBeanDefinitionResolver extends AbstractBeanDefinitionRes
 
     @Override
     List<Annotation> getAnnotations() {
-        return Arrays.asList(type.getAnnotations());
+        return Arrays.asList(method.getAnnotations());
     }
 }

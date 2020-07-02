@@ -1,23 +1,17 @@
 package core.mvc.tobe;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
-import core.util.ReflectionUtils;
+import core.config.MyConfiguration;
+import core.di.factory.ApplicationContext;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import support.test.DBInitializer;
 
-import java.util.Set;
+import javax.sql.DataSource;
 
-import static core.di.factory.BeanFactory.CONTROLLER_CLASS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnnotationHandlerMappingTest {
@@ -26,15 +20,13 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        Reflections reflections = new Reflections("core.mvc.tobe");
-        Set<Class<?>> preInstantiatedClazz = ReflectionUtils.getTypesAnnotatedWith(reflections, CONTROLLER_CLASS);
-        BeanFactory beanFactory = new BeanFactory(preInstantiatedClazz);
+        ApplicationContext applicationContext = new ApplicationContext(MyConfiguration.class);
+        DBInitializer.initialize(applicationContext.getBean(DataSource.class));
 
-        handlerMapping = new AnnotationHandlerMapping(new BeanScanner(beanFactory));
+        handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
 
-        DBInitializer.initialize();
-        userDao = beanFactory.getBean(UserDao.class);
+        userDao = applicationContext.getBean(UserDao.class);
     }
 
     @Test
