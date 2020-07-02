@@ -43,5 +43,4 @@ public class BeanScannerTest {
         assertThat(classBeanDefinition).isNull();
         assertThat(classBeanDefinition1.getType()).isEqualTo(NameController.class);
     }
-
 }

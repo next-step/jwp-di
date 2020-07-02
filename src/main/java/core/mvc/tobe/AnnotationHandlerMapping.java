@@ -26,8 +26,6 @@ import static java.util.Arrays.asList;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Object[] basePackage;
-
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
@@ -47,20 +45,14 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(scan(basePackage));
-    }
 
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+        Object[] controllers = beanFactory.getAnnotatedBeans(Controller.class);
 
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
-        for (Class<?> controller : controllers) {
+        for (Object instance : controllers) {
+            Class<?> controller = instance.getClass();
             Object target = newInstance(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
+            addHandlerExecution(handlerExecutions, target, controller.getMethods());
         }
-
-        return handlers;
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
@@ -79,6 +71,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         String requestUri = request.getRequestURI();
         RequestMethod rm = RequestMethod.valueOf(request.getMethod().toUpperCase());
         logger.debug("requestUri : {}, requestMethod : {}", requestUri, rm);
+
         return getHandlerInternal(new HandlerKey(requestUri, rm));
     }
 
