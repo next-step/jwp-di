@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class DefaultBeanFactory implements BeanFactory {
+public class DefaultBeanFactory implements  BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultBeanFactory.class);
 
     private final Map<Class<?>, BeanDefinition> definitionMap;
