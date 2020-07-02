@@ -25,8 +25,10 @@ public class BeanFactory {
 
     private void initialize() {
         definitionMap.forEach((clazz, beanDefinition) -> {
-            final Object bean = instantiateBean(beanDefinition);
-            registerBean(bean, beanDefinition);
+            if (!beanDefinition.isLazyInit()) {
+                final Object bean = instantiateBean(beanDefinition);
+                registerBean(bean, beanDefinition);
+            }
         });
     }
 

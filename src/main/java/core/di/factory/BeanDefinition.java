@@ -40,4 +40,9 @@ public interface BeanDefinition {
      * @param clazz dependencies of this bean.
      */
     void setDependencies(Class<?> ...clazz);
+
+    /**
+     * @return true if the bean requires lazy initialization.
+     */
+    boolean isLazyInit();
 }

@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import core.annotation.Lazy;
 import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Constructor;
@@ -47,5 +48,14 @@ public class DefaultBeanDefinition implements BeanDefinition {
     @Override
     public void setDependencies(Class<?>... clazz) {
         dependencies.addAll(Arrays.asList(clazz));
+    }
+
+    @Override
+    public boolean isLazyInit() {
+        final Lazy annotation = originClass.getAnnotation(Lazy.class);
+        if (annotation == null) {
+            return false;
+        }
+        return annotation.value();
     }
 }
