@@ -20,6 +20,14 @@ public class BeanFactory {
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         definitionMap = BeanDefinitionUtil.convertClassToDefinition(preInstanticateBeans);
+        initialize();
+    }
+
+    private void initialize() {
+        definitionMap.forEach((clazz, beanDefinition) -> {
+            final Object bean = instantiateBean(beanDefinition);
+            registerBean(bean, beanDefinition);
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -36,6 +44,12 @@ public class BeanFactory {
         }
 
         final BeanDefinition beanDefinition = maybeDefinition.get();
+        final Object bean = instantiateBean(beanDefinition);
+        registerBean(bean, beanDefinition);
+        return (T) bean;
+    }
+
+    private Object instantiateBean(BeanDefinition beanDefinition) {
         final List<Class<?>> dependenciesClass = Optional
                 .ofNullable(beanDefinition.getDependencies())
                 .orElse(Lists.newArrayList());
@@ -46,8 +60,14 @@ public class BeanFactory {
 
         logger.debug("bean constructor: {}", beanDefinition.getBeanConstructor());
         logger.debug("bean dependencies: {}", dependencies);
-        final Object bean = BeanUtils.instantiateClass(beanDefinition.getBeanConstructor(), dependencies.toArray());
-        beans.put(requiredType, bean);
-        return (T) bean;
+        return BeanUtils.instantiateClass(beanDefinition.getBeanConstructor(), dependencies.toArray());
+    }
+
+    private void registerBean(Object bean, BeanDefinition beanDefinition) {
+        final Class<?> originClass = beanDefinition.getOriginalClass();
+        beans.put(originClass, bean);
+        for (Class<?> type : originClass.getInterfaces()) {
+            beans.put(type, bean);
+        }
     }
 }
