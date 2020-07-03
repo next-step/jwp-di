@@ -25,7 +25,8 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        /*handlerMappingRegistry = new HandlerMappingRegistry();
+        /*
+        handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
 
         AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping(ContextLoaderListener.applicationContext);
@@ -37,7 +38,8 @@ public class DispatcherServlet extends HttpServlet {
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
-        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);*/
+        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+        */
     }
 
     @Override
@@ -51,7 +53,6 @@ public class DispatcherServlet extends HttpServlet {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
                 return;
             }
-
 
             ModelAndView mav = handlerExecutor.handle(req, resp, maybeHandler.get());
             render(mav, req, resp);
@@ -67,7 +68,7 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     public void addHandlerMapping(HandlerMapping handlerMapping) {
-        handlerMappingRegistry.addHandlerMpping(handlerMapping);
+        handlerMappingRegistry.addHandlerMapping(handlerMapping);
     }
 
     public void addHandlerAdapter(HandlerAdapter handlerAdapter) {

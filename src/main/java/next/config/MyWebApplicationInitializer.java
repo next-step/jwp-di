@@ -1,6 +1,7 @@
 package next.config;
 
 import core.di.factory.ApplicationContext;
+import core.jdbc.ConnectionManager;
 import core.mvc.DispatcherServlet;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
@@ -26,12 +27,10 @@ public class MyWebApplicationInitializer implements WebApplicationInitializer {
         ApplicationContext ac = new ApplicationContext(MyConfiguration.class);
         AnnotationHandlerMapping ahm = new AnnotationHandlerMapping(ac);
         ahm.initialize();
-/*
 
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ac.getBean(DataSource.class));
-*/
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet();
         dispatcherServlet.addHandlerMapping(ahm);

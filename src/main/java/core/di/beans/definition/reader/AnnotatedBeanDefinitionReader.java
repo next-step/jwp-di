@@ -1,7 +1,6 @@
 package core.di.beans.definition.reader;
 
 import core.di.beans.definition.AnnotatedBeanDefinition;
-import core.di.beans.definition.BeanDefinitionReader;
 import core.di.beans.definition.BeanDefinitionRegistry;
 import core.di.beans.definition.DefaultBeanDefinition;
 import core.di.factory.BeanFactoryUtils;

@@ -35,6 +35,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private HandlerExecution getHandlerInternal(HandlerKey requestHandlerKey) {
         for (HandlerKey handlerKey : handlerExecutions.keySet()) {
             if (handlerKey.isMatch(requestHandlerKey)) {
+                logger.debug("handler: {}", handlerExecutions.get(handlerKey).getTarget().getClass());
                 return handlerExecutions.get(handlerKey);
             }
         }

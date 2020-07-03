@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import support.test.DBInitializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +20,7 @@ public class AnswerDaoTest {
     public void setup() {
         ApplicationContext applicationContext = new ApplicationContext(MyConfiguration.class);
         answerDao = applicationContext.getBean(AnswerDao.class);
+        DBInitializer.initialize();
     }
 
     @Test
