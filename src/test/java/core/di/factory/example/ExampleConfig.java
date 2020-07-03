@@ -1,12 +1,14 @@
 package core.di.factory.example;
 
 import core.annotation.Bean;
+import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.sql.DataSource;
 
 @Configuration
+@ComponentScan({"core.di.factory.example2", "core.di.factory.example3"})
 public class ExampleConfig {
     @Bean
     public DataSource dataSource() {

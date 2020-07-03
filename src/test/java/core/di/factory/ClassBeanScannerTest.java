@@ -2,6 +2,7 @@ package core.di.factory;
 
 import core.di.factory.example.NameController;
 import core.di.factory.example.QnaController;
+import core.di.factory.example2.TestComponent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,5 +43,14 @@ public class ClassBeanScannerTest {
 
         assertThat(classBeanDefinition).isNull();
         assertThat(classBeanDefinition1.getType()).isEqualTo(NameController.class);
+    }
+
+    @Test
+    @DisplayName("@ComponentScan 동작 테스트")
+    public void componentScanTest() {
+        classBeanScanner.scan("core.di.factory.example");
+
+        assertThat(beanFactory.getBeanDefinition(TestComponent.class.getName())).isNotNull();
+        assertThat(beanFactory.getBeanDefinition(TestComponent.class.getName())).isNotNull();
     }
 }

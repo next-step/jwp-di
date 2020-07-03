@@ -36,4 +36,14 @@ public class MethodBeanDefinition implements BeanDefinition {
     public String getName() {
         return name;
     }
+
+    @Override
+    public String toString() {
+        return "MethodBeanDefinition{" +
+                "parent=" + parent +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                ", method=" + method +
+                '}';
+    }
 }
