@@ -16,7 +16,9 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
     private BeanInitializer beanInitializer;
 
     public DefaultBeanFactory() {
-        beanInitializer = new BeanInitializerComposite(new ClassBeanDefinitionInitializer());
+        beanInitializer = new BeanInitializerComposite(
+                new ClassBeanDefinitionInitializer(),
+                new MethodBeanDefinitionInitializer());
     }
 
     public void initialize() {

@@ -1,25 +1,27 @@
 package core.di.factory;
 
-import core.di.factory.example.BoardService;
-import core.di.factory.example.MockBoardRepository;
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
+import core.di.factory.example.*;
+import core.jdbc.JdbcTemplate;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import javax.sql.DataSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
     private DefaultBeanFactory beanFactory;
-    private ClassBeanScanner classBeanScanner;
 
     @BeforeEach
     public void setup() {
         beanFactory = new DefaultBeanFactory();
-        classBeanScanner = new ClassBeanScanner(beanFactory);
+        new ClassBeanScanner(beanFactory).scan("core.di.factory.example");
+        new MethodBeanScanner(beanFactory).scan("core.di.factory.example");
 
-        classBeanScanner.scan("core.di.factory.example");
         beanFactory.initialize();
     }
 
@@ -37,8 +39,18 @@ public class BeanFactoryTest {
 
     @Test
     public void qualifierTest() {
-        BoardService boardService = beanFactory.getBean(BoardService.class.getName(), BoardService.class);
+        BoardService boardService = beanFactory.getBean(BoardService.class);
 
-        Assertions.assertThat(boardService.getBoardRepository()).isInstanceOf(MockBoardRepository.class);
+        assertThat(boardService.getBoardRepository()).isInstanceOf(MockBoardRepository.class);
+    }
+
+    @Test
+    @DisplayName("@Bean 어노테이션으로 등록한 Bean 테스트")
+    public void methodBeanTest() {
+        MyJdbcTemplate jdbcTemplate = beanFactory.getBean(MyJdbcTemplate.class);
+        BasicDataSource dataSource = (BasicDataSource) beanFactory.getBean("dataSource2", DataSource.class);
+
+        assertThat(jdbcTemplate).isNotNull();
+        assertThat(((BasicDataSource)jdbcTemplate.getDataSource()).getUrl()).isEqualTo(dataSource.getUrl());
     }
 }

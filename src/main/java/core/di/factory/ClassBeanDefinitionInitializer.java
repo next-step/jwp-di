@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 
@@ -26,6 +27,7 @@ public class ClassBeanDefinitionInitializer implements BeanInitializer {
         return beanDefinition instanceof ClassBeanDefinition;
     }
 
+    @Nullable
     @Override
     public Object instantiate(BeanDefinition beanDefinition, BeanFactory beanFactory) {
         if(!support(beanDefinition)) {

@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import core.annotation.Component;
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -22,7 +23,7 @@ public class ClassBeanScanner implements BeanScanner {
 
     private BeanDefinitionRegistry beanDefinitionRegistry;
 
-    private Class<? extends Annotation>[] annotations = new Class[] { Controller.class, Service.class, Repository.class, Component.class };
+    private Class<? extends Annotation>[] annotations = new Class[] { Controller.class, Service.class, Repository.class, Component.class, Configuration.class};
 
     public ClassBeanScanner(BeanDefinitionRegistry beanDefinitionRegistry) {
         this.beanDefinitionRegistry = beanDefinitionRegistry;

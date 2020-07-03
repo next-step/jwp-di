@@ -19,6 +19,14 @@ public class MethodBeanDefinition implements BeanDefinition {
         this.name = method.getName();
     }
 
+    public Class<?> getParent() {
+        return parent;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
     @Override
     public Class<?> getType() {
         return type;
