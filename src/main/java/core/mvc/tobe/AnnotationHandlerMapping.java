@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.factory.BeanFactory;
 import core.di.factory.DefaultBeanFactory;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.*;
@@ -26,18 +27,11 @@ import static java.util.Arrays.asList;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    private static final List<ArgumentResolver> argumentResolvers = asList(
-            new HttpRequestArgumentResolver(),
-            new HttpResponseArgumentResolver(),
-            new RequestParamArgumentResolver(),
-            new PathVariableArgumentResolver(),
-            new ModelArgumentResolver()
-    );
-
-    private DefaultBeanFactory beanFactory;
+    private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private ArgumentResolver argumentResolver;
+    private BeanFactory beanFactory;
 
     public AnnotationHandlerMapping(DefaultBeanFactory beanFactory) {
         this.beanFactory = beanFactory;
@@ -46,6 +40,11 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
 
+        initializeArgumentResolver();
+        initializeControllers();
+    }
+
+    private void initializeControllers() {
         Object[] controllers = beanFactory.getAnnotatedBeans(Controller.class);
 
         for (Object instance : controllers) {
@@ -55,13 +54,17 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         }
     }
 
+    private void initializeArgumentResolver() {
+        this.argumentResolver = new ArgumentResolverComposite(beanFactory);
+    }
+
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
                 .forEach(method -> {
                     RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
                     HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
-                    HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
+                    HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolver, target, method);
                     handlers.put(handlerKey, handlerExecution);
                     logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
                 });

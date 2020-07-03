@@ -15,14 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HandlerExecution {
 
     private static final Map<Method, MethodParameter[]> methodParameterCache = new ConcurrentHashMap<>();
-    private List<ArgumentResolver> argumentResolver;
+    private ArgumentResolver argumentResolver;
     private ParameterNameDiscoverer parameterNameDiscoverer;
     private Object target;
     private Method method;
 
-    public HandlerExecution(ParameterNameDiscoverer parameterNameDiscoverer, List<ArgumentResolver> argumentResolvers, Object target, Method method) {
+    public HandlerExecution(ParameterNameDiscoverer parameterNameDiscoverer, ArgumentResolver argumentResolver, Object target, Method method) {
         this.parameterNameDiscoverer = parameterNameDiscoverer;
-        this.argumentResolver = argumentResolvers;
+        this.argumentResolver = argumentResolver;
         this.target = target;
         this.method = method;
     }
@@ -58,10 +58,8 @@ public class HandlerExecution {
     }
 
     private Object getArguments(MethodParameter methodParameter, HttpServletRequest request, HttpServletResponse response) {
-        for (ArgumentResolver resolver : argumentResolver) {
-            if (resolver.supports(methodParameter)) {
-                return resolver.resolveArgument(methodParameter, request, response);
-            }
+        if(argumentResolver.supports(methodParameter)) {
+            return argumentResolver.resolveArgument(methodParameter, request, response);
         }
 
         throw new IllegalStateException("No suitable resolver for argument: " + methodParameter.getType());
