@@ -1,6 +1,7 @@
 package core.di.factory;
 
-import jdk.internal.jline.internal.Nullable;
+
+import javax.annotation.Nullable;
 
 /**
  * @author KingCjy
