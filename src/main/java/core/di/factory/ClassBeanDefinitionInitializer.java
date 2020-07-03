@@ -1,26 +1,21 @@
 package core.di.factory;
 
 import core.annotation.Inject;
-import core.annotation.Qualifier;
 import core.mvc.tobe.MethodParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
-import org.springframework.core.ParameterNameDiscoverer;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Parameter;
 
 /**
  * @author KingCjy
  */
-public class ClassBeanDefinitionInitializer implements BeanInitializer {
+public class ClassBeanDefinitionInitializer extends AbstractBeanDefinitionInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(ClassBeanDefinitionInitializer.class);
-    private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     @Override
     public boolean support(BeanDefinition beanDefinition) {
@@ -29,11 +24,7 @@ public class ClassBeanDefinitionInitializer implements BeanInitializer {
 
     @Nullable
     @Override
-    public Object instantiate(BeanDefinition beanDefinition, BeanFactory beanFactory) {
-        if(!support(beanDefinition)) {
-            return null;
-        }
-
+    public Object instantiateBean(BeanDefinition beanDefinition, BeanFactory beanFactory) {
         Constructor constructor = findInjectController(beanDefinition.getType());
 
         if(constructor == null) {
@@ -49,36 +40,6 @@ public class ClassBeanDefinitionInitializer implements BeanInitializer {
         return instance;
     }
 
-    private Object[] getParameters(BeanFactory beanFactory, MethodParameter[] methodParameters) {
-        Object[] parameters = new Object[methodParameters.length];
-
-        for (int i = 0; i < methodParameters.length; i++) {
-            String beanName = getBeanName(methodParameters[i]);
-            parameters[i] = beanFactory.getBean(beanName, methodParameters[i].getType());
-        }
-
-        return parameters;
-    }
-
-    private String getBeanName(MethodParameter methodParameter) {
-        String name = methodParameter.getType().getName();
-        Qualifier qualifier = methodParameter.getAnnotation(Qualifier.class);
-
-        return qualifier == null ? name : qualifier.value();
-    }
-
-    private MethodParameter[] getMethodParameters(Constructor constructor) {
-        MethodParameter[] methodParameters = new MethodParameter[constructor.getParameters().length];
-        String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
-        Parameter[] parameters = constructor.getParameters();
-
-        for (int i = 0; i < parameters.length; i++) {
-            methodParameters[i] = new MethodParameter(constructor, parameters[i].getType(), parameters[i].getAnnotations(), parameterNames[i]);
-        }
-
-        return methodParameters;
-    }
-
     private Constructor findInjectController(Class<?> targetClass) {
         for (Constructor<?> constructor : targetClass.getConstructors()) {
             if(constructor.isAnnotationPresent(Inject.class)) {
@@ -92,5 +53,4 @@ public class ClassBeanDefinitionInitializer implements BeanInitializer {
             return null;
         }
     }
-
 }
