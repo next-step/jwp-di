@@ -27,10 +27,8 @@ import static java.util.Arrays.asList;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
-
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
-    private ArgumentResolver argumentResolver;
+    private Controllers controllers;
     private BeanFactory beanFactory;
 
     public AnnotationHandlerMapping(DefaultBeanFactory beanFactory) {
@@ -40,33 +38,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
 
-        initializeArgumentResolver();
-        initializeControllers();
-    }
-
-    private void initializeControllers() {
-        Object[] controllers = beanFactory.getAnnotatedBeans(Controller.class);
-
-        for (Object instance : controllers) {
-            Class<?> controller = instance.getClass();
-            addHandlerExecution(handlerExecutions, instance, controller.getMethods());
-        }
-    }
-
-    private void initializeArgumentResolver() {
-        this.argumentResolver = new ArgumentResolverComposite(beanFactory);
-    }
-
-    private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
-        Arrays.stream(methods)
-                .filter(method -> method.isAnnotationPresent(RequestMapping.class))
-                .forEach(method -> {
-                    RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-                    HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
-                    HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolver, target, method);
-                    handlers.put(handlerKey, handlerExecution);
-                    logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
-                });
+        controllers = new Controllers(beanFactory);
+        this.handlerExecutions = controllers.getHandlerExecutions();
     }
 
     public Object getHandler(HttpServletRequest request) {
