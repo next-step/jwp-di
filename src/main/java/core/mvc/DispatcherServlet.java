@@ -34,7 +34,7 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init() {
         DefaultBeanFactory beanFactory = new DefaultBeanFactory();
-        new BeanScanner(beanFactory).scan("next.controller");
+        new BeanScanner(beanFactory).scan("next.controller", "core.mvc.tobe.support");
         beanFactory.initialize();
 
         handlerMappingRegistry = new HandlerMappingRegistry();

@@ -10,6 +10,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -43,7 +44,8 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
     public Object[] getAnnotatedBeans(Class<? extends Annotation> annotation) {
         return beans.values().stream()
                 .filter(obj -> obj.getClass().isAnnotationPresent(annotation))
-                .collect(Collectors.toSet())
+                .sorted(AnnotationAwareOrderComparator.INSTANCE)
+                .collect(Collectors.toCollection(LinkedHashSet::new))
                 .toArray(new Object[] {});
     }
 

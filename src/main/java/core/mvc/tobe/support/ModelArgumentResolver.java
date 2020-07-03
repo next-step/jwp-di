@@ -1,10 +1,15 @@
 package core.mvc.tobe.support;
 
+import core.annotation.Component;
 import core.mvc.tobe.MethodParameter;
 import core.util.ReflectionUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.OrderComparator;
+import org.springframework.core.Ordered;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.annotation.OrderUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +21,8 @@ import java.lang.reflect.Method;
 import static core.util.ReflectionUtils.hasFieldMethod;
 import static core.util.StringUtil.upperFirstChar;
 
+@Order
+@Component
 public class ModelArgumentResolver implements ArgumentResolver {
 
     private ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();

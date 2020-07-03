@@ -1,5 +1,6 @@
 package core.mvc.tobe.support;
 
+import core.annotation.Component;
 import core.annotation.web.PathVariable;
 import core.annotation.web.RequestMapping;
 import core.mvc.tobe.MethodParameter;
@@ -11,6 +12,7 @@ import java.lang.reflect.Method;
 
 import static core.util.PathPatternUtil.getUriValue;
 
+@Component
 public class PathVariableArgumentResolver extends AbstractAnnotationArgumentResolver {
 
     @Override

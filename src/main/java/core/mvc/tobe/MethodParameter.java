@@ -15,21 +15,8 @@ public class MethodParameter {
     private Annotation[] annotations;
     private String parameterName;
 
-    public MethodParameter(Class<?> parameterType, Annotation[] parameterAnnotation, String parameterName) {
-        this.type = parameterType;
-        this.annotations = parameterAnnotation;
-        this.parameterName = parameterName;
-    }
-
-    public MethodParameter(Method executable, Class<?> parameterType, Annotation[] parameterAnnotation, String parameterName) {
+    public MethodParameter(Executable executable, Class<?> parameterType, Annotation[] parameterAnnotation, String parameterName) {
         this.executable = executable;
-        this.type = parameterType;
-        this.annotations = parameterAnnotation;
-        this.parameterName = parameterName;
-    }
-
-    public MethodParameter(Constructor<?> constructor, Class<?> parameterType, Annotation[] parameterAnnotation, String parameterName) {
-        this.executable = constructor;
         this.type = parameterType;
         this.annotations = parameterAnnotation;
         this.parameterName = parameterName;
