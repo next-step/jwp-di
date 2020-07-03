@@ -48,7 +48,7 @@ public class Controllers {
         argumentResolver = new ArgumentResolverComposite(beanFactory);
     }
 
-    public void addHandlerExecution(Object target, Method[] methods) {
+    private void addHandlerExecution(Object target, Method[] methods) {
         Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
                 .forEach(method -> {
