@@ -1,6 +1,8 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.exception.JwpException;
+import core.exception.JwpExceptionStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +22,7 @@ public class BeanFactory {
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
+        initialize();
     }
 
     @SuppressWarnings("unchecked")
@@ -27,7 +30,7 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private void initialize() {
         for (Class<?> preInstanticateBean : preInstanticateBeans) {
             if (beans.containsKey(preInstanticateBean)) {
                 continue;
@@ -36,7 +39,7 @@ public class BeanFactory {
         }
     }
 
-    private Object getInstance(Class<?> classType) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    private Object getInstance(Class<?> classType) {
         if (beans.containsKey(classType)) {
             return beans.get(classType);
         }
@@ -51,14 +54,19 @@ public class BeanFactory {
         return BeanUtils.instantiateClass(clazz);
     }
 
-    private Object getConstructorNewInstance(Constructor<?> constructor) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (constructor.getParameterCount() > 0) {
-            return constructor.newInstance(getInitArgs(constructor));
+    private Object getConstructorNewInstance(Constructor<?> constructor) {
+        try {
+            if (constructor.getParameterCount() > 0) {
+                return constructor.newInstance(getInitArgs(constructor));
+            }
+            return constructor.newInstance();
+
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new JwpException(JwpExceptionStatus.CONSTRUCTOR_NEW_INSTANCE_FAIL, e);
         }
-        return constructor.newInstance();
     }
 
-    private Object[] getInitArgs(Constructor<?> constructor) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private Object[] getInitArgs(Constructor<?> constructor) {
         Object[] initArgs = new Object[constructor.getParameterCount()];
         for (int i = 0; i < constructor.getParameterTypes().length; i++) {
             initArgs[i] = getInstance(constructor.getParameterTypes()[i]);

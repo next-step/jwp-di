@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class ApiQnaController extends AbstractNewController {
-    private static final Logger logger = LoggerFactory.getLogger( ApiQnaController.class );
+    private static final Logger logger = LoggerFactory.getLogger(ApiQnaController.class);
 
     private QuestionDao questionDao = QuestionDao.getInstance();
     private AnswerDao answerDao = AnswerDao.getInstance();
