@@ -1,7 +1,6 @@
 package core.mvc;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.ClassBeanScanner;
 import core.di.factory.DefaultBeanFactory;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
@@ -34,7 +33,7 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init() {
         DefaultBeanFactory beanFactory = new DefaultBeanFactory();
-        new BeanScanner(beanFactory).scan("next.controller", "core.mvc.tobe.support");
+        new ClassBeanScanner(beanFactory).scan("next.controller", "core.mvc.tobe.support");
         beanFactory.initialize();
 
         handlerMappingRegistry = new HandlerMappingRegistry();

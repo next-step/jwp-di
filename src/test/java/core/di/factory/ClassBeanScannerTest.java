@@ -11,21 +11,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author KingCjy
  */
-public class BeanScannerTest {
+public class ClassBeanScannerTest {
 
     private DefaultBeanFactory beanFactory;
-    private BeanScanner beanScanner;
+    private ClassBeanScanner classBeanScanner;
 
     @BeforeEach
     public void setUp() {
         beanFactory = new DefaultBeanFactory();
-        beanScanner = new BeanScanner(beanFactory);
+        classBeanScanner = new ClassBeanScanner(beanFactory);
     }
 
     @Test
     @DisplayName("BeanFactory에 BeanDefinition등록 테스트")
     public void registerBeanDefinitionTest() {
-        beanScanner.scan("core.di.factory.example");
+        classBeanScanner.scan("core.di.factory.example");
 
         ClassBeanDefinition classBeanDefinition = (ClassBeanDefinition) beanFactory.getBeanDefinition(QnaController.class);
 
@@ -35,7 +35,7 @@ public class BeanScannerTest {
     @Test
     @DisplayName("BeanFactory에 이름으로 BeanDefinition 등록 테스트")
     public void registerBeanDefinitionWithNameTest() {
-        beanScanner.scan("core.di.factory.example");
+        classBeanScanner.scan("core.di.factory.example");
 
         ClassBeanDefinition classBeanDefinition = (ClassBeanDefinition) beanFactory.getBeanDefinition(NameController.class);
         ClassBeanDefinition classBeanDefinition1 = (ClassBeanDefinition) beanFactory.getBeanDefinition("name");

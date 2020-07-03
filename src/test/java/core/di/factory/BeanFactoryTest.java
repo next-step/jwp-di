@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
     private DefaultBeanFactory beanFactory;
-    private BeanScanner beanScanner;
+    private ClassBeanScanner classBeanScanner;
 
     @BeforeEach
     public void setup() {
         beanFactory = new DefaultBeanFactory();
-        beanScanner = new BeanScanner(beanFactory);
+        classBeanScanner = new ClassBeanScanner(beanFactory);
 
-        beanScanner.scan("core.di.factory.example");
+        classBeanScanner.scan("core.di.factory.example");
         beanFactory.initialize();
     }
 
