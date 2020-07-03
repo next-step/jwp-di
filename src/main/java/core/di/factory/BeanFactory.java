@@ -1,53 +1,5 @@
 package core.di.factory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
-
-    private final Map<Class<?>, BeanDefinition> definitionMap;
-
-    private final Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        definitionMap = BeanDefinitionUtil.convertClassToDefinition(preInstanticateBeans);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        logger.debug("required type: {}", requiredType);
-        final Optional<Object> maybeBean = Optional.ofNullable(beans.get(requiredType));
-        if (maybeBean.isPresent()) {
-            return (T) maybeBean.get();
-        }
-
-        final Optional<BeanDefinition> maybeDefinition = Optional.ofNullable(definitionMap.get(requiredType));
-        if (maybeDefinition.isEmpty()) {
-            return null;
-        }
-
-        final BeanDefinition beanDefinition = maybeDefinition.get();
-        final List<Class<?>> dependenciesClass = Optional
-                .ofNullable(beanDefinition.getDependencies())
-                .orElse(Lists.newArrayList());
-        final List<Object> dependencies = Lists.newArrayList();
-        for (Class<?> clazz : dependenciesClass) {
-            dependencies.add(getBean(clazz));
-        }
-
-        logger.debug("bean constructor: {}", beanDefinition.getBeanConstructor());
-        logger.debug("bean dependencies: {}", dependencies);
-        final Object bean = BeanUtils.instantiateClass(beanDefinition.getBeanConstructor(), dependencies.toArray());
-        beans.put(requiredType, bean);
-        return (T) bean;
-    }
+public interface BeanFactory {
+    <T> T getBean(Class<T> requiredType);
 }

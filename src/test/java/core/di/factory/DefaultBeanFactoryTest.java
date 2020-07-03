@@ -15,11 +15,11 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class BeanFactoryTest {
+public class DefaultBeanFactoryTest {
 
-    private static final Logger log = LoggerFactory.getLogger(BeanFactoryTest.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultBeanFactoryTest.class);
 
-    private BeanFactory beanFactory;
+    private DefaultBeanFactory defaultBeanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -28,12 +28,12 @@ public class BeanFactoryTest {
         final Set<Class<?>> rawClasses = beanScanner.loadClasses(Controller.class, Service.class, Repository.class);
         assertThat(rawClasses).isNotNull();
         log.debug("classes: {}", rawClasses);
-        beanFactory = new BeanFactory(rawClasses);
+        defaultBeanFactory = new DefaultBeanFactory(rawClasses);
     }
 
     @Test
     public void di() throws Exception {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
+        QnaController qnaController = defaultBeanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
         assertNotNull(qnaController.getQnaService());
