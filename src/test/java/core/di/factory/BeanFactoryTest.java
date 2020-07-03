@@ -37,7 +37,7 @@ public class BeanFactoryTest {
 
     @Test
     public void qualifierTest() {
-        BoardService boardService = beanFactory.getBean(BoardService.class);
+        BoardService boardService = beanFactory.getBean(BoardService.class.getName(), BoardService.class);
 
         Assertions.assertThat(boardService.getBoardRepository()).isInstanceOf(MockBoardRepository.class);
     }

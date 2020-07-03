@@ -27,7 +27,7 @@ public class ClassBeanScannerTest {
     public void registerBeanDefinitionTest() {
         classBeanScanner.scan("core.di.factory.example");
 
-        ClassBeanDefinition classBeanDefinition = (ClassBeanDefinition) beanFactory.getBeanDefinition(QnaController.class);
+        ClassBeanDefinition classBeanDefinition = (ClassBeanDefinition) beanFactory.getBeanDefinition(QnaController.class.getName());
 
         assertThat(classBeanDefinition.getType()).isEqualTo(QnaController.class);
     }
@@ -37,7 +37,7 @@ public class ClassBeanScannerTest {
     public void registerBeanDefinitionWithNameTest() {
         classBeanScanner.scan("core.di.factory.example");
 
-        ClassBeanDefinition classBeanDefinition = (ClassBeanDefinition) beanFactory.getBeanDefinition(NameController.class);
+        ClassBeanDefinition classBeanDefinition = (ClassBeanDefinition) beanFactory.getBeanDefinition(NameController.class.getName());
         ClassBeanDefinition classBeanDefinition1 = (ClassBeanDefinition) beanFactory.getBeanDefinition("name");
 
         assertThat(classBeanDefinition).isNull();
