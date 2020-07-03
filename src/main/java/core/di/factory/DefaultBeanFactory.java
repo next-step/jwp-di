@@ -1,6 +1,8 @@
 package core.di.factory;
 
 import core.util.OrderComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanInitializationException;
 
@@ -12,6 +14,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultBeanFactory.class);
 
     private Map<String, BeanDefinition> beanDefinitions = new LinkedHashMap<>();
     private Map<String, Object> beans = new LinkedHashMap<>();
@@ -130,6 +134,7 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
         }
 
         this.beanDefinitions.put(beanDefinition.getName(), beanDefinition);
+        logger.info("registered {}", beanDefinition);
     }
 
     @Override

@@ -7,12 +7,16 @@ import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.Set;
+import java.net.URL;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ClassBeanScanner implements BeanScanner {
 
@@ -28,21 +32,28 @@ public class ClassBeanScanner implements BeanScanner {
 
     @Override
     public void scan(Object... basePackages) {
+        scanPackages(new LinkedHashSet<>(), basePackages);
+    }
+
+    public void scanPackages(Set<Class<?>> scannedClasses, Object... basePackages) {
+
         Reflections reflections = new Reflections(basePackages, new TypeAnnotationsScanner(), new SubTypesScanner(false), new MethodAnnotationsScanner());
         Set<Class<?>> getAnnotatedClasses = ReflectionUtils.getAnnotatedClasses(reflections, annotations);
 
         for (Class<?> targetClass : getAnnotatedClasses) {
-            String name = getComponentName(targetClass);
-            ClassBeanDefinition beanDefinition = new ClassBeanDefinition(targetClass, name);
-
-            if(targetClass.isAnnotationPresent(ComponentScan.class)) {
-                String[] scanPackages = getScanPackage(targetClass);
-                scan(scanPackages);
+            if(scannedClasses.contains(targetClass)) {
+                continue;
             }
 
+            String name = getComponentName(targetClass);
+            ClassBeanDefinition beanDefinition = new ClassBeanDefinition(targetClass, name);
+            scannedClasses.add(targetClass);
             beanDefinitionRegistry.registerDefinition(beanDefinition);
 
-            logger.info("register {}", beanDefinition);
+            if(targetClass.isAnnotationPresent(ComponentScan.class)) {
+                String[] scanPackages = getComponentScanPackage(targetClass);
+                scanPackages(scannedClasses, scanPackages);
+            }
         }
     }
 
@@ -51,7 +62,7 @@ public class ClassBeanScanner implements BeanScanner {
         return "".equals(component.value()) ? targetClass.getName() : component.value();
     }
 
-    private String[] getScanPackage(Class<?> targetClass) {
+    private String[] getComponentScanPackage(Class<?> targetClass) {
         if(!(targetClass.isAnnotationPresent(Configuration.class) && targetClass.isAnnotationPresent(ComponentScan.class)) ) {
             return new String[]{};
         }
