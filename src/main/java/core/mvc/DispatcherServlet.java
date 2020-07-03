@@ -1,5 +1,10 @@
 package core.mvc;
 
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.support.context.ContextLoaderListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,29 +22,27 @@ public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private HandlerMappingRegistry handlerMappingRegistry = new HandlerMappingRegistry();
+    private HandlerMappingRegistry handlerMappingRegistry;
 
-    private HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
+    private HandlerAdapterRegistry handlerAdapterRegistry;
 
-    private HandlerExecutor handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+    private HandlerExecutor handlerExecutor;
 
     @Override
     public void init() {
-        /*
         handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
+        handlerMappingRegistry.addHandlerMapping(new RequestMapping());
 
         AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping(ContextLoaderListener.applicationContext);
         handlerMapping.initialize();
 
-        handlerMappingRegistry.addHandlerMpping(handlerMapping);
+        handlerMappingRegistry.addHandlerMapping(handlerMapping);
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
         handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
-        */
     }
 
     @Override
@@ -51,6 +54,7 @@ public class DispatcherServlet extends HttpServlet {
             Optional<Object> maybeHandler = handlerMappingRegistry.getHandler(req);
             if (!maybeHandler.isPresent()) {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
+                logger.debug("NOT FOUND");
                 return;
             }
 
