@@ -22,9 +22,18 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
     private static final Logger logger = LoggerFactory.getLogger(DefaultBeanFactory.class);
 
     private Map<String, BeanDefinition> beanDefinitions = new LinkedHashMap<>();
-    private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     private Map<String, Object> beans = Maps.newHashMap();
+
+    private BeanInitializer beanInitializer;
+
+    public DefaultBeanFactory() {
+        beanInitializer = new BeanInitializerComposite(new ClassBeanDefinitionInitializer());
+    }
+
+    public void initialize() {
+        this.beanDefinitions.values().forEach(beanDefinition -> instantiateBeanDefinition(beanDefinition));
+    }
 
     @Override
     public Object getBean(String name) {
@@ -33,90 +42,80 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType.getName());
+        return getBean(requiredType.getName(), requiredType);
     }
 
     public <T> T getBean(String name, Class<T> requiredType) {
-        return (T) beans.get(name);
-    }
-
-    @Override
-    public Object[] getAnnotatedBeans(Class<? extends Annotation> annotation) {
-        return beans.values().stream()
-                .filter(obj -> obj.getClass().isAnnotationPresent(annotation))
-                .sorted(AnnotationAwareOrderComparator.INSTANCE)
-                .collect(Collectors.toCollection(LinkedHashSet::new))
-                .toArray(new Object[] {});
-    }
-
-
-    public void initialize() {
-        this.beanDefinitions.values().forEach(beanDefinition -> instantiateBeanDefinition(beanDefinition));
-    }
-
-    private void instantiateBeanDefinition(BeanDefinition beanDefinition) {
-        if(getBean(beanDefinition.getName(), beanDefinition.getType()) != null) {
-            return;
+        //        Inject 받아야할 Bean이 interface이고 Qualifier가 지정되지 않았을 시
+        Object instance;
+        if(requiredType.isInterface() && name.equals(requiredType.getName())) {
+            instance = getImplBean(requiredType);
+        } else if(name.equals(requiredType.getName())) {
+            instance = doGetBean(name, requiredType);
+        } else {
+            instance = beans.get(name);
         }
 
-        Constructor constructor = findInjectController(beanDefinition.getType());
-
-        if(constructor == null) {
-            throw new BeanInstantiationException(beanDefinition.getType(), "Constructor with @Inject not Found");
+        if(instance != null) {
+            return (T) instance;
         }
 
-        MethodParameter[] methodParameters = getMethodParameters(constructor);
-        Object[] parameters = getParameters(methodParameters);
-
-        Object instance = BeanUtils.instantiateClass(constructor, parameters);
-        beans.put(beanDefinition.getName(), instance);
-
-        logger.info("bean " + instance.getClass() + " instantiate");
+        return instantiateBean(name, requiredType);
     }
 
-    private Object[] getParameters(MethodParameter[] methodParameters) {
-        Object[] parameters = new Object[methodParameters.length];
+    private <T> T instantiateBean(String name, Class<T> requiredType) {
+        BeanDefinition beanDefinition = getBeanDefinition(name);
 
-        for (int i = 0; i < methodParameters.length; i++) {
-            String beanName = getBeanName(methodParameters[i]);
-            parameters[i] = getInstanceBean(methodParameters[i].getType(), beanName);
+        if(beanDefinition == null) {
+            throw new BeanInstantiationException(requiredType, "bean " + requiredType.getName() + " is not defined");
         }
 
-        return parameters;
+        instantiateBeanDefinition(beanDefinition);
+        return (T) getBean(beanDefinition.getName(), beanDefinition.getType());
     }
 
-    private String getBeanName(MethodParameter methodParameter) {
-        String name = methodParameter.getType().getName();
-        Qualifier qualifier = methodParameter.getAnnotation(Qualifier.class);
+    private <T> T doGetBean(String name, Class<T> requiredType) {
+        Object bean = beans.keySet().stream()
+                .filter(key -> name.equals(key))
+                .map(key -> beans.get(key))
+                .findFirst()
+                .orElse(null);
 
-        return qualifier == null ? name : qualifier.value();
+        if(bean != null) {
+            return (T) bean;
+        }
+
+        Set<Object> typeBeans = beans.values().stream()
+                .filter(instance -> requiredType.equals(instance.getClass()))
+                .collect(Collectors.toSet());
+
+        if(typeBeans.size() == 1) {
+            return (T) typeBeans.iterator().next();
+        }
+
+        if(typeBeans.size() == 2) {
+            throw new BeanInstantiationException(requiredType, requiredType.getName() + " need @Qualifier annotation to inject");
+        }
+
+        return null;
     }
 
-    private MethodParameter[] getMethodParameters(Constructor constructor) {
-        MethodParameter[] methodParameters = new MethodParameter[constructor.getParameters().length];
-        String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
-        Parameter[] parameters = constructor.getParameters();
+    private Object getImplBean(Class<?> type) {
+        Set<Object> instances = beans.values().stream()
+                .filter(bean -> type.isAssignableFrom(bean.getClass()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        for (int i = 0; i < parameters.length; i++) {
-            methodParameters[i] = new MethodParameter(constructor, parameters[i].getType(), parameters[i].getAnnotations(), parameterNames[i]);
+        if(instances.size() == 0) {
+            BeanDefinition beanDefinition = getImplBeanDefinition(type);
+            instantiateBeanDefinition(beanDefinition);
+            return getBean(beanDefinition.getName(), beanDefinition.getType());
         }
 
-        return methodParameters;
-    }
-
-    private Object getInstanceBean(Class<?> type, String beanName) {
-//        Inject 받아야할 Bean이 interface이고 Qualifier가 지정되지 않았을 시
-        if(type.isInterface() && beanName.equals(type.getName())) {
-            BeanDefinition implBeanDefinition = getImplBeanDefinition(type);
-            instantiateBeanDefinition(implBeanDefinition);
-            return beans.get(implBeanDefinition.getName());
+        if(instances.size() >= 2) {
+            throw new BeanInstantiationException(type, type.getName() + " need @Qualifier annotation to inject");
         }
 
-        if(beans.get(beanName) == null) {
-            instantiateBeanDefinition(getBeanDefinition(beanName));
-        }
-
-        return beans.get(beanName);
+        return instances.iterator().next();
     }
 
     private BeanDefinition getImplBeanDefinition(Class<?> type) {
@@ -135,18 +134,18 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
         return implBeanDefinitions.iterator().next();
     }
 
-    private Constructor findInjectController(Class<?> targetClass) {
-        for (Constructor<?> constructor : targetClass.getConstructors()) {
-            if(constructor.isAnnotationPresent(Inject.class)) {
-                return constructor;
-            }
-        }
+    @Override
+    public Object[] getAnnotatedBeans(Class<? extends Annotation> annotation) {
+        return beans.values().stream()
+                .filter(obj -> obj.getClass().isAnnotationPresent(annotation))
+                .sorted(AnnotationAwareOrderComparator.INSTANCE)
+                .collect(Collectors.toCollection(LinkedHashSet::new))
+                .toArray(new Object[] {});
+    }
 
-        try {
-            return targetClass.getConstructor();
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
+    private void instantiateBeanDefinition(BeanDefinition beanDefinition) {
+        Object instantiate = beanInitializer.instantiate(beanDefinition, this);
+        beans.put(beanDefinition.getName(), instantiate);
     }
 
     @Override
@@ -156,7 +155,6 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
 
     @Override
     public BeanDefinition getBeanDefinition(Class<?> type) {
-
         return this.beanDefinitions.get(type.getName());
     }
 
