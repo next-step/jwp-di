@@ -1,3 +1,4 @@
+/*
 package core.di.factory;
 
 import core.annotation.ComponentScan;
@@ -42,3 +43,4 @@ public class ConfigurationBeanScanner {
         beanFactory.registerConfigurationTypes(configType);
     }
 }
+*/

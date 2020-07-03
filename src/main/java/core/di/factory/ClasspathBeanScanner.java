@@ -1,3 +1,4 @@
+/*
 package core.di.factory;
 
 import core.annotation.Component;
@@ -34,3 +35,4 @@ public class ClasspathBeanScanner {
         beanFactory.registerBeanDefinitions(beanFactory.getClassPathRootTypes());
     }
 }
+*/

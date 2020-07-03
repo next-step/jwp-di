@@ -1,7 +1,7 @@
 package core.mvc;
 
-import core.config.MyConfiguration;
 import core.di.factory.ApplicationContext;
+import next.config.MyConfiguration;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import support.test.DBInitializer;
-
-import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,7 +27,12 @@ class DispatcherServletTest {
         response = new MockHttpServletResponse();
 
         applicationContext = new ApplicationContext(MyConfiguration.class);
-        DBInitializer.initialize(applicationContext.getBean(DataSource.class));
+        /*AnnotationHandlerMapping ahm = new AnnotationHandlerMapping(applicationContext);
+        dispatcher = new DispatcherServlet();
+        dispatcher.addHandlerMapping(ahm);
+        dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+*/
+        DBInitializer.initialize();
     }
 
     @Test

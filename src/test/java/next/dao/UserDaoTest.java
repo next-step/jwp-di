@@ -1,9 +1,7 @@
 package next.dao;
 
-import core.config.MyConfiguration;
 import core.di.factory.ApplicationContext;
-import core.di.factory.BeanFactory;
-import core.di.factory.ClasspathBeanScanner;
+import next.config.MyConfiguration;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,13 +17,11 @@ public class UserDaoTest {
 
     private UserDao userDao;
 
-    private ApplicationContext applicationContext;
-
     @BeforeEach
     public void setup() {
-        applicationContext = new ApplicationContext(MyConfiguration.class);
-        DBInitializer.initialize(applicationContext.getBean(DataSource.class));
+        ApplicationContext applicationContext = new ApplicationContext(MyConfiguration.class);
         userDao = applicationContext.getBean(UserDao.class);
+        DBInitializer.initialize();
     }
 
     @Test

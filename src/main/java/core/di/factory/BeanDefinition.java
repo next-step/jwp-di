@@ -1,3 +1,4 @@
+/*
 package core.di.factory;
 
 import com.google.common.collect.Lists;
@@ -49,3 +50,4 @@ public class BeanDefinition {
         return new HashSet<>(Arrays.asList(type.getAnnotations()));
     }
 }
+*/

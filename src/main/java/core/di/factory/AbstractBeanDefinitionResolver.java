@@ -1,10 +1,12 @@
+/*
 package core.di.factory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import core.di.beans.definition.BeanDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -21,7 +23,7 @@ public abstract class AbstractBeanDefinitionResolver<T> implements BeanDefinitio
     protected final Set<Class<?>> rootTypes;
     protected final Class<?> type;
 
-    protected final Map<Class<?>, BeanDefinition> beanDefinitions;
+    protected final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
 
     public AbstractBeanDefinitionResolver(
         Set<Class<?>> rootTypes,
@@ -108,3 +110,4 @@ public abstract class AbstractBeanDefinitionResolver<T> implements BeanDefinitio
     abstract Method getMethod();
     abstract Object getParent();
 }
+*/

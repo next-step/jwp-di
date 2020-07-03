@@ -3,16 +3,18 @@ package core.di.factory;
 import com.google.common.collect.Sets;
 import core.annotation.Bean;
 import core.annotation.Inject;
+import core.di.beans.getter.BeanGettable;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.ReflectionUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static java.util.stream.Collectors.toList;
 import static org.reflections.ReflectionUtils.*;
 
 @Slf4j
@@ -32,7 +34,17 @@ public class BeanFactoryUtils {
                 .orElse(null);
     }
 
-    public static Set<Method> getAnnotatedBeanMethods(Class<?> clazz) {
+    @SuppressWarnings({ "unchecked" })
+    public static Set<Field> getInjectedFields(Class<?> clazz) {
+        return getAllFields(clazz, withAnnotation(Inject.class));
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    public static Set<Method> getInjectedMethods(Class<?> clazz) {
+        return getAllMethods(clazz, withAnnotation(Inject.class));
+    }
+
+    public static Set<Method> getBeanMethods(Class<?> clazz) {
         return ReflectionUtils.getAllMethods(clazz, withAnnotation(Bean.class));
     }
 
@@ -57,5 +69,31 @@ public class BeanFactoryUtils {
         }
 
         return null;
+    }
+
+
+    public static Object invokeMethod(Method method, Object bean, Object[] args) {
+        try {
+            return method.invoke(bean, args);
+        }
+        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            log.error(e.getMessage());
+            return null;
+        }
+    }
+
+    public static Object[] getArguments(BeanGettable beanGettable, Class<?>[] parameterTypes) {
+        return Arrays.stream(parameterTypes)
+            .map(parameterType -> {
+                Object bean = beanGettable.getBean(parameterType);
+
+                if (Objects.isNull(bean)) {
+                    throw new NullPointerException(parameterType + "의 Bean이 존재하지 않습니다.");
+                }
+
+                return bean;
+            })
+            .collect(toList())
+            .toArray(new Object[0]);
     }
 }

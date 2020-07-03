@@ -1,3 +1,4 @@
+/*
 package core.di.factory;
 
 import lombok.extern.slf4j.Slf4j;
@@ -65,3 +66,4 @@ public class MethodBeanDefinitionResolver extends AbstractBeanDefinitionResolver
         return type;
     }
 }
+*/

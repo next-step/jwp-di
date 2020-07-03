@@ -1,234 +1,114 @@
 package core.di.factory;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import core.annotation.Component;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.util.ReflectionUtils;
+import core.di.beans.definition.AnnotatedBeanDefinition;
+import core.di.beans.definition.BeanDefinition;
+import core.di.beans.definition.BeanDefinitionRegistry;
+import core.di.beans.definition.InjectType;
+import core.di.beans.getter.BeanGettable;
+import core.di.beans.injector.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 
-import static core.di.factory.ClasspathBeanScanner.CLASSPATH_TARGET_TYPES;
 import static java.util.stream.Collectors.toMap;
 
 @Slf4j
-public class BeanFactory {
-    public static final Set<Class<? extends Annotation>> TARGET_ANNOTATION_TYPES = Sets.newHashSet(Arrays.asList(Controller.class, Service.class, Repository.class, Component.class));
-    public static final Class CONTROLLER_CLASS = Controller.class;
+public class BeanFactory implements BeanDefinitionRegistry, BeanGettable {
+    public static final Class[] TARGET_ANNOTATION_TYPES = new Class[]{Controller.class, Service.class, Repository.class, Component.class};
+
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
     private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
-    private Map<Class<?>, BeanDefinitionResolver> resolvers = Maps.newHashMap();
-    private Set<String> basePackages = Sets.newHashSet();
-    private Set<Class<?>> configurationTypes = Sets.newHashSet();
+    private static final Map<InjectType, BeanInjector> beanInjectors = initBeanInjectors();
 
-    public void initialize() {
-        if (!CollectionUtils.isEmpty(configurationTypes)) {
-            registerBeanDefinitions(configurationTypes);
+    private static Map<InjectType, BeanInjector> initBeanInjectors() {
+        Map<InjectType, BeanInjector> beanInjectors = Maps.newHashMap();
+        beanInjectors.put(InjectType.METHOD, new MethodBeanInjector());
+        beanInjectors.put(InjectType.CONSTRUCTOR, new ConstructorBeanInjector());
+        beanInjectors.put(InjectType.FIELDS, new FieldBeanInjector());
+        beanInjectors.put(InjectType.NONE, new DefaultBeanInjector());
+        return beanInjectors;
+    }
+
+    public void instantiateBeans() {
+        for (Class<?> type : beanDefinitions.keySet()) {
+            getBean(type);
         }
     }
 
-    public void registerConfigurationTypes(Class<?> configurationType) {
-        if (Objects.nonNull(configurationType)) {
-            configurationTypes.add(configurationType);
+    @Override
+    public void register(Class<?> type, BeanDefinition beanDefinition) {
+        if (!beanDefinitions.containsKey(type)) {
+            log.debug("registering BeanDefinition : {}", beanDefinition.getType().getSimpleName());
+            beanDefinitions.put(type, beanDefinition);
         }
-    }
-
-    public Set<Class<?>> getClassPathRootTypes() {
-        Set<Class<?>> rootTypes = Sets.newHashSet();
-
-        TypeAnnotationsScanner typeAnnotationsScanner = new TypeAnnotationsScanner();
-        SubTypesScanner subTypesScanner = new SubTypesScanner();
-        MethodAnnotationsScanner methodAnnotationsScanner = new MethodAnnotationsScanner();
-
-        for (String basePackage : basePackages) {
-            Reflections reflections = new Reflections(basePackage, typeAnnotationsScanner, subTypesScanner, methodAnnotationsScanner);
-            rootTypes.addAll(ReflectionUtils.getTypesAnnotatedWith(reflections, CLASSPATH_TARGET_TYPES));
-        }
-
-        return rootTypes;
-    }
-
-    public void registerBeanDefinitions(Set<Class<?>> rootTypes) {
-        if (CollectionUtils.isEmpty(rootTypes)) {
-            return;
-        }
-
-        registerResolvers(rootTypes);
-        registerBeanDefinitions();
-    }
-
-    public void registerResolvers(Set<Class<?>> rootTypes) {
-        for (Class<?> type : rootTypes) {
-            if (!resolvers.containsKey(type)) {
-                putResolvers(rootTypes, type);
-            }
-        }
-
-        resolvers.values().forEach(
-            resolver -> log.debug("resolvers: {}", resolver.getType())
-        );
-    }
-
-    public void registerBasePackages(String[] basePackages) {
-        if (!ArrayUtils.isEmpty(basePackages)) {
-            this.basePackages.addAll(Arrays.asList(basePackages));
-        }
-    }
-
-    private void putResolvers(Set<Class<?>> rootTypes, Class<?> type) {
-        if (isAnnotatedType(type)) {
-            resolvers.put(type, new ConstructorBeanDefinitionResolver(rootTypes, type, beanDefinitions, resolvers));
-        }
-        else {
-            Set<Method> methods = BeanFactoryUtils.getAnnotatedBeanMethods(type);
-            Object parent = BeanUtils.instantiateClass(type);
-
-            for (Method method : methods) {
-                if (resolvers.containsKey(method.getReturnType())) {
-                    continue;
-                }
-
-                log.debug("putResolvers - methodName: {}, returnType: {}", method.getName(), method.getReturnType().getSimpleName());
-                resolvers.put(method.getReturnType(), new MethodBeanDefinitionResolver(rootTypes, method.getReturnType(), beanDefinitions, resolvers, method, parent));
-            }
-        }
-    }
-
-    private void registerBeanDefinitions() {
-        if (CollectionUtils.isEmpty(resolvers)) {
-            return;
-        }
-
-        for (Map.Entry<Class<?>, BeanDefinitionResolver> resolverEntry : resolvers.entrySet()) {
-            if (beanDefinitions.containsKey(resolverEntry.getKey())) {
-                continue;
-            }
-
-            BeanDefinition beanDefinition = resolverEntry.getValue().resolve();
-
-            if (Objects.nonNull(beanDefinition)) {
-                beanDefinitions.put(resolverEntry.getKey(), beanDefinition);
-                log.debug("beanDefinitions: {}, {}", beanDefinition.getType().getSimpleName());
-            }
-        }
-    }
-
-    private boolean isAnnotatedType(Class<?> type) {
-        return TARGET_ANNOTATION_TYPES
-            .stream()
-            .anyMatch(type::isAnnotationPresent);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        if (beans.containsKey(requiredType)) {
-            return (T) beans.get(requiredType);
+    @Override
+    public <T> T getBean(Class<?> type) {
+        if (beans.containsKey(type)) {
+            Object bean = beans.get(type);
+            log.debug("getting an existing bean: {}", type.getSimpleName());
+            return (T) bean;
         }
 
-        Object bean = getBeanFromDefinition(requiredType);
+        Object bean = getBeanFromDefinition(type);
 
         if (Objects.nonNull(bean)) {
-            beans.put(requiredType, bean);
+            log.debug("getting a new bean: {}", type.getSimpleName());
+            beans.put(type, bean);
         }
 
         return (T)bean;
     }
 
-    private <T> Object getBeanFromDefinition(Class<T> type) {
+    private <T> T getBeanFromDefinition(Class<T> type) {
         BeanDefinition beanDefinition = beanDefinitions.get(type);
 
-        if (Objects.isNull(beanDefinition)) {
+        if (Objects.nonNull(beanDefinition) && InjectType.METHOD.equals(beanDefinition.getInjectType())) {
+            return getBeanFromAnnotatedBeanDefinition((AnnotatedBeanDefinition) beanDefinition);
+        }
+
+        return getBeanFromDefaultBeanDefinition(type, beanDefinition);
+    }
+
+    private <T> T getBeanFromAnnotatedBeanDefinition(AnnotatedBeanDefinition beanDefinition) {
+        BeanInjector beanInjector = beanInjectors.get(beanDefinition.getInjectType());
+        return beanInjector.inject(this, beanDefinition);
+    }
+
+    private <T> T getBeanFromDefaultBeanDefinition(Class<?> type, BeanDefinition beanDefinition) {
+        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(type, beanDefinitions.keySet());
+
+        if (Objects.isNull(concreteClass)) {
             return null;
         }
 
-        try {
-            if (Objects.isNull(beanDefinition.getMethod())) {
-                return getBeanByConstructor(beanDefinition);
-            }
-            else {
-                return getBeanByMethodInvocation(beanDefinition);
-            }
-        }
-        catch (Exception e) {
-            log.error(e.getMessage());
-            return null;
-        }
-    }
+        log.debug("concreteClass: {}", concreteClass);
+        beanDefinition = beanDefinitions.get(concreteClass);
 
-    private Object getBeanByConstructor(BeanDefinition beanDefinition) {
-        if (Objects.isNull(beanDefinition.getConstructor())) {
-            return BeanUtils.instantiateClass(beanDefinition.getType());
-        }
+        log.debug("beanDefinition: {}", beanDefinition.getType());
 
-        if (CollectionUtils.isEmpty(beanDefinition.getChildren())) {
-            return BeanUtils.instantiateClass(beanDefinition.getConstructor());
-        }
-
-        return getParameterizedBean(beanDefinition);
-    }
-
-    private Object getBeanByMethodInvocation(BeanDefinition beanDefinition) throws IllegalAccessException, InvocationTargetException {
-        if (CollectionUtils.isEmpty(beanDefinition.getChildren())) {
-            return beanDefinition.getMethod().invoke(beanDefinition.getParent());
-        }
-
-        return getParameterizedBean(beanDefinition);
-    }
-
-    private Object getParameterizedBean(BeanDefinition beanDefinition) {
-        List<Object> parameters = Lists.newArrayList();
-
-        for (BeanDefinition child : beanDefinition.getChildren()) {
-            if (beans.containsKey(child.getType())) {
-                parameters.add(beans.get(child.getType()));
-            }
-            else {
-                Object beanInstance = getBean(child.getType());
-                beans.put(child.getType(), beanInstance);
-                parameters.add(beanInstance);
-            }
-        }
-
-        return instantiateParameterizedClass(beanDefinition, parameters);
-    }
-
-    private Object instantiateParameterizedClass(BeanDefinition beanDefinition, List<Object> parameters) {
-        try {
-            if (Objects.isNull(beanDefinition.getConstructor())) {
-                return beanDefinition.getMethod().invoke(beanDefinition.getParent(), parameters.toArray(new Object[0]));
-            }
-
-            return BeanUtils.instantiateClass(beanDefinition.getConstructor(), parameters.toArray(new Object[0]));
-        }
-        catch (Exception e) {
-            log.error(e.getMessage());
-            return null;
-        }
+        BeanInjector beanInjector = beanInjectors.get(beanDefinition.getInjectType());
+        log.debug("beanInjector: {}", beanInjector.getClass().getSimpleName());
+        return beanInjector.inject(this, beanDefinition);
     }
 
     public Map<Class<?>, Object> getControllers() {
         return beanDefinitions.entrySet()
             .stream()
-            .filter(entry -> Objects.nonNull(entry.getValue()) && entry.getValue().getAnnotations().contains(CONTROLLER_CLASS))
+            .filter(entry -> Objects.nonNull(entry.getValue()) && isController(entry.getValue()))
             .collect(toMap(Map.Entry::getKey, entry -> getBean(entry.getKey())));
     }
 
-    public void clearResolvers() {
-        resolvers.clear();
+    private boolean isController(BeanDefinition beanDefinition) {
+        return beanDefinition.containsAnnotation(Controller.class);
     }
 }

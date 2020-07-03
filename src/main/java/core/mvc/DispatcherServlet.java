@@ -1,20 +1,9 @@
 package core.mvc;
 
-import core.config.MyConfiguration;
-import core.di.factory.ApplicationContext;
-import core.di.factory.BeanFactory;
-import core.di.factory.HandlerBeanScanner;
-import core.di.factory.ConfigurationBeanScanner;
-import core.mvc.asis.ControllerHandlerAdapter;
-import core.mvc.asis.RequestMapping;
-import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.HandlerExecutionHandlerAdapter;
-import next.support.context.ContextLoaderListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -28,15 +17,15 @@ public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private HandlerMappingRegistry handlerMappingRegistry;
+    private HandlerMappingRegistry handlerMappingRegistry = new HandlerMappingRegistry();
 
-    private HandlerAdapterRegistry handlerAdapterRegistry;
+    private HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
 
-    private HandlerExecutor handlerExecutor;
+    private HandlerExecutor handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
 
     @Override
     public void init() {
-        handlerMappingRegistry = new HandlerMappingRegistry();
+        /*handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
 
         AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping(ContextLoaderListener.applicationContext);
@@ -48,7 +37,7 @@ public class DispatcherServlet extends HttpServlet {
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
-        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);*/
     }
 
     @Override
@@ -75,5 +64,13 @@ public class DispatcherServlet extends HttpServlet {
     private void render(ModelAndView mav, HttpServletRequest req, HttpServletResponse resp) throws Exception {
         View view = mav.getView();
         view.render(mav.getModel(), req, resp);
+    }
+
+    public void addHandlerMapping(HandlerMapping handlerMapping) {
+        handlerMappingRegistry.addHandlerMpping(handlerMapping);
+    }
+
+    public void addHandlerAdapter(HandlerAdapter handlerAdapter) {
+        handlerAdapterRegistry.addHandlerAdapter(handlerAdapter);
     }
 }
