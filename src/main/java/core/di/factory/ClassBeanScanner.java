@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Set;
 
 public class ClassBeanScanner implements BeanScanner {
 
@@ -34,10 +34,6 @@ public class ClassBeanScanner implements BeanScanner {
         for (Class<?> targetClass : getAnnotatedClasses) {
             String name = getComponentName(targetClass);
             ClassBeanDefinition beanDefinition = new ClassBeanDefinition(targetClass, name);
-
-            if(beanDefinitionRegistry.getBeanDefinition(name) != null) {
-                continue;
-            }
 
             if(targetClass.isAnnotationPresent(ComponentScan.class)) {
                 String[] scanPackages = getScanPackage(targetClass);

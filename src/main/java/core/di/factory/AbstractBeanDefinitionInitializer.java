@@ -19,11 +19,7 @@ public abstract class AbstractBeanDefinitionInitializer implements BeanInitializ
 
     @Override
     public Object instantiate(BeanDefinition beanDefinition, BeanFactory beanFactory) {
-        if(!support(beanDefinition)) {
-            return null;
-        }
-
-        return instantiateBean(beanDefinition, beanFactory);
+        return support(beanDefinition) ? instantiateBean(beanDefinition, beanFactory) : null;
     }
 
     abstract public Object instantiateBean(BeanDefinition beanDefinition, BeanFactory beanFactory);

@@ -1,9 +1,7 @@
 package core.di.factory;
 
 import core.di.factory.example.*;
-import core.jdbc.JdbcTemplate;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

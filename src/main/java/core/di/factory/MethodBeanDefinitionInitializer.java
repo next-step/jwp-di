@@ -1,40 +1,39 @@
 package core.di.factory;
 
-import core.annotation.Qualifier;
 import core.mvc.tobe.MethodParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
-import org.springframework.beans.BeanUtils;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
-import org.springframework.core.ParameterNameDiscoverer;
 
-import javax.annotation.Nullable;
-import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 
 /**
  * @author KingCjy
  */
 public class MethodBeanDefinitionInitializer extends AbstractBeanDefinitionInitializer {
 
+    private static final Logger logger = LoggerFactory.getLogger(MethodBeanDefinition.class);
+
     @Override
     public boolean support(BeanDefinition beanDefinition) {
         return beanDefinition instanceof MethodBeanDefinition;
     }
 
-    @Nullable
     @Override
     public Object instantiateBean(BeanDefinition definition, BeanFactory beanFactory) {
         MethodBeanDefinition beanDefinition = (MethodBeanDefinition) definition;
 
-        Object instance = beanFactory.getBean(beanDefinition.getParent());
+        Object classInstance = beanFactory.getBean(beanDefinition.getParent());
         Method method = beanDefinition.getMethod();
 
         MethodParameter[] methodParameters = getMethodParameters(method);
         Object[] parameters = getParameters(beanFactory, methodParameters);
 
-        return invokeMethod(instance, method, parameters);
+        Object instance = invokeMethod(classInstance, method, parameters);
+        logger.info("bean " + instance.getClass() + " instantiate");
+
+        return instance;
     }
 
     private Object invokeMethod(Object instance, Method method, Object[] parameters) {

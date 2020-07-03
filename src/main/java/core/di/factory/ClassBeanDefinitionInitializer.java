@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 
 /**
@@ -22,7 +21,6 @@ public class ClassBeanDefinitionInitializer extends AbstractBeanDefinitionInitia
         return beanDefinition instanceof ClassBeanDefinition;
     }
 
-    @Nullable
     @Override
     public Object instantiateBean(BeanDefinition beanDefinition, BeanFactory beanFactory) {
         Constructor constructor = findInjectController(beanDefinition.getType());

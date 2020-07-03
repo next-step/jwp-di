@@ -1,8 +1,10 @@
 package core.di.factory;
 
-import core.annotation.Bean;
+import core.di.factory.example.MyJdbcTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author KingCjy
@@ -23,6 +25,7 @@ public class MethodBeanScannerTest {
 
     @Test
     public void registerMethodBeanDefinitionTest() {
-        beanDefinitionRegistry.getBeanDefinition("dataSource");
+        assertThat(beanDefinitionRegistry.getBeanDefinitions(MyJdbcTemplate.class)).isNotEmpty();
+        assertThat(beanDefinitionRegistry.getBeanDefinition("dataSource2")).isNotNull();
     }
 }

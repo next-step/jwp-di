@@ -30,7 +30,9 @@ public class MethodBeanScanner implements BeanScanner {
 
         Set<MethodBeanDefinition> beanDefinitions = createMethodBeanDefinitions(configurationClasses);
 
-        beanDefinitions.forEach(beanDefinition -> beanDefinitionRegistry.registerDefinition(beanDefinition));
+        for (MethodBeanDefinition beanDefinition : beanDefinitions) {
+            beanDefinitionRegistry.registerDefinition(beanDefinition);
+        }
     }
 
     private Set<MethodBeanDefinition> createMethodBeanDefinitions(Set<Class<?>> configurationClasses) {

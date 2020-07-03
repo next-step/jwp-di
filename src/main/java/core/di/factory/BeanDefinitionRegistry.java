@@ -1,5 +1,7 @@
 package core.di.factory;
 
+import jdk.internal.jline.internal.Nullable;
+
 import java.util.Set;
 
 /**
@@ -7,6 +9,9 @@ import java.util.Set;
  */
 public interface BeanDefinitionRegistry {
     void registerDefinition(BeanDefinition beanDefinition);
+
+    @Nullable
     BeanDefinition getBeanDefinition(String name);
+
     Set<BeanDefinition> getBeanDefinitions(Class<?> type);
 }

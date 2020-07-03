@@ -2,9 +2,7 @@ package core.di.factory;
 
 import core.util.OrderComparator;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.annotation.OrderUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;

@@ -1,12 +1,14 @@
 package core.di.factory;
 
 import core.util.OrderComparator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.BeanInitializationException;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
@@ -45,24 +47,16 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
     @Override
     public <T> T getBean(String name, Class<T> requiredType) {
         T bean = (T) doGetBeanByName(name);
-
         if(bean != null) {
             return bean;
         }
 
-        bean = (T) doGetBeanByType(requiredType);
-
+        bean = doGetBeanByType(requiredType);
         if(bean != null) {
             return bean;
         }
 
-        bean = doGetBeanByInterface(requiredType);
-
-        if(bean != null) {
-            return bean;
-        }
-
-        return null;
+        return doGetBeanByInterface(requiredType);
     }
 
     private Object doGetBeanByName(String name) {
@@ -130,6 +124,11 @@ public class DefaultBeanFactory implements BeanFactory, BeanDefinitionRegistry {
 
     @Override
     public void registerDefinition(BeanDefinition beanDefinition) {
+        BeanDefinition duplicated = this.beanDefinitions.get(beanDefinition.getName());
+        if(duplicated != null && !beanDefinition.equals(duplicated)) {
+            throw new BeanInitializationException("bean name '" + beanDefinition.getName() + "' is duplicated");
+        }
+
         this.beanDefinitions.put(beanDefinition.getName(), beanDefinition);
     }
 

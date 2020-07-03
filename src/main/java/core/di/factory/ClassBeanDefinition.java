@@ -1,5 +1,7 @@
 package core.di.factory;
 
+import java.util.Objects;
+
 /**
  * @author KingCjy
  */
@@ -21,6 +23,20 @@ public class ClassBeanDefinition implements BeanDefinition {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClassBeanDefinition that = (ClassBeanDefinition) o;
+        return Objects.equals(type, that.type) &&
+                Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, name);
     }
 
     @Override
