@@ -49,8 +49,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
         for (Object instance : controllers) {
             Class<?> controller = instance.getClass();
-            Object target = newInstance(controller);
-            addHandlerExecution(handlerExecutions, target, controller.getMethods());
+            addHandlerExecution(handlerExecutions, instance, controller.getMethods());
         }
     }
 
