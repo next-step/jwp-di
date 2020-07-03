@@ -1,28 +1,22 @@
 package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
+import core.annotation.Component;
 import core.annotation.web.Controller;
-import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
 import core.di.factory.DefaultBeanFactory;
 import core.mvc.HandlerMapping;
-import core.mvc.tobe.support.*;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
+import core.mvc.tobe.support.ArgumentResolver;
+import core.mvc.tobe.support.ArgumentResolverComposite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
-import org.springframework.core.ParameterNameDiscoverer;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Method;
-import java.util.*;
-
-import static core.util.ReflectionUtils.newInstance;
-import static java.util.Arrays.asList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
@@ -38,8 +32,23 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
 
-        controllers = new Controllers(beanFactory);
+        ArgumentResolver argumentResolver = new ArgumentResolverComposite(getArgumentResolvers());
+        Object[] controllerInstances = getControllers();
+
+        controllers = new Controllers(controllerInstances, argumentResolver);
         this.handlerExecutions = controllers.getHandlerExecutions();
+    }
+
+    private Object[] getControllers() {
+        return beanFactory.getAnnotatedBeans(Controller.class);
+    }
+
+    private ArgumentResolver[] getArgumentResolvers() {
+        return Arrays.stream(beanFactory.getAnnotatedBeans(Component.class))
+                .filter(object -> ArgumentResolver.class.isAssignableFrom(object.getClass()))
+                .map(object -> (ArgumentResolver) object)
+                .collect(Collectors.toCollection(LinkedHashSet::new))
+                .toArray(new ArgumentResolver[]{});
     }
 
     public Object getHandler(HttpServletRequest request) {

@@ -1,10 +1,7 @@
 package core.mvc.tobe;
 
-import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
-import core.di.factory.BeanFactory;
 import core.mvc.tobe.support.ArgumentResolver;
-import core.mvc.tobe.support.ArgumentResolverComposite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -12,7 +9,6 @@ import org.springframework.core.ParameterNameDiscoverer;
 
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author KingCjy
@@ -21,31 +17,20 @@ public class Controllers {
 
     private static final Logger logger = LoggerFactory.getLogger(Controllers.class);
 
-    private BeanFactory beanFactory;
     private Object[] controllers;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = new LinkedHashMap<>();
     private ArgumentResolver argumentResolver;
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public Controllers(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-
-        initializeArgumentResolver();
-        initializeControllers();
-    }
-
-    private void initializeControllers() {
-        this.controllers = this.beanFactory.getAnnotatedBeans(Controller.class);
+    public Controllers(Object[] controllers, ArgumentResolver argumentResolver) {
+        this.controllers = controllers;
+        this.argumentResolver = argumentResolver;
 
         for (Object target : this.controllers) {
             Class<?> controller = target.getClass();
             addHandlerExecution(target, controller.getMethods());
         }
-    }
-
-    private void initializeArgumentResolver() {
-        argumentResolver = new ArgumentResolverComposite(beanFactory);
     }
 
     private void addHandlerExecution(Object target, Method[] methods) {

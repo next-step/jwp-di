@@ -1,7 +1,5 @@
 package core.mvc.tobe.support;
 
-import core.annotation.Component;
-import core.di.factory.BeanFactory;
 import core.mvc.tobe.MethodParameter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,7 +8,6 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author KingCjy
@@ -18,19 +15,13 @@ import java.util.stream.Collectors;
 public class ArgumentResolverComposite implements ArgumentResolver {
 
     private Set<ArgumentResolver> argumentResolvers;
-    private BeanFactory beanFactory;
 
-    public ArgumentResolverComposite(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-
-        initArgumentResolvers();
+    public ArgumentResolverComposite(ArgumentResolver ...argumentResolvers) {
+        this.argumentResolvers = new LinkedHashSet<>(Arrays.asList(argumentResolvers));
     }
 
-    private void initArgumentResolvers() {
-        argumentResolvers = Arrays.stream(beanFactory.getAnnotatedBeans(Component.class))
-                .filter(object -> ArgumentResolver.class.isAssignableFrom(object.getClass()))
-                .map(object -> (ArgumentResolver) object)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+    public void addArgumentResolver(ArgumentResolver ... argumentResolvers) {
+        this.argumentResolvers.addAll(Arrays.asList(argumentResolvers));
     }
 
     @Override

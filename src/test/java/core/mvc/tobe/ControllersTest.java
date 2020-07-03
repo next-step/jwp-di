@@ -1,10 +1,12 @@
 package core.mvc.tobe;
 
+import core.annotation.web.Controller;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanDefinition;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import core.di.factory.DefaultBeanFactory;
+import core.mvc.tobe.support.ArgumentResolverComposite;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +30,7 @@ public class ControllersTest {
         beanScanner.scan("core.di.factory.example");
         beanFactory.initialize();
 
-        controllers = new Controllers(beanFactory);
+        controllers = new Controllers(beanFactory.getAnnotatedBeans(Controller.class), new ArgumentResolverComposite());
     }
 
     @Test
