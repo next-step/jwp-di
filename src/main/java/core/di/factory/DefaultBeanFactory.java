@@ -14,12 +14,15 @@ import java.util.Set;
 public class DefaultBeanFactory implements BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultBeanFactory.class);
 
-    private final Map<Class<?>, BeanDefinition> definitionMap;
+    private final Map<Class<?>, BeanDefinition> definitionMap = Maps.newHashMap();
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
+    public DefaultBeanFactory() {
+    }
+
     public DefaultBeanFactory(Set<Class<?>> preInstanticateBeans) {
-        definitionMap = BeanDefinitionUtil.convertClassToDefinition(preInstanticateBeans);
+        // definitionMap = BeanDefinitionUtil.convertClassToDefinition(preInstanticateBeans);
         initialize();
     }
 
@@ -30,6 +33,11 @@ public class DefaultBeanFactory implements BeanFactory {
                 registerBean(bean, beanDefinition);
             }
         });
+    }
+
+    @Override
+    public void instantiate() {
+        initialize();
     }
 
     @Override
@@ -67,8 +75,8 @@ public class DefaultBeanFactory implements BeanFactory {
             dependencies.add(getBean(clazz));
         }
 
-        logger.debug("bean constructor: {}", beanDefinition.getBeanConstructor());
-        logger.debug("bean dependencies: {}", dependencies);
+        // logger.debug("bean constructor: {}", beanDefinition.getBeanConstructor());
+        // logger.debug("bean dependencies: {}", dependencies);
         return BeanUtils.instantiateClass(beanDefinition.getBeanConstructor(), dependencies.toArray());
     }
 
@@ -76,6 +84,7 @@ public class DefaultBeanFactory implements BeanFactory {
         final Class<?> originClass = beanDefinition.getOriginalClass();
         beans.put(originClass, bean);
         for (Class<?> type : originClass.getInterfaces()) {
+            logger.debug("registerBean - {}", type);
             beans.put(type, bean);
         }
     }
