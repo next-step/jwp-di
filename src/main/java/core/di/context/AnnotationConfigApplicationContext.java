@@ -1,16 +1,17 @@
 package core.di.context;
 
 import core.annotation.ComponentScan;
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
-import core.di.factory.DefaultBeanFactory;
-import core.di.factory.JavaConfigBeanDefinitionReader;
+import core.annotation.Repository;
+import core.annotation.Service;
+import core.annotation.web.Controller;
+import core.di.factory.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class AnnotationConfigApplicationContext implements ApplicationContext {
 
@@ -23,14 +24,16 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         final Object[] candidatePackages = findCandidatePackages(configClasses);
 
         // 2. load class-based definitions -> refactoring required.
+        final BeanDefinitionReader classBeanDefinitionReader = new ClassBeanDefinitionReader(beanFactory);
         for (Object pkg : candidatePackages) {
             final BeanScanner bs = new BeanScanner(pkg);
-            bs.loadBeanDefinitions(beanFactory);
+            final Set<Class<?>> classes = bs.loadClasses(Controller.class, Service.class, Repository.class);
+            classBeanDefinitionReader.loadBeanDefinitions(classes.toArray(new Class[classes.size()]));
         }
 
         // 3. load method-based definitions -> ㄷㄷㄷㄷ
-        final JavaConfigBeanDefinitionReader definitionReader = new JavaConfigBeanDefinitionReader(beanFactory);
-        definitionReader.loadBeanDefinitions(configClasses);
+        final BeanDefinitionReader javaConfigBeanDefinitionReader = new JavaConfigBeanDefinitionReader(beanFactory);
+        javaConfigBeanDefinitionReader.loadBeanDefinitions(configClasses);
 
         beanFactory.initialize();
     }

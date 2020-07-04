@@ -1,18 +1,12 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
-import core.annotation.Inject;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
-import org.springframework.lang.Nullable;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -54,43 +48,5 @@ public class BeanScanner {
             beans.addAll(classes);
         }
         return beans;
-    }
-
-    // TODO: 모든 작업 끝난 후 분리 고민해볼 것
-    public void loadBeanDefinitions(BeanFactory beanFactory) {
-        final Set<Class<?>> classes = this.loadClasses(Controller.class, Service.class, Repository.class);
-        for (Class<?> clazz : classes) {
-            final BeanDefinition beanDefinition = buildBeanDefinition(clazz);
-            beanFactory.registerBeanDefinition(clazz, beanDefinition);
-            for (Class<?> type : clazz.getInterfaces()) {
-                beanFactory.registerBeanDefinition(type, beanDefinition);
-            }
-        }
-    }
-
-    private BeanDefinition buildBeanDefinition(Class<?> clazz) {
-        final ClassBeanDefinition beanDefinition = new ClassBeanDefinition(clazz);
-        final Constructor<?> ctor = findBeanConstructor(clazz);
-        if (ctor != null) {
-            beanDefinition.setDependencies(ctor.getParameterTypes());
-            beanDefinition.setBeanConstructor(ctor);
-        }
-        return beanDefinition;
-    }
-
-    @Nullable
-    private Constructor<?> findBeanConstructor(Class<?> clazz) {
-        final Constructor<?>[] ctors = clazz.getDeclaredConstructors();
-        Constructor<?> nonArgsCtor = null;
-        for (Constructor<?> ctor : ctors) {
-            if (ctor.isAnnotationPresent(Inject.class)) {
-                return ctor;
-            }
-
-            if (ctor.getParameterTypes().length == 0) {
-                nonArgsCtor = ctor;
-            }
-        }
-        return nonArgsCtor;
     }
 }
