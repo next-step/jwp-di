@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class DefaultBeanFactory implements  BeanFactory {
+public class DefaultBeanFactory implements BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultBeanFactory.class);
 
     private final Map<Class<?>, BeanDefinition> definitionMap;
@@ -32,6 +32,7 @@ public class DefaultBeanFactory implements  BeanFactory {
         });
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         logger.debug("required type: {}", requiredType);
@@ -49,6 +50,12 @@ public class DefaultBeanFactory implements  BeanFactory {
         final Object bean = instantiateBean(beanDefinition);
         registerBean(bean, beanDefinition);
         return (T) bean;
+    }
+
+    @Override
+    public void registerBeanDefinition(Class<?> clazz, BeanDefinition beanDefinition) {
+        logger.debug("registerBeanDefinition - clazz: {}", clazz);
+        definitionMap.put(clazz, beanDefinition);
     }
 
     private Object instantiateBean(BeanDefinition beanDefinition) {
