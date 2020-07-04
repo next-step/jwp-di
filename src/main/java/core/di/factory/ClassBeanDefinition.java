@@ -13,13 +13,13 @@ import java.util.List;
  *
  * @author hyeyoom
  */
-public class DefaultBeanDefinition implements BeanDefinition {
+public class ClassBeanDefinition implements BeanDefinition {
 
     private final Class<?> originClass;
     private final List<Class<?>> dependencies = new ArrayList<>();
     private Constructor<?> beanConstructor;
 
-    public DefaultBeanDefinition(Class<?> originClass) {
+    public ClassBeanDefinition(Class<?> originClass) {
         this.originClass = originClass;
     }
 

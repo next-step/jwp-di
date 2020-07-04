@@ -20,10 +20,13 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         // 1. find candidate packages to be scanned.
         final Object[] candidatePackages = findCandidatePackages(configClasses);
 
+        // 2. load class-based definitions -> refactoring required.
         for (Object pkg : candidatePackages) {
             final BeanScanner bs = new BeanScanner(pkg);
             bs.loadBeanDefinitions(beanFactory);
         }
+
+        // 3. load method-based definitions -> ㄷㄷㄷㄷ
 
         beanFactory.instantiate();
     }

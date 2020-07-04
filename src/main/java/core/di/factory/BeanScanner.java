@@ -69,7 +69,7 @@ public class BeanScanner {
     }
 
     private BeanDefinition buildBeanDefinition(Class<?> clazz) {
-        final DefaultBeanDefinition beanDefinition = new DefaultBeanDefinition(clazz);
+        final ClassBeanDefinition beanDefinition = new ClassBeanDefinition(clazz);
         final Constructor<?> ctor = findBeanConstructor(clazz);
         if (ctor != null) {
             beanDefinition.setDependencies(ctor.getParameterTypes());
