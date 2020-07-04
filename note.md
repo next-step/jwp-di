@@ -55,7 +55,14 @@ TO-BE
         - 그래서 나는 BeanFacctory를 인자로 넘겨주다 망해버렸지
 - 결론
     - Bean 생성에 대한 책임은 BeanFactory에게 있다.  
-
+    
+- 중간 고민
+    - 엄.. 의존 관계는 BeanFactory가 가지고 있다.  
+    - BeanFactory#instantiateBean에서 실제 의존성을 주입해주긴 함..  
+    - BeanScanner를 두 개로 쪼갤 필요가 있음  
+        - Class-Base
+        - Java Config
+    
 ## 1단계 - DI 구현
 
 - @Controller
