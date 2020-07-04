@@ -38,6 +38,7 @@ public class HandlerBeanScanner {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
         for (Map.Entry<Class<?>, Object> controllerEntry : beanFactory.getControllers().entrySet()) {
+            log.debug("foundController: {}", controllerEntry.getValue().getClass().getSimpleName());
             addHandlerExecution(handlers, controllerEntry.getValue(), controllerEntry.getKey().getMethods());
         }
 

@@ -1,10 +1,5 @@
 package core.mvc;
 
-import core.config.MyConfiguration;
-import core.di.factory.ApplicationContext;
-import core.di.factory.BeanFactory;
-import core.di.factory.HandlerBeanScanner;
-import core.di.factory.ConfigurationBeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -14,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,12 +31,12 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init() {
         handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
+        handlerMappingRegistry.addHandlerMapping(new RequestMapping());
 
         AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping(ContextLoaderListener.applicationContext);
         handlerMapping.initialize();
 
-        handlerMappingRegistry.addHandlerMpping(handlerMapping);
+        handlerMappingRegistry.addHandlerMapping(handlerMapping);
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
@@ -60,9 +54,9 @@ public class DispatcherServlet extends HttpServlet {
             Optional<Object> maybeHandler = handlerMappingRegistry.getHandler(req);
             if (!maybeHandler.isPresent()) {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
+                logger.debug("NOT FOUND");
                 return;
             }
-
 
             ModelAndView mav = handlerExecutor.handle(req, resp, maybeHandler.get());
             render(mav, req, resp);
@@ -75,5 +69,13 @@ public class DispatcherServlet extends HttpServlet {
     private void render(ModelAndView mav, HttpServletRequest req, HttpServletResponse resp) throws Exception {
         View view = mav.getView();
         view.render(mav.getModel(), req, resp);
+    }
+
+    public void addHandlerMapping(HandlerMapping handlerMapping) {
+        handlerMappingRegistry.addHandlerMapping(handlerMapping);
+    }
+
+    public void addHandlerAdapter(HandlerAdapter handlerAdapter) {
+        handlerAdapterRegistry.addHandlerAdapter(handlerAdapter);
     }
 }

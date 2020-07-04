@@ -1,5 +1,7 @@
 package core.di.factory;
 
+import core.di.beans.definition.reader.AnnotatedBeanDefinitionReader;
+import core.di.beans.definition.reader.ClasspathBeanDefinitionReader;
 import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
@@ -22,12 +24,12 @@ public class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
-        cbs.register(ExampleConfig.class);
-        beanFactory.initialize();
+        AnnotatedBeanDefinitionReader annotatedBeanDefinitionReader = new AnnotatedBeanDefinitionReader(beanFactory);
+        annotatedBeanDefinitionReader.read(ExampleConfig.class);
 
-        ClasspathBeanScanner cpbs = new ClasspathBeanScanner(beanFactory);
-        cpbs.doScan("core.di.factory.example");
+        ClasspathBeanDefinitionReader classpathBeanDefinitionReader = new ClasspathBeanDefinitionReader(beanFactory);
+        classpathBeanDefinitionReader.doScan("core.di.factory.example");
+        beanFactory.instantiateBeans();
     }
 
     @Test

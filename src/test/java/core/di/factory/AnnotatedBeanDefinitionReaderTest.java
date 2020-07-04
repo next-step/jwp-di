@@ -1,5 +1,7 @@
 package core.di.factory;
 
+import core.di.beans.definition.reader.AnnotatedBeanDefinitionReader;
+import core.di.beans.definition.reader.ClasspathBeanDefinitionReader;
 import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.JdbcUserRepository;
@@ -10,14 +12,14 @@ import javax.sql.DataSource;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ConfigurationHandlerBeanScannerTest {
+public class AnnotatedBeanDefinitionReaderTest {
 
     @Test
     public void register_simple() {
         BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
-        cbs.register(ExampleConfig.class);
-        beanFactory.initialize();
+        AnnotatedBeanDefinitionReader abdr = new AnnotatedBeanDefinitionReader(beanFactory);
+        abdr.read(ExampleConfig.class);
+        beanFactory.instantiateBeans();
 
         assertNotNull(beanFactory.getBean(DataSource.class));
     }
@@ -25,12 +27,12 @@ public class ConfigurationHandlerBeanScannerTest {
     @Test
     public void register_classpathBeanScanner_통합() {
         BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
-        cbs.register(IntegrationConfig.class);
-        beanFactory.initialize();
+        AnnotatedBeanDefinitionReader abdr = new AnnotatedBeanDefinitionReader(beanFactory);
+        abdr.read(ExampleConfig.class);
 
-        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
-        cbds.doScan("core.di.factory.example");
+        ClasspathBeanDefinitionReader cbdr = new ClasspathBeanDefinitionReader(beanFactory);
+        cbdr.doScan("core.di.factory.example");
+        beanFactory.instantiateBeans();
 
         assertNotNull(beanFactory.getBean(DataSource.class));
 

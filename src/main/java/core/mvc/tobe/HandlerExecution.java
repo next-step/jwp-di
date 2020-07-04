@@ -2,6 +2,7 @@ package core.mvc.tobe;
 
 import core.mvc.ModelAndView;
 import core.mvc.tobe.support.ArgumentResolver;
+import lombok.Getter;
 import org.springframework.core.ParameterNameDiscoverer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ public class HandlerExecution {
     private static final Map<Method, MethodParameter[]> methodParameterCache = new ConcurrentHashMap<>();
     private List<ArgumentResolver> argumentResolver;
     private ParameterNameDiscoverer parameterNameDiscoverer;
+    @Getter
     private Object target;
     private Method method;
 
