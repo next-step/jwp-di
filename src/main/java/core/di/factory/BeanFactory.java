@@ -15,6 +15,11 @@ public interface BeanFactory {
     <T> T getBean(Class<T> requiredType);
 
     /**
+     * @return types of beans
+     */
+    Class<?>[] getBeanClasses();
+
+    /**
      * @param clazz          origin class
      * @param beanDefinition bean definition data
      */

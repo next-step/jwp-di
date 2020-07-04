@@ -8,4 +8,9 @@ public interface ApplicationContext {
      * @return bean
      */
     <T> T getBean(Class<T> requiredType);
+
+    /**
+     * @return types of beans
+     */
+    Class<?>[] getBeanClasses();
 }

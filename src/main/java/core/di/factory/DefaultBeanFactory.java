@@ -56,6 +56,12 @@ public class DefaultBeanFactory implements BeanFactory {
     }
 
     @Override
+    public Class<?>[] getBeanClasses() {
+        final Set<Class<?>> keyset = beans.keySet();
+        return keyset.toArray(new Class<?>[keyset.size()]);
+    }
+
+    @Override
     public void registerBeanDefinition(Class<?> clazz, BeanDefinition beanDefinition) {
         logger.debug("registerBeanDefinition - clazz: {}", clazz);
         definitionMap.put(clazz, beanDefinition);

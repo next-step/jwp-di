@@ -43,6 +43,11 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         return beanFactory.getBean(requiredType);
     }
 
+    @Override
+    public Class<?>[] getBeanClasses() {
+        return beanFactory.getBeanClasses();
+    }
+
     private Object[] findCandidatePackages(Class<?>... configClasses) {
         final List<Object> packages = new ArrayList<>();
         for (Class<?> config : configClasses) {
