@@ -29,7 +29,7 @@ AS-IS
     - Bean 생성 (필요한 경우)
     - 조회한 빈 반환
 - BeanDefinitionUtil의 책임
-    - 스캐너가 넘겨준 친구들을 BeaDefinition으로 변환
+    - 스캐너가 넘겨준 친구들을 BeanDefinition으로 변환
 - scan -> defutil -> factory 순. 망.
   
 TO-BE
