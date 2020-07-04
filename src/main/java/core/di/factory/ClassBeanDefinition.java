@@ -62,6 +62,6 @@ public class ClassBeanDefinition implements BeanDefinition, InstantiatableBean {
 
     @Override
     public Object instantiate(List<Object> dependencies) {
-        return BeanUtils.instantiateClass(getBeanConstructor(), dependencies.toArray());
+        return BeanUtils.instantiateClass(beanConstructor, dependencies.toArray());
     }
 }

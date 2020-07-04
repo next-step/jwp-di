@@ -4,6 +4,7 @@ import core.annotation.ComponentScan;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import core.di.factory.DefaultBeanFactory;
+import core.di.factory.JavaConfigBeanDefinitionReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +28,9 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         }
 
         // 3. load method-based definitions -> ㄷㄷㄷㄷ
+        final JavaConfigBeanDefinitionReader definitionReader = new JavaConfigBeanDefinitionReader(beanFactory);
+        definitionReader.loadBeanDefinitions(configClasses);
+
         beanFactory.initialize();
     }
 
