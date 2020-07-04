@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.di.factory.exception.CircularReferenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
@@ -33,6 +34,10 @@ public class BeanFactory {
     }
 
     private Object instantiate(Class<?> preInstantiateBean) {
+        if (this.beanInstantiateHistory.contains(preInstantiateBean)) {
+            throw new CircularReferenceException("Illegal Bean Creation Exception : Circular Reference");
+        }
+
         if (beans.containsKey(preInstantiateBean)) {
             return beans.get(preInstantiateBean);
         }
@@ -44,6 +49,8 @@ public class BeanFactory {
             return instance;
         }
 
+        this.beanInstantiateHistory.push(preInstantiateBean);
+
         Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
         Object[] parameterInstances = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
@@ -53,6 +60,8 @@ public class BeanFactory {
 
         Object instance = BeanUtils.instantiateClass(injectedConstructor, parameterInstances);
         this.beans.put(preInstantiateBean, instance);
+
+        this.beanInstantiateHistory.pop();
         return instance;
     }
 }
