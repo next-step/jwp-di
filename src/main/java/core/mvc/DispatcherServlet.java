@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.di.factory.BeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -22,22 +23,23 @@ public class DispatcherServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
     private HandlerMappingRegistry handlerMappingRegistry;
-
     private HandlerAdapterRegistry handlerAdapterRegistry;
-
     private HandlerExecutor handlerExecutor;
+    private BeanScanner beanScanner;
 
     @Override
     public void init() {
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next"));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanScanner));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
         handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+
+        beanScanner = new BeanScanner("next");
     }
 
     @Override
@@ -51,7 +53,6 @@ public class DispatcherServlet extends HttpServlet {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
                 return;
             }
-
 
             ModelAndView mav = handlerExecutor.handle(req, resp, maybeHandler.get());
             render(mav, req, resp);

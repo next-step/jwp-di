@@ -13,7 +13,7 @@ public class RequestMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
     private Map<String, Controller> mappings = new HashMap<>();
 
-    public void initialize() {
+    public RequestMapping() {
         logger.info("Initialized Request Mapping!");
         mappings.keySet().forEach(path -> {
             logger.info("Path : {}, Controller : {}", path, mappings.get(path).getClass());
