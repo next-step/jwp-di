@@ -1,10 +1,16 @@
 package core.di.factory;
 
+import javax.annotation.Nullable;
+import java.util.Set;
+
 /**
  * @author KingCjy
  */
 public interface BeanDefinitionRegistry {
     void registerDefinition(BeanDefinition beanDefinition);
-    BeanDefinition getBeanDefinition(Class<?> type);
+
+    @Nullable
     BeanDefinition getBeanDefinition(String name);
+
+    Set<BeanDefinition> getBeanDefinitions(Class<?> type);
 }

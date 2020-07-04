@@ -1,11 +1,15 @@
 package core.util;
 
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class ReflectionUtils {
 
@@ -81,6 +85,16 @@ public class ReflectionUtils {
             }
         }
         return false;
+    }
+
+    public static Set<Class<?>> getAnnotatedClasses(Reflections reflections, Class<? extends Annotation>... annotations) {
+        Set<Class<?>> classes = new LinkedHashSet<>();
+
+        for (Class<? extends Annotation> annotation : annotations) {
+            classes.addAll(reflections.getTypesAnnotatedWith(annotation));
+        }
+
+        return classes;
     }
 
 }

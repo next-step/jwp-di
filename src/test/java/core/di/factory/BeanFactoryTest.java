@@ -1,25 +1,25 @@
 package core.di.factory;
 
-import core.di.factory.example.BoardService;
-import core.di.factory.example.MockBoardRepository;
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
-import org.assertj.core.api.Assertions;
+import core.di.factory.example.*;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import javax.sql.DataSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
     private DefaultBeanFactory beanFactory;
-    private BeanScanner beanScanner;
 
     @BeforeEach
     public void setup() {
         beanFactory = new DefaultBeanFactory();
-        beanScanner = new BeanScanner(beanFactory);
+        new ClassBeanScanner(beanFactory).scan("core.di.factory.example");
+        new MethodBeanScanner(beanFactory).scan("core.di.factory.example");
 
-        beanScanner.scan("core.di.factory.example");
         beanFactory.initialize();
     }
 
@@ -39,6 +39,16 @@ public class BeanFactoryTest {
     public void qualifierTest() {
         BoardService boardService = beanFactory.getBean(BoardService.class);
 
-        Assertions.assertThat(boardService.getBoardRepository()).isInstanceOf(MockBoardRepository.class);
+        assertThat(boardService.getBoardRepository()).isInstanceOf(MockBoardRepository.class);
+    }
+
+    @Test
+    @DisplayName("@Bean 어노테이션으로 등록한 Bean 테스트")
+    public void methodBeanTest() {
+        MyJdbcTemplate jdbcTemplate = beanFactory.getBean(MyJdbcTemplate.class);
+        BasicDataSource dataSource = (BasicDataSource) beanFactory.getBean("dataSource2", DataSource.class);
+
+        assertThat(jdbcTemplate).isNotNull();
+        assertThat(((BasicDataSource)jdbcTemplate.getDataSource()).getUrl()).isEqualTo(dataSource.getUrl());
     }
 }
