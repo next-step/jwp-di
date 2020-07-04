@@ -27,8 +27,7 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         }
 
         // 3. load method-based definitions -> ㄷㄷㄷㄷ
-
-        beanFactory.instantiate();
+        beanFactory.initialize();
     }
 
     @Override

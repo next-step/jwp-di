@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -26,18 +25,14 @@ public class DefaultBeanFactory implements BeanFactory {
         initialize();
     }
 
-    private void initialize() {
+    @Override
+    public void initialize() {
         definitionMap.forEach((clazz, beanDefinition) -> {
             if (!beanDefinition.isLazyInit()) {
                 final Object bean = instantiateBean(beanDefinition);
                 registerBean(bean, beanDefinition);
             }
         });
-    }
-
-    @Override
-    public void instantiate() {
-        initialize();
     }
 
     @Override
@@ -74,10 +69,11 @@ public class DefaultBeanFactory implements BeanFactory {
         for (Class<?> clazz : dependenciesClass) {
             dependencies.add(getBean(clazz));
         }
+        return instantiate((InstantiatableBean) beanDefinition, dependencies);
+    }
 
-        // logger.debug("bean constructor: {}", beanDefinition.getBeanConstructor());
-        // logger.debug("bean dependencies: {}", dependencies);
-        return BeanUtils.instantiateClass(beanDefinition.getBeanConstructor(), dependencies.toArray());
+    private Object instantiate(InstantiatableBean instantiatableBean, List<Object> dependencies) {
+        return instantiatableBean.instantiate(dependencies);
     }
 
     private void registerBean(Object bean, BeanDefinition beanDefinition) {

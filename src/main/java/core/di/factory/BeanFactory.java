@@ -5,7 +5,7 @@ package core.di.factory;
  */
 public interface BeanFactory {
 
-    void instantiate();
+    void initialize();
 
     /**
      * @param requiredType type of bean to find
