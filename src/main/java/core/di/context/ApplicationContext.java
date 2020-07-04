@@ -1,6 +1,11 @@
 package core.di.context;
 
-import core.di.factory.BeanFactory;
+public interface ApplicationContext {
 
-public interface ApplicationContext extends BeanFactory {
+    /**
+     * @param requiredType type of bean to find
+     * @param <T>          type of bean
+     * @return bean
+     */
+    <T> T getBean(Class<T> requiredType);
 }
