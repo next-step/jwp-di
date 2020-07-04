@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class AnnotationConfigApplicationContext implements ApplicationContext {
 
@@ -40,7 +41,7 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
     }
 
     private Object[] findCandidatePackages(Class<?>... configClasses) {
-        final ArrayList<Object> packages = new ArrayList<>();
+        final List<Object> packages = new ArrayList<>();
         for (Class<?> config : configClasses) {
             final ComponentScan componentScan = config.getAnnotation(ComponentScan.class);
             if (componentScan != null) {

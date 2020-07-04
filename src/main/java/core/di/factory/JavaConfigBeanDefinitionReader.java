@@ -4,7 +4,7 @@ import core.annotation.Bean;
 
 import java.util.Arrays;
 
-public class JavaConfigBeanDefinitionReader {
+public class JavaConfigBeanDefinitionReader implements BeanDefinitionReader {
 
     final BeanFactory beanFactory;
 
@@ -12,6 +12,7 @@ public class JavaConfigBeanDefinitionReader {
         this.beanFactory = beanFactory;
     }
 
+    @Override
     public void loadBeanDefinitions(Class<?>... classes) {
         for (Class<?> clazz : classes) {
             registerBeanDefinition(clazz);
