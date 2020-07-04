@@ -1,7 +1,6 @@
 package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
-import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanScanner;
@@ -36,10 +35,10 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
     public AnnotationHandlerMapping(BeanScanner beanScanner) {
-        Map<Class<?>, Object> beans = beanScanner.getBeansAnnotationWith(Controller.class);
-        for (Map.Entry<Class<?>, Object> beanEntry : beans.entrySet()) {
-            Class<?> clazz = beanEntry.getKey();
-            Object target = beanEntry.getValue();
+        Map<Class<?>, Object> controllers = beanScanner.getControllers();
+        for (Map.Entry<Class<?>, Object> controllerEntry : controllers.entrySet()) {
+            Class<?> clazz = controllerEntry.getKey();
+            Object target = controllerEntry.getValue();
             addHandlerExecution(handlerExecutions, target, clazz.getMethods());
         }
     }

@@ -28,7 +28,11 @@ public class BeanScanner {
         this.beanFactory = new BeanFactory(preInstanticateBeans);
     }
 
-    public Map<Class<?>, Object> getBeansAnnotationWith(Class<? extends Annotation> annotationClass) {
+    public Map<Class<?>, Object> getControllers() {
+        return getBeansAnnotationWith(Controller.class);
+    }
+
+    private Map<Class<?>, Object> getBeansAnnotationWith(Class<? extends Annotation> annotationClass) {
         Map<Class<?>, Object> beans = new HashMap<>();
         for (Class<?> bean : preInstanticateBeans) {
             if (bean.isAnnotationPresent(annotationClass)) {
