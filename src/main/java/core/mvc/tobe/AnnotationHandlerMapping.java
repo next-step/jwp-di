@@ -23,9 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
@@ -58,12 +56,10 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private Map<HandlerKey, HandlerExecution> findControllers() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        Set<Class<?>> controllers = beanFactory.getControllers();
-        for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
+        Map<Class<?>, Object> beans = beanFactory.getControllers();
+        for (Class<?> controller : beans.keySet()) {
+            addHandlerExecution(handlers, beans.get(controller), controller.getMethods());
         }
-
         return handlers;
     }
 

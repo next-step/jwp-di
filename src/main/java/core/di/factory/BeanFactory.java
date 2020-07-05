@@ -10,8 +10,10 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
@@ -78,10 +80,11 @@ public class BeanFactory {
         return params;
     }
 
-    public Set<Class<?>> getControllers() {
-        return beans.keySet().stream()
-                .filter(c -> c.isAnnotationPresent(Controller.class))
-                .collect(Collectors.toSet());
+    public Map<Class<?>, Object> getControllers() {
+        return this.beans.entrySet().stream()
+                .filter(m -> m.getKey().isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
     }
 
 }
