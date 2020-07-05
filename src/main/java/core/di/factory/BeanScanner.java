@@ -25,7 +25,7 @@ public class BeanScanner {
     private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
         Set<Class<?>> beans = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
+            beans.addAll(reflections.getTypesAnnotatedWith(annotation, true));
         }
         return beans;
     }

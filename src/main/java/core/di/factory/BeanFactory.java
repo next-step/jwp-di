@@ -2,12 +2,14 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
+import core.di.factory.exception.BeanCurrentlyInCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,7 +18,7 @@ public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
     private Set<Class<?>> preInstantiateBeans;
-
+    private Set<Class<?>> references = new HashSet<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(Set<Class<?>> preInstantiateBeans) {
@@ -35,6 +37,10 @@ public class BeanFactory {
     }
 
     private Object instantiate(Class<?> clazz) {
+        if (references.contains(clazz)) {
+            throw new BeanCurrentlyInCreationException("순환참조가 발생했습니다.");
+        }
+
         if (beans.containsKey(clazz)) {
             return beans.get(clazz);
         }
@@ -45,7 +51,9 @@ public class BeanFactory {
         }
 
         try {
+            references.add(clazz);
             Object bean = injectedConstructor.newInstance(instantiateConstructor(injectedConstructor));
+            references.remove(clazz);
             beans.put(clazz, bean);
             return bean;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
