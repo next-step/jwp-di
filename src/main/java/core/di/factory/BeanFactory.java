@@ -19,12 +19,10 @@ import java.util.stream.Collectors;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-        initialize();
+        initialize(preInstanticateBeans);
     }
 
     @SuppressWarnings("unchecked")
@@ -37,28 +35,28 @@ public class BeanFactory {
     }
 
     private Map<Class<?>, Object> getBeansAnnotationWith(Class<? extends Annotation> annotationClass) {
-        return this.preInstanticateBeans.stream()
-                .filter(bean -> bean.isAnnotationPresent(annotationClass))
-                .collect(Collectors.toMap(bean -> bean, this::getBean));
+        return this.beans.entrySet().stream()
+                .filter(beanEntry -> beanEntry.getKey().isAnnotationPresent(annotationClass))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private void initialize() {
+    private void initialize(Set<Class<?>> preInstanticateBeans) {
         for (Class<?> preInstanticateBean : preInstanticateBeans) {
             if (beans.containsKey(preInstanticateBean)) {
                 continue;
             }
-            beans.put(preInstanticateBean, getInstance(preInstanticateBean));
+            beans.put(preInstanticateBean, getInstance(preInstanticateBean, preInstanticateBeans));
         }
     }
 
-    private Object getInstance(Class<?> classType) {
+    private Object getInstance(Class<?> classType, Set<Class<?>> preInstanticateBeans) {
         if (beans.containsKey(classType)) {
             return beans.get(classType);
         }
 
         Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(classType);
         if (Objects.nonNull(constructor)) {
-            beans.put(classType, getConstructorNewInstance(constructor));
+            beans.put(classType, getConstructorNewInstance(constructor, preInstanticateBeans));
             return beans.get(classType);
         }
 
@@ -66,10 +64,10 @@ public class BeanFactory {
         return BeanUtils.instantiateClass(clazz);
     }
 
-    private Object getConstructorNewInstance(Constructor<?> constructor) {
+    private Object getConstructorNewInstance(Constructor<?> constructor, Set<Class<?>> preInstanticateBeans) {
         try {
             if (constructor.getParameterCount() > 0) {
-                return constructor.newInstance(getInitArgs(constructor));
+                return constructor.newInstance(getInitArgs(constructor, preInstanticateBeans));
             }
             return constructor.newInstance();
 
@@ -78,10 +76,10 @@ public class BeanFactory {
         }
     }
 
-    private Object[] getInitArgs(Constructor<?> constructor) {
+    private Object[] getInitArgs(Constructor<?> constructor, Set<Class<?>> preInstanticateBeans) {
         Object[] initArgs = new Object[constructor.getParameterCount()];
         for (int i = 0; i < constructor.getParameterTypes().length; i++) {
-            initArgs[i] = getInstance(constructor.getParameterTypes()[i]);
+            initArgs[i] = getInstance(constructor.getParameterTypes()[i], preInstanticateBeans);
         }
         return initArgs;
     }
