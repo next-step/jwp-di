@@ -29,6 +29,8 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
+        beanScanner = new BeanScanner("next");
+
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMapping(new RequestMapping());
         handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(beanScanner));
@@ -38,8 +40,6 @@ public class DispatcherServlet extends HttpServlet {
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
         handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
-
-        beanScanner = new BeanScanner("next");
     }
 
     @Override
