@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -9,6 +10,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -66,6 +68,12 @@ public class BeanFactory {
             params[i] = instantiate(parameterTypes[i]);
         }
         return params;
+    }
+
+    public Set<Class<?>> getControllers() {
+        return beans.keySet().stream()
+                .filter(c -> c.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toSet());
     }
 
 }
