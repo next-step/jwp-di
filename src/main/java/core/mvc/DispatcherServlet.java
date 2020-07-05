@@ -10,14 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
@@ -25,12 +23,8 @@ public class DispatcherServlet extends HttpServlet {
     private HandlerMappingRegistry handlerMappingRegistry;
     private HandlerAdapterRegistry handlerAdapterRegistry;
     private HandlerExecutor handlerExecutor;
-    private BeanScanner beanScanner;
 
-    @Override
-    public void init() {
-        beanScanner = new BeanScanner("next");
-
+    public DispatcherServlet(BeanScanner beanScanner) {
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMapping(new RequestMapping());
         handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(beanScanner));

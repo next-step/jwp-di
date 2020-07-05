@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.di.factory.BeanScanner;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +18,8 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        dispatcher = new DispatcherServlet();
-        dispatcher.init();
+        BeanScanner beanScanner = new BeanScanner("next");
+        dispatcher = new DispatcherServlet(beanScanner);
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
