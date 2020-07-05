@@ -1,9 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
+import core.annotation.Component;
 import lombok.Getter;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -18,12 +16,21 @@ import java.util.Set;
 @Getter
 public class BeanScanner {
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final String ANNOTATION_PREFIX = "core.annotation";
 
     private Set<Class<?>> preInstanticateBeans;
 
     public BeanScanner(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        this.preInstanticateBeans = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+        this.preInstanticateBeans = getTypesAnnotatedWith(reflections, getComponentAnnotation());
+    }
+
+    private Class<? extends Annotation>[] getComponentAnnotation() {
+        Reflections reflections = new Reflections(ANNOTATION_PREFIX, new TypeAnnotationsScanner(), new SubTypesScanner());
+        Set<Class<?>> annotations = reflections.getTypesAnnotatedWith(Component.class);
+        annotations.add(Component.class);
+
+        return (Class<? extends Annotation>[]) annotations.toArray(new Class<?>[annotations.size()]);
     }
 
     private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
