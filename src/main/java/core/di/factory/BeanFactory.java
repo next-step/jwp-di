@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import core.exception.JwpException;
 import core.exception.JwpExceptionStatus;
 import org.slf4j.Logger;
@@ -31,7 +32,11 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public Map<Class<?>, Object> getBeansAnnotationWith(Class<? extends Annotation> annotationClass) {
+    public Map<Class<?>, Object> getControllers() {
+        return getBeansAnnotationWith(Controller.class);
+    }
+
+    private Map<Class<?>, Object> getBeansAnnotationWith(Class<? extends Annotation> annotationClass) {
         return this.preInstanticateBeans.stream()
                 .filter(bean -> bean.isAnnotationPresent(annotationClass))
                 .collect(Collectors.toMap(bean -> bean, this::getBean));

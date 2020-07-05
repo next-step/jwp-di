@@ -3,7 +3,7 @@ package core.mvc.tobe;
 import com.google.common.collect.Maps;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.factory.BeanScanner;
+import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.*;
 import org.slf4j.Logger;
@@ -34,8 +34,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(BeanScanner beanScanner) {
-        Map<Class<?>, Object> controllers = beanScanner.getControllers();
+    public AnnotationHandlerMapping(BeanFactory beanFactory) {
+        Map<Class<?>, Object> controllers = beanFactory.getControllers();
         for (Map.Entry<Class<?>, Object> controllerEntry : controllers.entrySet()) {
             Class<?> clazz = controllerEntry.getKey();
             Object target = controllerEntry.getValue();

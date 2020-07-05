@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import next.controller.UserSessionUtils;
 import next.model.User;
@@ -19,7 +20,7 @@ class DispatcherServletTest {
     @BeforeEach
     void setUp() {
         BeanScanner beanScanner = new BeanScanner("next");
-        dispatcher = new DispatcherServlet(beanScanner);
+        dispatcher = new DispatcherServlet(new BeanFactory(beanScanner.getPreInstanticateBeans()));
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();

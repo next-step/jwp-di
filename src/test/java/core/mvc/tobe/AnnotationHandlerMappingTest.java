@@ -1,5 +1,6 @@
 package core.mvc.tobe;
 
+import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import next.dao.UserDao;
 import next.model.User;
@@ -18,7 +19,7 @@ public class AnnotationHandlerMappingTest {
     @BeforeEach
     public void setup() {
         BeanScanner beanScanner = new BeanScanner("core.mvc.tobe");
-        handlerMapping = new AnnotationHandlerMapping(beanScanner);
+        handlerMapping = new AnnotationHandlerMapping(new BeanFactory(beanScanner.getPreInstanticateBeans()));
 
         DBInitializer.initialize();
         userDao = UserDao.getInstance();
