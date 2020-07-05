@@ -1,11 +1,11 @@
-package core.di.factory;
+package core.di.factory.illegal.circular;
 
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
+import core.di.factory.BeanFactory;
+import core.di.factory.exception.CircularReferenceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
@@ -13,9 +13,9 @@ import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class BeanFactoryTest {
+public class CircularReferenceBeanFactoryTest {
 
     private Reflections reflections;
     private BeanFactory beanFactory;
@@ -23,29 +23,21 @@ public class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        reflections = new Reflections("core.di.factory.example");
+        reflections = new Reflections("core.di.factory.illegal.circular");
         Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstantiateClazz);
-        beanFactory.initialize();
     }
 
     @Test
-    public void di() {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
-
-        assertNotNull(qnaController);
-        assertNotNull(qnaController.getQnaService());
-
-        MyQnaService qnaService = qnaController.getQnaService();
-        assertNotNull(qnaService.getUserRepository());
-        assertNotNull(qnaService.getQuestionRepository());
+    public void circularReferenceException() {
+        assertThrows(CircularReferenceException.class, () -> beanFactory.initialize());
     }
 
     @SuppressWarnings("unchecked")
     private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
         Set<Class<?>> beans = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
+            beans.addAll(reflections.getTypesAnnotatedWith(annotation, true));
         }
         return beans;
     }

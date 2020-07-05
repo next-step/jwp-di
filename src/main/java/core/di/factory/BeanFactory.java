@@ -1,21 +1,33 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import core.di.factory.exception.CircularReferenceException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
-
+    private Set<Class<?>> preInstantiateBeans;
+    private Deque<Class<?>> beanInstantiateHistory = new ArrayDeque<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
+        this.preInstantiateBeans = preInstantiateBeans;
+    }
+
+    public void initialize() {
+        for (Class<?> preInstantiateBean : preInstantiateBeans) {
+            instantiate(preInstantiateBean);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -23,7 +35,50 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
+    public Set<Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {
+        return this.beans.values().stream()
+                .filter(bean -> bean.getClass().isAnnotationPresent(annotation))
+                .collect(Collectors.toSet());
+    }
 
+    private Object instantiate(Class<?> preInstantiateBean) {
+        if (this.beanInstantiateHistory.contains(preInstantiateBean)) {
+            throw new CircularReferenceException("Illegal Bean Creation Exception : Circular Reference");
+        }
+
+        if (beans.containsKey(preInstantiateBean)) {
+            return beans.get(preInstantiateBean);
+        }
+
+        this.beanInstantiateHistory.push(preInstantiateBean);
+        Object instance = instantiateWithInjectedConstructor(preInstantiateBean);
+        this.beanInstantiateHistory.pop();
+
+        return instance;
+    }
+
+    private Object instantiateWithInjectedConstructor(Class<?> preInstantiateBean) {
+        Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstantiateBean);
+        if (injectedConstructor == null) {
+            return instantiateWithDefaultConstructor(preInstantiateBean);
+        }
+
+        Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
+        Object[] parameterInstances = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Class<?> concreteParameterType = BeanFactoryUtils.findConcreteClass(parameterTypes[i], preInstantiateBeans);
+            parameterInstances[i] = instantiate(concreteParameterType);
+        }
+
+        Object instance = BeanUtils.instantiateClass(injectedConstructor, parameterInstances);
+        this.beans.put(preInstantiateBean, instance);
+        return instance;
+    }
+
+    private Object instantiateWithDefaultConstructor(Class<?> preInstantiateBean) {
+        Object instance = BeanUtils.instantiateClass(preInstantiateBean);
+
+        this.beans.put(preInstantiateBean, instance);
+        return instance;
     }
 }
