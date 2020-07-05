@@ -5,11 +5,13 @@ import core.di.factory.exception.CircularReferenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class BeanFactory {
@@ -22,17 +24,24 @@ public class BeanFactory {
         this.preInstantiateBeans = preInstantiateBeans;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
-    }
-
     public void initialize() {
         for (Class<?> preInstantiateBean : preInstantiateBeans) {
             instantiate(preInstantiateBean);
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getBean(Class<T> requiredType) {
+        return (T) beans.get(requiredType);
+    }
+
+    public Set<Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {
+        return this.beans.values().stream()
+                .filter(bean -> bean.getClass().isAnnotationPresent(annotation))
+                .collect(Collectors.toSet());
+    }
+
+    // TODO: 2020/07/05 refactor
     private Object instantiate(Class<?> preInstantiateBean) {
         if (this.beanInstantiateHistory.contains(preInstantiateBean)) {
             throw new CircularReferenceException("Illegal Bean Creation Exception : Circular Reference");
