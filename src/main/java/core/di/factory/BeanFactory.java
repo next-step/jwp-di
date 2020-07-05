@@ -2,6 +2,7 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.util.ReflectionUtils;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Map;
@@ -37,6 +38,16 @@ public class BeanFactory {
         }
     }
 
+    public Map<Class<?>, Object> getAnnotationBeans(Class<?extends Annotation> annotation) {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        for (Class<?> clazz : preInstanticateBeans) {
+            if (clazz.isAnnotationPresent(annotation)) {
+                controllers.put(clazz, beans.get(clazz));
+            }
+        }
+        return controllers;
+    }
+
     private Object getOrNewBean(Class clazz){
         if(this.beans.containsKey(clazz)){
             return this.beans.get(clazz);
@@ -46,15 +57,15 @@ public class BeanFactory {
     }
 
     private Object newInstance(Class clazz) {
-        clazz = BeanFactoryUtils.findConcreteClass(clazz, this.preInstanticateBeans);
-        Constructor constructor = findConstructor(clazz);
+        Class concreteClass = BeanFactoryUtils.findConcreteClass(clazz, this.preInstanticateBeans);
+        Constructor constructor = findConstructor(concreteClass);
         Object[] injectBeans = getInjectBeans(constructor);
         Object bean = BeanUtils.instantiateClass(constructor, injectBeans);
         return bean;
     }
 
     private Constructor findConstructor(Class clazz) {
-        return Optional.ofNullable(BeanFactoryUtils.getInjectedConstructor(clazz))
+        return BeanFactoryUtils.getInjectedConstructor(clazz)
             .orElseGet(() -> ReflectionUtils.getConstructorByArgs(clazz));
     }
 
