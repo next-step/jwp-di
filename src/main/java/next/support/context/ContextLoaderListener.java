@@ -1,14 +1,24 @@
 package next.support.context;
 
+import core.di.context.AnnotationConfigApplicationContext;
+import core.di.context.ApplicationContext;
 import core.jdbc.ConnectionManager;
 import core.mvc.DispatcherServlet;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.ApplicationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
-import javax.servlet.*;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
 
 @WebListener
@@ -23,7 +33,15 @@ public class ContextLoaderListener implements ServletContextListener {
     }
 
     private void initWebApp(ServletContext servletContext) {
-        final Servlet dispatcherServlet = new DispatcherServlet();
+        final ApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
+        final AnnotationHandlerMapping handlerMapping = new AnnotationHandlerMapping(context);
+
+        final DispatcherServlet dispatcherServlet = new DispatcherServlet();
+        dispatcherServlet.addHandlerMapping(new RequestMapping());
+        dispatcherServlet.addHandlerMapping(handlerMapping);
+        dispatcherServlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        dispatcherServlet.addHandlerAdapter(new ControllerHandlerAdapter());
+
         final ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcher", dispatcherServlet);
         registration.setLoadOnStartup(1);
         registration.addMapping("/");

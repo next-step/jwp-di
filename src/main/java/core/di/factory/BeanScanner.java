@@ -22,13 +22,6 @@ public class BeanScanner {
     private final Reflections reflections;
     private final Map<Class<? extends Annotation>, Set<Class<?>>> cache = new HashMap<>();
 
-    public BeanScanner(String prefix) {
-        reflections = new Reflections(ConfigurationBuilder
-                .build(prefix)
-                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner(false))
-        );
-    }
-
     public BeanScanner(Object... basePackages) {
         reflections = new Reflections(ConfigurationBuilder
                 .build(basePackages)
@@ -47,7 +40,8 @@ public class BeanScanner {
         return classes;
     }
 
-    public Set<Class<?>> loadClasses(Class<? extends Annotation>... annotations) {
+    @SafeVarargs
+    public final Set<Class<?>> loadClasses(Class<? extends Annotation>... annotations) {
         final Set<Class<?>> beans = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
             final Set<Class<?>> classes = loadClasses(annotation);

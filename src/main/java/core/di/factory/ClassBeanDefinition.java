@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import core.annotation.Lazy;
+import org.springframework.beans.BeanUtils;
 import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Constructor;
@@ -13,13 +14,13 @@ import java.util.List;
  *
  * @author hyeyoom
  */
-public class DefaultBeanDefinition implements BeanDefinition {
+public class ClassBeanDefinition implements BeanDefinition, InstantiatableBean {
 
     private final Class<?> originClass;
     private final List<Class<?>> dependencies = new ArrayList<>();
     private Constructor<?> beanConstructor;
 
-    public DefaultBeanDefinition(Class<?> originClass) {
+    public ClassBeanDefinition(Class<?> originClass) {
         this.originClass = originClass;
     }
 
@@ -57,5 +58,10 @@ public class DefaultBeanDefinition implements BeanDefinition {
             return false;
         }
         return annotation.value();
+    }
+
+    @Override
+    public Object instantiate(List<Object> dependencies) {
+        return BeanUtils.instantiateClass(beanConstructor, dependencies.toArray());
     }
 }

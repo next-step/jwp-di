@@ -4,26 +4,29 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class DefaultBeanFactory implements  BeanFactory {
+public class DefaultBeanFactory implements BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(DefaultBeanFactory.class);
 
-    private final Map<Class<?>, BeanDefinition> definitionMap;
+    private final Map<Class<?>, BeanDefinition> definitionMap = Maps.newHashMap();
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
+    public DefaultBeanFactory() {
+    }
+
     public DefaultBeanFactory(Set<Class<?>> preInstanticateBeans) {
-        definitionMap = BeanDefinitionUtil.convertClassToDefinition(preInstanticateBeans);
+        // definitionMap = BeanDefinitionUtil.convertClassToDefinition(preInstanticateBeans);
         initialize();
     }
 
-    private void initialize() {
+    @Override
+    public void initialize() {
         definitionMap.forEach((clazz, beanDefinition) -> {
             if (!beanDefinition.isLazyInit()) {
                 final Object bean = instantiateBean(beanDefinition);
@@ -32,6 +35,7 @@ public class DefaultBeanFactory implements  BeanFactory {
         });
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         logger.debug("required type: {}", requiredType);
@@ -51,6 +55,18 @@ public class DefaultBeanFactory implements  BeanFactory {
         return (T) bean;
     }
 
+    @Override
+    public Class<?>[] getBeanClasses() {
+        final Set<Class<?>> keyset = beans.keySet();
+        return keyset.toArray(new Class<?>[keyset.size()]);
+    }
+
+    @Override
+    public void registerBeanDefinition(Class<?> clazz, BeanDefinition beanDefinition) {
+        logger.debug("registerBeanDefinition - clazz: {}", clazz);
+        definitionMap.put(clazz, beanDefinition);
+    }
+
     private Object instantiateBean(BeanDefinition beanDefinition) {
         final List<Class<?>> dependenciesClass = Optional
                 .ofNullable(beanDefinition.getDependencies())
@@ -59,16 +75,18 @@ public class DefaultBeanFactory implements  BeanFactory {
         for (Class<?> clazz : dependenciesClass) {
             dependencies.add(getBean(clazz));
         }
+        return instantiate((InstantiatableBean) beanDefinition, dependencies);
+    }
 
-        logger.debug("bean constructor: {}", beanDefinition.getBeanConstructor());
-        logger.debug("bean dependencies: {}", dependencies);
-        return BeanUtils.instantiateClass(beanDefinition.getBeanConstructor(), dependencies.toArray());
+    private Object instantiate(InstantiatableBean instantiatableBean, List<Object> dependencies) {
+        return instantiatableBean.instantiate(dependencies);
     }
 
     private void registerBean(Object bean, BeanDefinition beanDefinition) {
         final Class<?> originClass = beanDefinition.getOriginalClass();
         beans.put(originClass, bean);
         for (Class<?> type : originClass.getInterfaces()) {
+            logger.debug("registerBean - {}", type);
             beans.put(type, bean);
         }
     }
