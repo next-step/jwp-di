@@ -41,7 +41,6 @@ public class BeanFactory {
                 .collect(Collectors.toSet());
     }
 
-    // TODO: 2020/07/05 refactor
     private Object instantiate(Class<?> preInstantiateBean) {
         if (this.beanInstantiateHistory.contains(preInstantiateBean)) {
             throw new CircularReferenceException("Illegal Bean Creation Exception : Circular Reference");
@@ -51,14 +50,18 @@ public class BeanFactory {
             return beans.get(preInstantiateBean);
         }
 
+        this.beanInstantiateHistory.push(preInstantiateBean);
+        Object instance = instantiateWithInjectedConstructor(preInstantiateBean);
+        this.beanInstantiateHistory.pop();
+
+        return instance;
+    }
+
+    private Object instantiateWithInjectedConstructor(Class<?> preInstantiateBean) {
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstantiateBean);
         if (injectedConstructor == null) {
-            Object instance = BeanUtils.instantiateClass(preInstantiateBean);
-            this.beans.put(preInstantiateBean, instance);
-            return instance;
+            return instantiateWithDefaultConstructor(preInstantiateBean);
         }
-
-        this.beanInstantiateHistory.push(preInstantiateBean);
 
         Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
         Object[] parameterInstances = new Object[parameterTypes.length];
@@ -69,8 +72,13 @@ public class BeanFactory {
 
         Object instance = BeanUtils.instantiateClass(injectedConstructor, parameterInstances);
         this.beans.put(preInstantiateBean, instance);
+        return instance;
+    }
 
-        this.beanInstantiateHistory.pop();
+    private Object instantiateWithDefaultConstructor(Class<?> preInstantiateBean) {
+        Object instance = BeanUtils.instantiateClass(preInstantiateBean);
+
+        this.beans.put(preInstantiateBean, instance);
         return instance;
     }
 }
