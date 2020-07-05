@@ -18,7 +18,7 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping(new Object[]{new ApiUserController(), new UserController()});
+        handlerMapping = new AnnotationHandlerMapping(new Object[]{new MyController()});
         handlerMapping.initialize();
 
         DBInitializer.initialize();
