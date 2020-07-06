@@ -35,6 +35,11 @@ public class BeanFactory {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        logger.info("bean register start");
+        for (final Class<?> aClass : beans.keySet()) {
+            logger.info("bean register : {}", aClass);
+        }
     }
 
     private void validateInjectBean() throws Exception {
