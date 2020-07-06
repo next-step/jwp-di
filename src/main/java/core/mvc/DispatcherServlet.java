@@ -1,5 +1,6 @@
 package core.mvc;
 
+import core.di.factory.BeanFactory;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -9,29 +10,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
     private HandlerMappingRegistry handlerMappingRegistry;
-
     private HandlerAdapterRegistry handlerAdapterRegistry;
-
     private HandlerExecutor handlerExecutor;
 
-    @Override
-    public void init() {
+    public DispatcherServlet(BeanFactory beanFactory) {
         handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next"));
+        handlerMappingRegistry.addHandlerMapping(new RequestMapping());
+        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(beanFactory));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
@@ -51,7 +47,6 @@ public class DispatcherServlet extends HttpServlet {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
                 return;
             }
-
 
             ModelAndView mav = handlerExecutor.handle(req, resp, maybeHandler.get());
             render(mav, req, resp);
