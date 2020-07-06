@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.servlet.http.HttpServletRequest;
@@ -41,19 +42,16 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
-    private final BeanFactory beanFactory;
-    private final BeanScanner beanScanner;
+    private final Object[] controllers;
 
-    public AnnotationHandlerMapping(BeanFactory beanFactory, BeanScanner beanScanner) {
-        this.beanScanner = beanScanner;
-        this.beanFactory = beanFactory;
+    public AnnotationHandlerMapping(Object[] controllers) {
+        this.controllers = controllers;
     }
 
     public void initialize() {
-        logger.info("## Initialized Annotation Handler Mapping");
-        Set<Class<?>> classes = this.beanScanner.scan(Controller.class);
-
-        classes.forEach(clazz -> addHandlerExecutions(this.beanFactory.getBean(clazz)));
+        for(Object controller : controllers){
+            addHandlerExecutions(controller);
+        }
     }
 
     public Object getHandler(HttpServletRequest request) {

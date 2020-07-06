@@ -1,6 +1,13 @@
 package next.support.context;
 
+import core.annotation.Repository;
+import core.annotation.Service;
+import core.annotation.web.Controller;
+import core.di.BeanScanner;
+import core.di.factory.BeanFactory;
 import core.jdbc.ConnectionManager;
+import core.mvc.DispatcherServlet;
+import javax.servlet.ServletRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -22,6 +29,14 @@ public class ContextLoaderListener implements ServletContextListener {
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
         logger.info("Completed Load ServletContext!");
+
+        BeanScanner beanScanner = new BeanScanner("next");
+        BeanFactory beanFactory = new BeanFactory(beanScanner.scan(Controller.class, Service.class, Repository.class));
+        beanFactory.initialize();
+
+        DispatcherServlet servlet = new DispatcherServlet(beanFactory);
+        ServletRegistration sr = sce.getServletContext().addServlet("dispacher", servlet);
+        sr.addMapping("/");
     }
 
     @Override

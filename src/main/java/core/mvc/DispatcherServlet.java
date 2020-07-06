@@ -1,9 +1,6 @@
 package core.mvc;
 
-import core.annotation.Repository;
-import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.di.BeanScanner;
 import core.di.factory.BeanFactory;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
@@ -14,14 +11,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
@@ -32,15 +27,18 @@ public class DispatcherServlet extends HttpServlet {
 
     private HandlerExecutor handlerExecutor;
 
+    private final BeanFactory beanFactory;
+
+    public DispatcherServlet(BeanFactory beanFactory){
+        this.beanFactory = beanFactory;
+    }
+
     @Override
     public void init() {
-        BeanScanner beanScanner = new BeanScanner("next");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.scan(Controller.class, Service.class, Repository.class));
-        beanFactory.initialize();
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory, beanScanner));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getAnnotationBeans(Controller.class).values().toArray()));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
