@@ -1,5 +1,6 @@
 package next.support.context;
 
+import core.annotation.Component;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -31,7 +32,7 @@ public class ContextLoaderListener implements ServletContextListener {
         logger.info("Completed Load ServletContext!");
 
         BeanScanner beanScanner = new BeanScanner("next");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.scan(Controller.class, Service.class, Repository.class));
+        BeanFactory beanFactory = new BeanFactory(beanScanner.scan(Component.class));
         beanFactory.initialize();
 
         DispatcherServlet servlet = new DispatcherServlet(beanFactory);
