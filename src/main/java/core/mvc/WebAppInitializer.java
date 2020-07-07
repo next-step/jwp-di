@@ -15,6 +15,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
         BasePackageScanner basePackageScanner = new BasePackageScanner();
         BeanScanner beanScanner = new BeanScanner(basePackageScanner.getBasePackage());
         BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateBeans());
+
         ServletRegistration.Dynamic servlet = servletContext.addServlet("dispatcher", new DispatcherServlet(beanFactory));
         servlet.setLoadOnStartup(1);
         servlet.addMapping("/");
