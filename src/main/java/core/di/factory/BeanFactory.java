@@ -2,7 +2,9 @@ package core.di.factory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,22 +15,22 @@ import org.springframework.beans.BeanUtils;
 public class BeanFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
-
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
+    private final BeanScanner beanScanner;
     private Set<Class<?>> preInstantiateBeans;
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
+    public BeanFactory(Object... basePackage) {
+        beanScanner = new BeanScanner(basePackage);
+    }
 
-    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
-        this.preInstantiateBeans = preInstantiateBeans;
+    public void initialize(Class<? extends Annotation>... annotations) {
+        preInstantiateBeans = beanScanner.getTypesAnnotatedWith(annotations);
+        preInstantiateBeans.forEach(clazz -> beans.put(clazz, instantiate(clazz)));
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
-    }
-
-    public void initialize() {
-        preInstantiateBeans.forEach(clazz -> beans.put(clazz, instantiate(clazz)));
     }
 
     private Object instantiate(Class<?> clazz) {
@@ -59,5 +61,15 @@ public class BeanFactory {
             args.add(instantiate(clazz));
         }
         return BeanUtils.instantiateClass(constructor, args.toArray());
+    }
+
+    public Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {
+        Map<Class<?>, Object> map = new HashMap<>();
+        for (Class<?> clazz : preInstantiateBeans) {
+            if (clazz.isAnnotationPresent(annotation)) {
+                map.put(clazz, beans.get(clazz));
+            }
+        }
+        return map;
     }
 }

@@ -1,30 +1,69 @@
 package core.mvc.tobe;
 
+import static java.util.Arrays.asList;
+
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
+import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
+import core.mvc.tobe.support.ArgumentResolver;
+import core.mvc.tobe.support.HttpRequestArgumentResolver;
+import core.mvc.tobe.support.HttpResponseArgumentResolver;
+import core.mvc.tobe.support.ModelArgumentResolver;
+import core.mvc.tobe.support.PathVariableArgumentResolver;
+import core.mvc.tobe.support.RequestParamArgumentResolver;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.ParameterNameDiscoverer;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
+
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Object[] basePackage;
-    private ControllerScanner controllerScanner;
+    private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
+    private static final List<ArgumentResolver> argumentResolvers = asList(
+        new HttpRequestArgumentResolver(),
+        new HttpResponseArgumentResolver(),
+        new RequestParamArgumentResolver(),
+        new PathVariableArgumentResolver(),
+        new ModelArgumentResolver()
+    );
 
-    private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final BeanFactory beanFactory;
 
     public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
-        controllerScanner = new ControllerScanner();
+        beanFactory = new BeanFactory(basePackage);
+        beanFactory.initialize(Controller.class);
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(controllerScanner.scan(basePackage));
+        Map<Class<?>, Object> controllers = beanFactory.getBeansAnnotatedWith(Controller.class);
+        for (Entry<Class<?>, Object> controllerEntry: controllers.entrySet()){
+            addHandlerExecution(handlerExecutions, controllerEntry.getValue(), controllerEntry.getKey().getMethods());
+        }
+    }
+
+    private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
+        Arrays.stream(methods)
+              .filter(method -> method.isAnnotationPresent(RequestMapping.class))
+              .forEach(method -> {
+                  RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+                  HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
+                  HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
+                  handlers.put(handlerKey, handlerExecution);
+                  logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
+              });
     }
 
     public Object getHandler(HttpServletRequest request) {
@@ -35,9 +74,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     }
 
     private HandlerExecution getHandlerInternal(HandlerKey requestHandlerKey) {
-        for (HandlerKey handlerKey : handlerExecutions.keySet()) {
-            if (handlerKey.isMatch(requestHandlerKey)) {
-                return handlerExecutions.get(handlerKey);
+        for (Entry<HandlerKey, HandlerExecution> handlerExecutionEntry : handlerExecutions.entrySet()) {
+            if (handlerExecutionEntry.getKey().isMatch(requestHandlerKey)) {
+                return handlerExecutionEntry.getValue();
             }
         }
 
