@@ -21,23 +21,24 @@ import java.util.stream.Collectors;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Map<Class<?>, Object> instanceMap = new HashMap<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(Set<Class<?>> scanBeans) {
         Map<Class<?>, Object> preInstanticateBeanMap = new HashMap<>();
+        Map<Class<?>, Object> instanceMap = new HashMap<>();
+
         for (Class<?> scanBean : scanBeans) {
             if (!scanBean.isAnnotationPresent(Configuration.class)) {
                 Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(scanBean);
                 preInstanticateBeanMap.put(scanBean, constructor);
                 continue;
             }
-            addConfigurationBeans(scanBean, preInstanticateBeanMap);
+            addConfigurationBeans(scanBean, preInstanticateBeanMap, instanceMap);
         }
-        initialize(preInstanticateBeanMap);
+        initialize(preInstanticateBeanMap, instanceMap);
     }
 
-    private void addConfigurationBeans(Class<?> scanBean, Map<Class<?>, Object> preInstanticateBeanMap) {
+    private void addConfigurationBeans(Class<?> scanBean, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
         Object instance = newInstance(scanBean);
         for (Method method : scanBean.getDeclaredMethods()) {
             if (method.isAnnotationPresent(Bean.class)) {
@@ -47,7 +48,7 @@ public class BeanFactory {
         }
     }
 
-    private void initialize(Map<Class<?>, Object> preInstanticateBeanMap) {
+    private void initialize(Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
         for (Map.Entry<Class<?>, Object> preInstanticateBeanEntry : preInstanticateBeanMap.entrySet()) {
             Class<?> clazz = preInstanticateBeanEntry.getKey();
             Object target = preInstanticateBeanEntry.getValue();
@@ -55,11 +56,11 @@ public class BeanFactory {
             if (beans.containsKey(clazz)) {
                 continue;
             }
-            beans.put(clazz, getInstance(clazz, target, preInstanticateBeanMap));
+            beans.put(clazz, getInstance(clazz, target, preInstanticateBeanMap, instanceMap));
         }
     }
 
-    private Object getInstance(Class<?> clazz, Object target, Map<Class<?>, Object> preInstanticateBeanMap) {
+    private Object getInstance(Class<?> clazz, Object target, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
         if (beans.containsKey(clazz)) {
             return beans.get(clazz);
         }
@@ -70,7 +71,7 @@ public class BeanFactory {
         }
 
         if (target instanceof Constructor) {
-            beans.put(clazz, getConstructorNewInstance((Constructor<?>) target, preInstanticateBeanMap));
+            beans.put(clazz, getConstructorNewInstance((Constructor<?>) target, preInstanticateBeanMap, instanceMap));
             return beans.get(clazz);
         }
 
@@ -78,17 +79,17 @@ public class BeanFactory {
             Method method = (Method) target;
             List<Object> parameters = new ArrayList<>();
             for (Parameter parameter : method.getParameters()) {
-                parameters.add(getInstance(parameter.getType(), preInstanticateBeanMap.get(parameter.getType()), preInstanticateBeanMap));
+                parameters.add(getInstance(parameter.getType(), preInstanticateBeanMap.get(parameter.getType()), preInstanticateBeanMap, instanceMap));
             }
-            beans.put(clazz, methodInvoke(method, clazz, preInstanticateBeanMap));
+            beans.put(clazz, methodInvoke(method, clazz, preInstanticateBeanMap, instanceMap));
         }
         return beans.get(clazz);
     }
 
-    private Object getConstructorNewInstance(Constructor<?> constructor, Map<Class<?>, Object> preInstanticateBeanMap) {
+    private Object getConstructorNewInstance(Constructor<?> constructor, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
         try {
             if (constructor.getParameterCount() > 0) {
-                return constructor.newInstance(getInitArgs(constructor, preInstanticateBeanMap));
+                return constructor.newInstance(getInitArgs(constructor, preInstanticateBeanMap, instanceMap));
             }
             return constructor.newInstance();
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
@@ -96,20 +97,20 @@ public class BeanFactory {
         }
     }
 
-    private Object[] getMethodInitArgs(Method method, Map<Class<?>, Object> preInstanticateBeanMap) {
+    private Object[] getMethodInitArgs(Method method, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
         List<Object> parameters = new ArrayList<>();
         for (Parameter parameter : method.getParameters()) {
-            parameters.add(getInstance(parameter.getType(), preInstanticateBeanMap.get(parameter.getType()), preInstanticateBeanMap));
+            parameters.add(getInstance(parameter.getType(), preInstanticateBeanMap.get(parameter.getType()), preInstanticateBeanMap, instanceMap));
         }
 
         return parameters.toArray(new Object[parameters.size()]);
     }
 
-    private Object[] getInitArgs(Constructor<?> constructor, Map<Class<?>, Object> preInstanticateBeanMap) {
+    private Object[] getInitArgs(Constructor<?> constructor, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
         Object[] initArgs = new Object[constructor.getParameterCount()];
         for (int i = 0; i < constructor.getParameterTypes().length; i++) {
             Class<?> type = constructor.getParameterTypes()[i];
-            initArgs[i] = getInstance(type, preInstanticateBeanMap.get(type), preInstanticateBeanMap);
+            initArgs[i] = getInstance(type, preInstanticateBeanMap.get(type), preInstanticateBeanMap, instanceMap);
         }
         return initArgs;
     }
@@ -122,9 +123,9 @@ public class BeanFactory {
         }
     }
 
-    private Object methodInvoke(Method method, Class<?> clazz, Map<Class<?>, Object> preInstanticateBeanMap) {
+    private Object methodInvoke(Method method, Class<?> clazz, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
         try {
-            return method.invoke(instanceMap.get(clazz), getMethodInitArgs(method, preInstanticateBeanMap));
+            return method.invoke(instanceMap.get(clazz), getMethodInitArgs(method, preInstanticateBeanMap, instanceMap));
         } catch (InvocationTargetException | IllegalAccessException e) {
             throw new JwpException(JwpExceptionStatus.METHOD_INVOKE_FAIL, e);
         }
