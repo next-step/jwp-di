@@ -5,7 +5,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,14 +13,12 @@ import java.util.List;
  *
  * @author hyeyoom
  */
-public class ClassBeanDefinition implements BeanDefinition, InstantiatableBean {
+public class ClassBeanDefinition extends AbstractBeanDefinition {
 
-    private final Class<?> originClass;
-    private final List<Class<?>> dependencies = new ArrayList<>();
     private Constructor<?> beanConstructor;
 
     public ClassBeanDefinition(Class<?> originClass) {
-        this.originClass = originClass;
+        super(originClass);
     }
 
     @Override

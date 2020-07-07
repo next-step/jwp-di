@@ -6,19 +6,16 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class JavaConfigBeanDefinition implements BeanDefinition, InstantiatableBean {
+public class JavaConfigBeanDefinition extends AbstractBeanDefinition {
 
-    private final Class<?> originClass;
-    private final List<Class<?>> dependencies = new ArrayList<>();
     private final Method method;
     private final Class<?> configurationClass;
 
     public JavaConfigBeanDefinition(Method method) {
-        originClass = method.getReturnType();
+        super(method.getReturnType());
         Collections.addAll(dependencies, method.getParameterTypes());
         this.method = method;
         this.configurationClass = method.getDeclaringClass();
