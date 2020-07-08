@@ -8,6 +8,8 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * @author KingCjy
@@ -23,11 +25,7 @@ public class ClassBeanDefinitionInitializer extends AbstractBeanDefinitionInitia
 
     @Override
     public Object instantiateBean(BeanDefinition beanDefinition, BeanFactory beanFactory) {
-        Constructor constructor = findInjectController(beanDefinition.getType());
-
-        if(constructor == null) {
-            throw new BeanInstantiationException(beanDefinition.getType(), "Constructor with @Inject not Found");
-        }
+        Constructor<?> constructor = findInjectController(beanDefinition.getType());
 
         MethodParameter[] methodParameters = getMethodParameters(constructor);
         Object[] parameters = getParameters(beanFactory, methodParameters);
@@ -38,17 +36,18 @@ public class ClassBeanDefinitionInitializer extends AbstractBeanDefinitionInitia
         return instance;
     }
 
-    private Constructor findInjectController(Class<?> targetClass) {
-        for (Constructor<?> constructor : targetClass.getConstructors()) {
-            if(constructor.isAnnotationPresent(Inject.class)) {
-                return constructor;
-            }
-        }
+    private Constructor<?> findInjectController(Class<?> targetClass) {
+        return Arrays.stream(targetClass.getConstructors())
+                .filter(constructor -> constructor.isAnnotationPresent(Inject.class))
+                .findAny()
+                .orElseGet(() -> findPrimaryConstructor(targetClass));
+    }
 
+    private Constructor<?> findPrimaryConstructor(Class<?> targetClass) {
         try {
             return targetClass.getConstructor();
         } catch (NoSuchMethodException e) {
-            return null;
+            throw new BeanInstantiationException(targetClass, "Constructor with @Inject not Found");
         }
     }
 }
