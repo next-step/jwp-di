@@ -1,6 +1,5 @@
 package core.di.factory;
 
-import core.mvc.tobe.MethodParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
@@ -24,11 +23,10 @@ public class MethodBeanDefinitionInitializer extends AbstractBeanDefinitionIniti
     public Object instantiateBean(BeanDefinition definition, BeanFactory beanFactory) {
         MethodBeanDefinition beanDefinition = (MethodBeanDefinition) definition;
 
-        Object classInstance = beanFactory.getBean(beanDefinition.getParent());
+        Object classInstance = beanFactory.getBean(beanDefinition.getParentType());
         Method method = beanDefinition.getMethod();
 
-        MethodParameter[] methodParameters = getMethodParameters(method);
-        Object[] parameters = getParameters(beanFactory, methodParameters);
+        Object[] parameters = BeanFactoryUtils.getParameters(beanFactory, method);
 
         Object instance = invokeMethod(classInstance, method, parameters);
         logger.info("bean " + instance.getClass() + " instantiate");

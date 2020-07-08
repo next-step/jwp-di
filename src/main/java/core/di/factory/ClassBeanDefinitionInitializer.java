@@ -1,7 +1,6 @@
 package core.di.factory;
 
 import core.annotation.Inject;
-import core.mvc.tobe.MethodParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
@@ -9,7 +8,6 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
-import java.util.Optional;
 
 /**
  * @author KingCjy
@@ -27,8 +25,7 @@ public class ClassBeanDefinitionInitializer extends AbstractBeanDefinitionInitia
     public Object instantiateBean(BeanDefinition beanDefinition, BeanFactory beanFactory) {
         Constructor<?> constructor = findInjectController(beanDefinition.getType());
 
-        MethodParameter[] methodParameters = getMethodParameters(constructor);
-        Object[] parameters = getParameters(beanFactory, methodParameters);
+        Object[] parameters = BeanFactoryUtils.getParameters(beanFactory, constructor);
 
         Object instance = BeanUtils.instantiateClass(constructor, parameters);
         logger.info("bean " + instance.getClass() + " instantiate");
