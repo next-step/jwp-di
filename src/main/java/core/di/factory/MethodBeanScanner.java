@@ -9,8 +9,10 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author KingCjy
@@ -30,21 +32,14 @@ public class MethodBeanScanner implements BeanScanner {
 
         Set<MethodBeanDefinition> beanDefinitions = createMethodBeanDefinitions(configurationClasses);
 
-        for (MethodBeanDefinition beanDefinition : beanDefinitions) {
-            beanDefinitionRegistry.registerDefinition(beanDefinition);
-        }
+        beanDefinitions.forEach(beanDefinitionRegistry::registerDefinition);
     }
 
     private Set<MethodBeanDefinition> createMethodBeanDefinitions(Set<Class<?>> configurationClasses) {
-        Set<MethodBeanDefinition> methods = new LinkedHashSet<>();
-        for (Class<?> targetClass : configurationClasses) {
-            for (Method method : targetClass.getMethods()) {
-                if(method.isAnnotationPresent(Bean.class)) {
-                    methods.add(new MethodBeanDefinition(method));
-                }
-            }
-        }
-
-        return methods;
+        return configurationClasses.stream()
+                .flatMap(targetClass -> Arrays.stream(targetClass.getMethods())
+                        .filter(method -> method.isAnnotationPresent(Bean.class))
+                        .map(MethodBeanDefinition::new))
+                .collect(Collectors.toSet());
     }
 }
