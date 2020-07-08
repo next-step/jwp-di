@@ -1,6 +1,5 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
 import core.annotation.Component;
 import lombok.Getter;
 import org.reflections.Reflections;
@@ -12,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 public class BeanScanner {
@@ -22,7 +22,10 @@ public class BeanScanner {
 
     public BeanScanner(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        this.preInstanticateBeans = getTypesAnnotatedWith(reflections, getComponentAnnotation());
+        Set<Class<?>> classes = ScannerUtils.getTypesAnnotatedWith(reflections, getComponentAnnotation());
+        this.preInstanticateBeans = classes.stream()
+                .filter(clazz -> !clazz.isAnnotation())
+                .collect(Collectors.toSet());
     }
 
     private Class<? extends Annotation>[] getComponentAnnotation() {
@@ -31,13 +34,5 @@ public class BeanScanner {
         annotations.add(Component.class);
 
         return (Class<? extends Annotation>[]) annotations.toArray(new Class<?>[annotations.size()]);
-    }
-
-    private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
     }
 }

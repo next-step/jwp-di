@@ -4,7 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum JwpExceptionStatus {
-    CONSTRUCTOR_NEW_INSTANCE_FAIL("constructor new Instance fail");
+    CONSTRUCTOR_NEW_INSTANCE_FAIL("constructor new Instance fail"),
+    NEW_INSTANCE_FAIL("new instance fail"),
+    METHOD_INVOKE_FAIL("method invoke fail");
 
     private String message;
 

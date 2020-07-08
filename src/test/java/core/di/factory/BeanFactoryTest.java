@@ -4,12 +4,15 @@ import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.factory.example.MyJdbcTemplate;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
+import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
@@ -46,5 +49,15 @@ public class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    @Test
+    @DisplayName("@Configuration Bean 생성 테스트")
+    void beanFactory_configuration() {
+        BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
+        BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateBeans());
+
+        assertNotNull(beanFactory.getBean(DataSource.class));
+        assertNotNull(beanFactory.getBean(MyJdbcTemplate.class));
     }
 }
