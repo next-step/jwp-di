@@ -22,7 +22,11 @@ public class ModelArgumentResolver implements ArgumentResolver {
 
     @Override
     public boolean supports(MethodParameter methodParameter) {
-        return !isSimpleType(methodParameter.getType());
+        return !isSimpleType(methodParameter.getType()) && !isRequestType(methodParameter.getType());
+    }
+
+    private boolean isRequestType(Class<?> clazz) {
+        return clazz == HttpServletRequest.class;
     }
 
     private boolean isSimpleType(Class<?> clazz) {
