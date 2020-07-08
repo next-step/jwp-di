@@ -10,7 +10,8 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class ClassBeanScanner implements BeanScanner {
 
