@@ -8,20 +8,14 @@ import java.util.Objects;
  */
 public class MethodBeanDefinition implements BeanDefinition {
 
-    private Class<?> parent;
-    private Class<?> type;
-    private String name;
     private Method method;
 
     public MethodBeanDefinition(Method method) {
         this.method = method;
-        this.parent = method.getDeclaringClass();
-        this.type = method.getReturnType();
-        this.name = method.getName();
     }
 
-    public Class<?> getParent() {
-        return parent;
+    public Class<?> getParentType() {
+        return method.getDeclaringClass();
     }
 
     public Method getMethod() {
@@ -30,12 +24,12 @@ public class MethodBeanDefinition implements BeanDefinition {
 
     @Override
     public Class<?> getType() {
-        return type;
+        return method.getReturnType();
     }
 
     @Override
     public String getName() {
-        return name;
+        return method.getName();
     }
 
     @Override
@@ -43,24 +37,18 @@ public class MethodBeanDefinition implements BeanDefinition {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodBeanDefinition that = (MethodBeanDefinition) o;
-        return Objects.equals(parent, that.parent) &&
-                Objects.equals(type, that.type) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(method, that.method);
+        return Objects.equals(method, that.method);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(parent, type, name, method);
+        return Objects.hash(method);
     }
 
     @Override
     public String toString() {
         return "MethodBeanDefinition{" +
-                "parent=" + parent +
-                ", type=" + type +
-                ", name='" + name + '\'' +
-                ", method=" + method +
+                "method=" + method +
                 '}';
     }
 }
