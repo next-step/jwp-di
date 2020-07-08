@@ -1,6 +1,7 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -8,28 +9,20 @@ import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
+class BeanFactoryTest {
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-public class BeanFactoryTest {
-    private Reflections reflections;
     private BeanFactory beanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
-        beanFactory.initialize();
+        beanFactory = new BeanFactory("core.di.factory.example");
+        beanFactory.initialize(Controller.class, Service.class, Repository.class);
     }
 
     @Test
-    public void di() throws Exception {
+    void di() {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
@@ -38,14 +31,5 @@ public class BeanFactoryTest {
         MyQnaService qnaService = qnaController.getQnaService();
         assertNotNull(qnaService.getUserRepository());
         assertNotNull(qnaService.getQuestionRepository());
-    }
-
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
     }
 }
