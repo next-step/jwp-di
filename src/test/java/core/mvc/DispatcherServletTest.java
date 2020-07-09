@@ -26,7 +26,7 @@ class DispatcherServletTest {
             }
         };
 
-        dispatcher = new DispatcherServlet(new BeanFactory(beanScanner.getPreInstanticateBeans()));
+        dispatcher = new DispatcherServlet(new BeanFactory(beanScanner.getBeanAdapters()));
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();

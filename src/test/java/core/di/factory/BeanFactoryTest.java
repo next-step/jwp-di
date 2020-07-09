@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -14,6 +15,8 @@ import org.reflections.Reflections;
 
 import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,7 +30,23 @@ public class BeanFactoryTest {
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
+        beanFactory = new BeanFactory(getBeanAdapters(preInstanticateClazz));
+    }
+
+    private List<BeanAdapter> getBeanAdapters(Set<Class<?>> preInstanticateClazz) {
+        List<BeanAdapter> beanAdapters = new ArrayList<>();
+        for (Class<?> clazz : preInstanticateClazz) {
+            if (clazz.isAnnotation()) {
+                continue;
+            }
+
+            if (clazz.isAnnotationPresent(Configuration.class)) {
+                beanAdapters.add(new ConfigurationBean(clazz));
+                continue;
+            }
+            beanAdapters.add(new ComponentBean(clazz));
+        }
+        return beanAdapters;
     }
 
     @Test
@@ -61,7 +80,7 @@ public class BeanFactoryTest {
             }
         };
 
-        BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateBeans());
+        BeanFactory beanFactory = new BeanFactory(beanScanner.getBeanAdapters());
 
         assertNotNull(beanFactory.getBean(DataSource.class));
         assertNotNull(beanFactory.getBean(MyJdbcTemplate.class));

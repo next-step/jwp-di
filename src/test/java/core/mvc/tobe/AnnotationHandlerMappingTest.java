@@ -25,7 +25,7 @@ public class AnnotationHandlerMappingTest {
             }
         };
 
-        handlerMapping = new AnnotationHandlerMapping(new BeanFactory(beanScanner.getPreInstanticateBeans()));
+        handlerMapping = new AnnotationHandlerMapping(new BeanFactory(beanScanner.getBeanAdapters()));
 
         DBInitializer.initialize();
         userDao = UserDao.getInstance();

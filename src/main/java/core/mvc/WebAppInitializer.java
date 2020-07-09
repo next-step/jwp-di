@@ -12,7 +12,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         BeanScanner beanScanner = new BeanScanner();
-        BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateBeans());
+        BeanFactory beanFactory = new BeanFactory(beanScanner.getBeanAdapters());
 
         ServletRegistration.Dynamic servlet = servletContext.addServlet("dispatcher", new DispatcherServlet(beanFactory));
         servlet.setLoadOnStartup(1);

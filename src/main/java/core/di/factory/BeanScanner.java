@@ -2,6 +2,7 @@ package core.di.factory;
 
 import core.annotation.Component;
 import core.annotation.ComponentScan;
+import core.annotation.Configuration;
 import lombok.Getter;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -22,14 +23,23 @@ public class BeanScanner {
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
     private static final String ANNOTATION_PREFIX = "core.annotation";
 
-    private Set<Class<?>> preInstanticateBeans;
+    private List<BeanAdapter> beanAdapters = new ArrayList<>();
 
     public BeanScanner() {
         Reflections reflections = new Reflections(getBasePackage(), new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Set<Class<?>> classes = ScannerUtils.getTypesAnnotatedWith(reflections, getComponentAnnotation());
-        this.preInstanticateBeans = classes.stream()
-                .filter(clazz -> !clazz.isAnnotation())
-                .collect(Collectors.toSet());
+
+        for (Class<?> clazz : classes) {
+            if(clazz.isAnnotation()) {
+                continue;
+            }
+
+            if(clazz.isAnnotationPresent(Configuration.class)) {
+                beanAdapters.add(new ConfigurationBean(clazz));
+                continue;
+            }
+            beanAdapters.add(new ComponentBean(clazz));
+        }
     }
 
     private Class<? extends Annotation>[] getComponentAnnotation() {
