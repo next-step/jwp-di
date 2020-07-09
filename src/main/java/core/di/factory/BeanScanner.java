@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import core.annotation.Component;
+import core.annotation.ComponentScan;
 import lombok.Getter;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -10,6 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,8 +24,8 @@ public class BeanScanner {
 
     private Set<Class<?>> preInstanticateBeans;
 
-    public BeanScanner(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+    public BeanScanner() {
+        Reflections reflections = new Reflections(getBasePackage(), new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Set<Class<?>> classes = ScannerUtils.getTypesAnnotatedWith(reflections, getComponentAnnotation());
         this.preInstanticateBeans = classes.stream()
                 .filter(clazz -> !clazz.isAnnotation())
@@ -34,5 +38,17 @@ public class BeanScanner {
         annotations.add(Component.class);
 
         return (Class<? extends Annotation>[]) annotations.toArray(new Class<?>[annotations.size()]);
+    }
+
+    private Object[] getBasePackage() {
+        List<String> basePackage = new ArrayList<>();
+
+        Reflections reflections = new Reflections("", new TypeAnnotationsScanner(), new SubTypesScanner());
+        Set<Class<?>> classes = ScannerUtils.getTypesAnnotatedWith(reflections, ComponentScan.class);
+        for (Class<?> clazz : classes) {
+            String[] values = clazz.getAnnotation(ComponentScan.class).value();
+            basePackage.addAll(Arrays.asList(values));
+        }
+        return basePackage.toArray(new Object[basePackage.size()]);
     }
 }
