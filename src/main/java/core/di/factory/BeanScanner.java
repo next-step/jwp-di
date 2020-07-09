@@ -40,7 +40,7 @@ public class BeanScanner {
         return (Class<? extends Annotation>[]) annotations.toArray(new Class<?>[annotations.size()]);
     }
 
-    private Object[] getBasePackage() {
+    protected Object[] getBasePackage() {
         List<String> basePackage = new ArrayList<>();
 
         Reflections reflections = new Reflections("", new TypeAnnotationsScanner(), new SubTypesScanner());

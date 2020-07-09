@@ -54,7 +54,13 @@ public class BeanFactoryTest {
     @Test
     @DisplayName("@Configuration Bean 생성 테스트")
     void beanFactory_configuration() {
-        BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
+        BeanScanner beanScanner = new BeanScanner() {
+            @Override
+            protected Object[] getBasePackage() {
+                return new Object[]{"core.di.factory.example"};
+            }
+        };
+
         BeanFactory beanFactory = new BeanFactory(beanScanner.getPreInstanticateBeans());
 
         assertNotNull(beanFactory.getBean(DataSource.class));

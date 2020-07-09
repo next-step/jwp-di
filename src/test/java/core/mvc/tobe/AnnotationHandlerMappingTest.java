@@ -18,7 +18,13 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        BeanScanner beanScanner = new BeanScanner("core.mvc.tobe");
+        BeanScanner beanScanner = new BeanScanner() {
+            @Override
+            protected Object[] getBasePackage() {
+                return new Object[]{"core.mvc.tobe"};
+            }
+        };
+
         handlerMapping = new AnnotationHandlerMapping(new BeanFactory(beanScanner.getPreInstanticateBeans()));
 
         DBInitializer.initialize();
