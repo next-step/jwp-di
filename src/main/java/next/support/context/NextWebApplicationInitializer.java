@@ -1,13 +1,13 @@
 package next.support.context;
 
 import core.annotation.Component;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
 import core.di.BeanScanner;
 import core.di.factory.BeanFactory;
 import core.jdbc.ConnectionManager;
 import core.mvc.DispatcherServlet;
+import core.web.WebApplicationInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,16 +15,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
+public class NextWebApplicationInitializer implements WebApplicationInitializer {
 
-@WebListener
-public class ContextLoaderListener implements ServletContextListener {
-    private static final Logger logger = LoggerFactory.getLogger(ContextLoaderListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(NextWebApplicationInitializer.class);
 
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
+    public void onStartup(ServletContext servletContext) throws ServletException {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
@@ -36,11 +32,7 @@ public class ContextLoaderListener implements ServletContextListener {
         beanFactory.initialize();
 
         DispatcherServlet servlet = new DispatcherServlet(beanFactory);
-        ServletRegistration sr = sce.getServletContext().addServlet("dispacher", servlet);
+        ServletRegistration sr = servletContext.addServlet("dispacher", servlet);
         sr.addMapping("/");
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
     }
 }
