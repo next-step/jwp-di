@@ -3,11 +3,9 @@ package core.mvc.tobe;
 import static java.util.Arrays.asList;
 
 import com.google.common.collect.Maps;
-import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.BeanScanner;
-import core.di.factory.BeanFactory;
+import core.context.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -19,9 +17,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +42,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     public AnnotationHandlerMapping(Object[] controllers) {
         this.controllers = controllers;
     }
+
+
 
     public void initialize() {
         for(Object controller : controllers){

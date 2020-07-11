@@ -35,7 +35,6 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
         handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getAnnotationBeans(Controller.class).values().toArray()));

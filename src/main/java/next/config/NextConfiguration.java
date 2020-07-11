@@ -1,4 +1,4 @@
-package next.support.context;
+package next.config;
 
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
@@ -9,7 +9,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 @Configuration
-@ComponentScan({ "next", "core" })
+@ComponentScan(basePackages = { "next", "core" })
 public class NextConfiguration {
 
     @Bean

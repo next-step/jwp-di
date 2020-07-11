@@ -1,6 +1,7 @@
 package core.annotation.web;
 
 import core.annotation.Component;
+import java.lang.annotation.Inherited;
 import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.ElementType;
@@ -15,6 +16,5 @@ public @interface Controller {
     @AliasFor(annotation = Component.class)
     String value() default "";
 
-    @AliasFor("value")
     String path() default "";
 }

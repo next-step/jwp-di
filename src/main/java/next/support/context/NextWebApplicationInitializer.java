@@ -2,6 +2,8 @@ package next.support.context;
 
 import core.annotation.Component;
 import core.di.BeanScanner;
+import core.context.AnnotationConfigApplicationContext;
+import core.context.ApplicationContext;
 import core.di.factory.BeanFactory;
 import core.jdbc.ConnectionManager;
 import core.mvc.DispatcherServlet;
@@ -9,6 +11,7 @@ import core.web.WebApplicationInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import next.config.NextConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -19,15 +22,18 @@ public class NextWebApplicationInitializer implements WebApplicationInitializer 
 
     private static final Logger logger = LoggerFactory.getLogger(NextWebApplicationInitializer.class);
 
+
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(NextConfiguration.class);
+
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
 
         logger.info("Completed Load ServletContext!");
 
-        BeanScanner beanScanner = new BeanScanner("next");
+        BeanScanner beanScanner = new BeanScanner("next", "core");
         BeanFactory beanFactory = new BeanFactory(beanScanner.scan(Component.class));
         beanFactory.initialize();
 
