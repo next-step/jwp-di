@@ -4,7 +4,6 @@ import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.BeanScanner;
-import core.di.factory.BeanFactory;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;

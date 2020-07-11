@@ -1,4 +1,4 @@
-package core.context;
+package core.di.context;
 
 import core.annotation.Bean;
 import core.annotation.Component;
@@ -6,40 +6,49 @@ import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.di.BeanDefinition;
 import core.di.BeanScanner;
-import core.di.factory.BeanFactory2;
+import core.di.factory.BeanFactory;
 import core.di.factory.BeanFactoryUtils;
 import core.util.ReflectionUtils;
-import core.util.StringUtil;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.StringUtils;
 
 public class AnnotationConfigApplicationContext implements ApplicationContext {
+
     private final BeanScanner beanScanner;
-    private final BeanFactory2 beanFactory;
+    private final BeanFactory beanFactory;
+
     public AnnotationConfigApplicationContext(Class<?>... clazz) {
         this.beanScanner = new BeanScanner(findBasePackages(clazz));
 
         List<BeanDefinition> beanDefinitions = findBasePackageBeanDefinitions();
         beanDefinitions.addAll(findConfigBeanDefinitions());
 
-        this.beanFactory = new BeanFactory2(beanDefinitions);
+        this.beanFactory = new BeanFactory(beanDefinitions);
         this.beanFactory.initialize();
+    }
+
+    @Override
+    public Object[] getBeans(Class<? extends Annotation> annotation) {
+        return beanFactory.getBeansByAnnotation(annotation);
+    }
+
+    @Override
+    public <T> T getBean(Class<T> clazz) {
+        return beanFactory.getBean(clazz);
     }
 
     private List<BeanDefinition> findConfigBeanDefinitions() {
         Set<Class<?>> beanClasses = beanScanner.scan(Configuration.class);
-
         List<BeanDefinition> beanDefinitions = new ArrayList<>();
-
         beanClasses.forEach(aClass -> {
             Method[] methods = aClass.getDeclaredMethods();
             beanDefinitions.addAll(Stream.of(methods).filter(method -> method.isAnnotationPresent(Bean.class))
@@ -115,5 +124,6 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         }
         return basePackages.toArray(new String[basePackages.size()]);
     }
+
 
 }

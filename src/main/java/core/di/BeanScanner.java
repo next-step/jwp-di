@@ -2,16 +2,13 @@ package core.di;
 
 import core.annotation.Component;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
-import org.springframework.core.annotation.AnnotationUtils;
 
 public class BeanScanner {
 
@@ -30,15 +27,7 @@ public class BeanScanner {
 
         return getTypesAnnotatedWith(annotations.toArray(new Class<?>[annotations.size()]))
             .stream().filter(aClass -> !aClass.isInterface()).collect(Collectors.toSet());
-        //return getTypesAnnotatedWith(annotations.toArray(new Class<?>[annotations.size()]));
     }
-
-   /* public Set<Class<?>> scan(Class<? extends Annotation> type) {
-        Reflections reflections = new Reflections(BASE_ANNOTATION, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Set<Class<?>> annotations = reflections.getTypesAnnotatedWith(type);
-        return getTypesAnnotatedWith(annotations.toArray(new Class<?>[annotations.size()]));
-    }*/
-
     private Set<Class<?>> getTypesAnnotatedWith(Class<?>... annotations) {
         Reflections reflections = new Reflections(this.basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
 

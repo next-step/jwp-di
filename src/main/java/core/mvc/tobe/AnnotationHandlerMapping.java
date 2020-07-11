@@ -3,9 +3,10 @@ package core.mvc.tobe;
 import static java.util.Arrays.asList;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.context.ApplicationContext;
+import core.di.context.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -39,11 +40,10 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
     private final Object[] controllers;
 
-    public AnnotationHandlerMapping(Object[] controllers) {
-        this.controllers = controllers;
+
+    public AnnotationHandlerMapping(ApplicationContext ac) {
+        this.controllers = ac.getBeans(Controller.class);
     }
-
-
 
     public void initialize() {
         for(Object controller : controllers){

@@ -1,78 +1,127 @@
 package core.di.factory;
 
-import com.google.common.collect.Maps;
-import core.util.ReflectionUtils;
+import core.di.BeanDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 
 public class BeanFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private final Set<Class<?>> preInstanticateBeans;
+    private final Map<BeanDefinition, Object> beans = new HashMap<>();
+    private final List<BeanDefinition> beanDefinitions;
 
-    private final Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) this.beans.get(requiredType);
+    public BeanFactory(List<BeanDefinition> beanDefinitions) {
+        this.beanDefinitions = beanDefinitions;
     }
 
     public void initialize() {
-        for (Class clazz : this.preInstanticateBeans) {
-            Object bean = getOrNewBean(clazz);
-            this.beans.put(clazz, bean);
+        for (BeanDefinition beanDefinition : this.beanDefinitions) {
+            addBean(beanDefinition);
         }
     }
 
-    public Map<Class<?>, Object> getAnnotationBeans(Class<?extends Annotation> annotation) {
-        Map<Class<?>, Object> controllers = Maps.newHashMap();
-        for (Class<?> clazz : preInstanticateBeans) {
-            if (clazz.isAnnotationPresent(annotation)) {
-                controllers.put(clazz, beans.get(clazz));
-            }
-        }
-        return controllers;
+    public <T> T getBean(Class<T> requiredType) {
+        return beanDefinitions.stream()
+            .filter(beanDefinition -> beanDefinition.getBeanClass().isAssignableFrom(requiredType))
+            .findFirst()
+            .map(beanDefinition -> beans.get(beanDefinition))
+            .map(o -> requiredType.cast(o))
+            .orElse(null);
     }
 
-    private Object getOrNewBean(Class clazz){
-        if(this.beans.containsKey(clazz)){
-            return this.beans.get(clazz);
-        }
-
-        return newInstance(clazz);
-    }
-
-    private Object newInstance(Class clazz) {
-        Class concreteClass = BeanFactoryUtils.findConcreteClass(clazz, this.preInstanticateBeans);
-        Constructor constructor = findConstructor(concreteClass);
-        Object[] injectBeans = getInjectBeans(constructor);
-        Object bean = BeanUtils.instantiateClass(constructor, injectBeans);
-        return bean;
-    }
-
-    private Constructor findConstructor(Class clazz) {
-        return BeanFactoryUtils.getInjectedConstructor(clazz)
-            .orElseGet(() -> ReflectionUtils.getConstructorByArgs(clazz));
-    }
-
-    private Object[] getInjectBeans(Constructor constructor) {
-        return Arrays.stream(constructor.getParameterTypes())
-            .map(parameter -> newInstance(parameter))
+    public Object[] getBeansByAnnotation(Class<? extends Annotation> annotation) {
+        return this.beans.values().stream()
+            .filter(o -> o.getClass().isAnnotationPresent(annotation))
             .toArray();
     }
+
+    private Object addBean(BeanDefinition beanDefinition) {
+        if (!this.beans.containsKey(beanDefinition)) {
+            this.beans.put(beanDefinition, newBean(beanDefinition));
+        }
+        return this.beans.get(beanDefinition);
+    }
+
+
+    private Object newBean(BeanDefinition beanDefinition) {
+        if (beanDefinition.getMethod() != null) {
+            return newConfigBean(beanDefinition);
+        }
+        return newClassPathBean(beanDefinition);
+    }
+
+    private Object newClassPathBean(BeanDefinition beanDefinition) {
+        Constructor constructor = beanDefinition.getConstructor();
+
+        Object[] parameters = Stream.of(constructor.getParameters())
+            .map(parameter -> {
+                BeanDefinition parameterBeanDefinition = findBeanDefinition(parameter);
+                return addBean(parameterBeanDefinition);
+            }).toArray();
+
+        try {
+            return constructor.newInstance(parameters);
+        } catch (InstantiationException|IllegalAccessException|InvocationTargetException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private Object newConfigBean(BeanDefinition beanDefinition) {
+        BeanDefinition configClassBean = this.beanDefinitions.stream()
+            .filter(b -> b.getBeanClass().isAssignableFrom(beanDefinition.getMethod().getDeclaringClass()))
+            .findFirst().get();
+
+        Object bean = this.beans.get(configClassBean);
+        if (bean == null) {
+            addBean(configClassBean);
+            bean = this.beans.get(configClassBean);
+        }
+
+        Method method = beanDefinition.getMethod();
+        Object[] parameters = Stream.of(method.getParameters())
+            .map(parameter -> {
+                BeanDefinition parameterBeanDefinition = findBeanDefinition(parameter);
+                return addBean(parameterBeanDefinition);
+            }).toArray();
+
+        try {
+            return method.invoke(bean, parameters);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private BeanDefinition findBeanDefinition(Parameter parameter) {
+        List<BeanDefinition> beanDefinitions = this.beanDefinitions.stream()
+            .filter(beanDefinition -> beanDefinition.getBeanClass()
+                .isAssignableFrom(parameter.getType()))
+            .collect(Collectors.toList());
+
+        if (beanDefinitions.isEmpty()) {
+            throw new RuntimeException("not found bean");
+        }
+
+        if (beanDefinitions.size() == 1) {
+            return beanDefinitions.get(0);
+        }
+
+        return beanDefinitions.stream()
+            .filter(beanDefinition -> beanDefinition.getName().equalsIgnoreCase(parameter.getName()))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("not matched bean"));
+    }
+
+
 
 }

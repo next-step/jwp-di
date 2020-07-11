@@ -1,16 +1,18 @@
 package next.support.context;
 
-import core.annotation.Component;
-import core.di.BeanScanner;
-import core.context.AnnotationConfigApplicationContext;
-import core.context.ApplicationContext;
-import core.di.factory.BeanFactory;
+import core.di.context.AnnotationConfigApplicationContext;
+import core.di.context.ApplicationContext;
 import core.jdbc.ConnectionManager;
 import core.mvc.DispatcherServlet;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import core.web.WebApplicationInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.sql.DataSource;
 import next.config.NextConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,23 +24,24 @@ public class NextWebApplicationInitializer implements WebApplicationInitializer 
 
     private static final Logger logger = LoggerFactory.getLogger(NextWebApplicationInitializer.class);
 
-
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
+
         ApplicationContext ac = new AnnotationConfigApplicationContext(NextConfiguration.class);
 
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+        DatabasePopulatorUtils.execute(populator, ac.getBean(DataSource.class));
 
-        logger.info("Completed Load ServletContext!");
+        DispatcherServlet servlet = new DispatcherServlet(ac);
 
-        BeanScanner beanScanner = new BeanScanner("next", "core");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.scan(Component.class));
-        beanFactory.initialize();
+        servlet.addHandlerMapping(new RequestMapping());
+        servlet.addHandlerMapping(new AnnotationHandlerMapping(ac));
+        servlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        servlet.addHandlerAdapter(new ControllerHandlerAdapter());
 
-        DispatcherServlet servlet = new DispatcherServlet(beanFactory);
         ServletRegistration sr = servletContext.addServlet("dispacher", servlet);
         sr.addMapping("/");
+        logger.info("Completed Load ServletContext!");
     }
 }
