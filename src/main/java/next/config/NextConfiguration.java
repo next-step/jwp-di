@@ -4,12 +4,11 @@ import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.jdbc.JdbcTemplate;
-import core.jdbc.JdbcTemplate2;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 @Configuration
-@ComponentScan(basePackages = { "next", "core" })
+@ComponentScan(basePackages = { "next", "core"})
 public class NextConfiguration {
 
     private static final String DB_DRIVER = "org.h2.Driver";
@@ -28,8 +27,8 @@ public class NextConfiguration {
     }
 
     @Bean
-    public JdbcTemplate2 jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate2(dataSource);
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 
 }

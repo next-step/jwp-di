@@ -12,13 +12,16 @@ public class ReflectionUtils {
     private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
 
     public static <T> T newInstance(Class<T> clazz, Object... args) {
+        Constructor<T> constructor = getConstructorByArgs(clazz, args);
+        return newInstance(constructor, args);
+    }
 
-        Constructor constructor = getConstructorByArgs(clazz, args);
-
+    public static <T> T newInstance(Constructor<T> constructor, Object... args){
         if (constructor == null) {
-            throw new IllegalArgumentException(clazz.getSimpleName() + " doesn't have args size constructor");
+            throw new IllegalArgumentException("constructor doesn't have args size constructor");
         }
 
+        Class<T> clazz = constructor.getDeclaringClass();
         try {
             return clazz.cast(constructor.newInstance(args));
         } catch (IllegalAccessException e) {

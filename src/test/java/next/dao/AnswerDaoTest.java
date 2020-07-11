@@ -1,6 +1,9 @@
 package next.dao;
 
+import core.di.context.AnnotationConfigApplicationContext;
+import core.di.context.ApplicationContext;
 import core.jdbc.ConnectionManager;
+import next.config.NextConfiguration;
 import next.model.Answer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,19 +18,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AnswerDaoTest {
     private static final Logger log = LoggerFactory.getLogger(AnswerDaoTest.class);
 
+    private AnswerDao answerDao;
+
     @BeforeEach
     public void setup() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+
+        ApplicationContext ac = new AnnotationConfigApplicationContext(NextConfiguration.class);
+        this.answerDao = ac.getBean(AnswerDao.class);
     }
 
     @Test
     public void addAnswer() throws Exception {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
-        AnswerDao dut = AnswerDao.getInstance();
-        Answer answer = dut.insert(expected);
+        Answer answer = answerDao.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();
     }

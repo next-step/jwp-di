@@ -29,12 +29,9 @@ public class NextWebApplicationInitializer implements WebApplicationInitializer 
 
         ApplicationContext ac = new AnnotationConfigApplicationContext(NextConfiguration.class);
 
-        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, ac.getBean(DataSource.class));
+        initDatabase(ac.getBean(DataSource.class));
 
         DispatcherServlet servlet = new DispatcherServlet(ac);
-
         servlet.addHandlerMapping(new RequestMapping());
         servlet.addHandlerMapping(new AnnotationHandlerMapping(ac));
         servlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
@@ -43,5 +40,11 @@ public class NextWebApplicationInitializer implements WebApplicationInitializer 
         ServletRegistration sr = servletContext.addServlet("dispacher", servlet);
         sr.addMapping("/");
         logger.info("Completed Load ServletContext!");
+    }
+
+    private void initDatabase(DataSource dataSource) {
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+        populator.addScript(new ClassPathResource("jwp.sql"));
+        DatabasePopulatorUtils.execute(populator, dataSource);
     }
 }

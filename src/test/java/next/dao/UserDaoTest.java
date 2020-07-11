@@ -1,9 +1,17 @@
 package next.dao;
 
+import core.di.context.AnnotationConfigApplicationContext;
+import core.di.context.ApplicationContext;
+import core.jdbc.ConnectionManager;
+import javax.sql.DataSource;
+import next.config.NextConfiguration;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import support.test.DBInitializer;
 
 import java.util.List;
@@ -16,9 +24,11 @@ public class UserDaoTest {
 
     @BeforeEach
     public void setup() {
-        DBInitializer.initialize();
 
-        userDao = UserDao.getInstance();
+        ApplicationContext ac = new AnnotationConfigApplicationContext(NextConfiguration.class);
+        initDatabase(ac.getBean(DataSource.class));
+
+        this.userDao = ac.getBean(UserDao.class);
     }
 
     @Test
@@ -39,4 +49,12 @@ public class UserDaoTest {
         List<User> users = userDao.findAll();
         assertThat(users).hasSize(1);
     }
+
+
+    private void initDatabase(DataSource dataSource) {
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+        populator.addScript(new ClassPathResource("jwp.sql"));
+        DatabasePopulatorUtils.execute(populator, dataSource);
+    }
+
 }
