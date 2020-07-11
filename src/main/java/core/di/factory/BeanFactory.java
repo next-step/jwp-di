@@ -1,12 +1,16 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import core.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -25,10 +29,12 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        try {
-            validateInjectBean();
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (final Class<?> preInstanticateBean : preInstanticateBeans) {
+            try {
+                instantiateClass(preInstanticateBean);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         logger.info("bean register start");
@@ -37,58 +43,41 @@ public class BeanFactory {
         }
     }
 
-    private void validateInjectBean() throws Exception {
 
-        for (final Class<?> clazz : preInstanticateBeans) {
-            registerInjectBean(clazz);
+    private Object instantiateClass(Class<?> clazz) throws Exception {
+        final Object bean = beans.get(clazz);
+        if (Objects.nonNull(bean)) {
+            return bean;
         }
 
-        final boolean allMatch = preInstanticateBeans.stream()
-                .allMatch(clazz -> Objects.nonNull(getBean(clazz)));
-        if (allMatch) {
-            return;
+        final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
+        final Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(concreteClass);
+
+        if (Objects.isNull(injectedConstructor)) {
+            final Constructor<?> defaultConstructor = concreteClass.getConstructor();
+            final Object constructor = defaultConstructor.newInstance();
+            beans.put(concreteClass, constructor);
+            return constructor;
         }
-        validateInjectBean();
+
+        final Object constructor = instantiateConstructor(injectedConstructor);
+        beans.put(concreteClass, constructor);
+        return constructor;
     }
 
-    private void registerInjectBean(Class<?> clazz) throws Exception {
-        final Optional<Constructor<?>> optionalConstructor = Arrays.stream(clazz.getDeclaredConstructors())
-                .filter(cstr -> cstr.isAnnotationPresent(Inject.class))
-                .findAny();
-
-        if (optionalConstructor.isPresent()) {
-            final Constructor<?> constructor = optionalConstructor.get();
-            List<Class> clazzes = new ArrayList<>();
-            for (final Class<?> parameterType : constructor.getParameterTypes()) {
-                final Class<?> classByType = getClassByType(parameterType);
-                if (Objects.isNull(getBean(classByType))) {
-                    return;
-                }
-                clazzes.add(classByType);
+    private Object instantiateConstructor(Constructor<?> constructor) throws Exception {
+        final Class<?>[] parameterTypes = constructor.getParameterTypes();
+        List<Object> args = Lists.newArrayList();
+        for (final Class<?> parameterType : parameterTypes) {
+            final Object bean = getBean(parameterType);
+            if (Objects.nonNull(bean)) {
+                args.add(bean);
+            } else {
+                args.add(instantiateClass(parameterType));
             }
 
-            Object[] objects = clazzes.stream()
-                    .map(this::getBean)
-                    .toArray();
-            beans.put(clazz, constructor.newInstance(objects));
-            return;
         }
-
-        beans.put(clazz, clazz.newInstance());
-    }
-
-    private Class getClassByType(Class parameterType) {
-        if (parameterType.isInterface()) {
-            return beans.keySet().stream()
-                    .filter(bean -> Arrays.asList(bean.getInterfaces()).contains(parameterType))
-                    .findAny()
-                    .orElse(parameterType);
-        }
-
-        return beans.keySet().stream()
-                .filter(bean -> bean.equals(parameterType))
-                .findAny()
-                .orElse(parameterType);
+        return BeanUtils.instantiateClass(constructor, args.toArray());
     }
 
 }
