@@ -1,8 +1,6 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.Bean;
-import core.annotation.Configuration;
 import core.annotation.web.Controller;
 import core.exception.JwpException;
 import core.exception.JwpExceptionStatus;
@@ -23,29 +21,12 @@ public class BeanFactory {
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> scanBeans) {
+    public BeanFactory(List<BeanAdapter> beanAdapters) {
         Map<Class<?>, Object> preInstanticateBeanMap = new HashMap<>();
         Map<Class<?>, Object> instanceMap = new HashMap<>();
 
-        for (Class<?> scanBean : scanBeans) {
-            if (!scanBean.isAnnotationPresent(Configuration.class)) {
-                Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(scanBean);
-                preInstanticateBeanMap.put(scanBean, constructor);
-                continue;
-            }
-            addConfigurationBeans(scanBean, preInstanticateBeanMap, instanceMap);
-        }
+        beanAdapters.forEach(beanAdapter -> beanAdapter.addBean(preInstanticateBeanMap, instanceMap));
         initialize(preInstanticateBeanMap, instanceMap);
-    }
-
-    private void addConfigurationBeans(Class<?> scanBean, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
-        Object instance = newInstance(scanBean);
-        for (Method method : scanBean.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(Bean.class)) {
-                instanceMap.put(method.getReturnType(), instance);
-                preInstanticateBeanMap.put(method.getReturnType(), method);
-            }
-        }
     }
 
     private void initialize(Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {
@@ -113,14 +94,6 @@ public class BeanFactory {
             initArgs[i] = getInstance(type, preInstanticateBeanMap.get(type), preInstanticateBeanMap, instanceMap);
         }
         return initArgs;
-    }
-
-    private Object newInstance(Class<?> clazz) {
-        try {
-            return clazz.newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new JwpException(JwpExceptionStatus.NEW_INSTANCE_FAIL, e);
-        }
     }
 
     private Object methodInvoke(Method method, Class<?> clazz, Map<Class<?>, Object> preInstanticateBeanMap, Map<Class<?>, Object> instanceMap) {

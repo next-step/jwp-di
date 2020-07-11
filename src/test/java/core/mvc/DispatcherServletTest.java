@@ -19,8 +19,14 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        BeanScanner beanScanner = new BeanScanner("next");
-        dispatcher = new DispatcherServlet(new BeanFactory(beanScanner.getPreInstanticateBeans()));
+        BeanScanner beanScanner = new BeanScanner() {
+            @Override
+            protected Object[] getBasePackage() {
+                return new Object[]{"next"};
+            }
+        };
+
+        dispatcher = new DispatcherServlet(new BeanFactory(beanScanner.getBeanAdapters()));
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
