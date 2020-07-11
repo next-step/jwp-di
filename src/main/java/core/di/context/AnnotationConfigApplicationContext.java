@@ -84,7 +84,6 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         Set<Class<?>> beanClasses= beanScanner.scan(Component.class);
         return beanClasses.stream().map(aClass -> {
             Component component = AnnotationUtils.findAnnotation(aClass, Component.class);
-
             String name = StringUtils.isEmpty(component.value())? aClass.getSimpleName() : component.value();
             return new BeanDefinition() {
                 @Override
@@ -124,6 +123,5 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         }
         return basePackages.toArray(new String[basePackages.size()]);
     }
-
 
 }

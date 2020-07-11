@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -67,18 +66,9 @@ public class BeanFactory {
     }
 
     private Object newClassPathBean(Constructor constructor) {
-
         String[] names = nameDiscoverer.getParameterNames(constructor);
         Parameter[] parameters = constructor.getParameters();
-
-        List<Object> parameterBeans = new ArrayList<>();
-
-        for (int i = 0; i < names.length; i++) {
-            BeanDefinition parameterBeanDefinition = findBeanDefinition(parameters[i].getType(), names[i]);
-            parameterBeans.add(addBean(parameterBeanDefinition));
-        }
-
-        return ReflectionUtils.newInstance(constructor, parameterBeans.toArray());
+        return ReflectionUtils.newInstance(constructor, addInjectBeans(names, parameters));
     }
 
     private Object newConfigBean(BeanDefinition beanDefinition) {
@@ -96,15 +86,9 @@ public class BeanFactory {
         Method method = beanDefinition.getMethod();
         String[] names = nameDiscoverer.getParameterNames(method);
         Parameter[] parameters = method.getParameters();
-        List<Object> parameterBeans = new ArrayList<>();
-
-        for (int i = 0; i < names.length; i++) {
-            BeanDefinition parameterBeanDefinition = findBeanDefinition(parameters[i].getType(), names[i]);
-            parameterBeans.add(addBean(parameterBeanDefinition));
-        }
 
         try {
-            return method.invoke(bean, parameterBeans.toArray());
+            return method.invoke(bean, addInjectBeans(names, parameters));
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -126,8 +110,16 @@ public class BeanFactory {
         return beanDefinitions.stream()
             .filter(beanDefinition -> beanDefinition.getName().equalsIgnoreCase(name))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException(
-                "not matched bean"));
+            .orElseThrow(() -> new RuntimeException("not matched bean"));
+    }
+
+    private Object[] addInjectBeans(String[] names, Parameter[] parameters){
+        List<Object> parameterBeans = new ArrayList<>();
+        for (int i = 0; i < names.length; i++) {
+            BeanDefinition parameterBeanDefinition = findBeanDefinition(parameters[i].getType(), names[i]);
+            parameterBeans.add(addBean(parameterBeanDefinition));
+        }
+        return parameterBeans.toArray();
     }
 
 }
