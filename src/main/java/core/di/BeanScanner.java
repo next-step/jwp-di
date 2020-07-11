@@ -14,13 +14,11 @@ public class BeanScanner {
 
     private static final String BASE_ANNOTATION = Component.class.getPackage().getName();
 
-
     private final Object[] basePackage;
 
     public BeanScanner(Object... basePackage) {
         this.basePackage = basePackage;
     }
-
 
     public Set<Class<?>> scan(Class<? extends Annotation> type) {
         Reflections reflections = new Reflections(BASE_ANNOTATION, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
