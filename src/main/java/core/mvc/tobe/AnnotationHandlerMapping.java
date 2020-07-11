@@ -46,7 +46,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public AnnotationHandlerMapping() {
         beanScanner = new BeanScanner();
-        beanScanner.initialize();
         Set<Class<?>> preInstantiateBeans = beanScanner.scan();
 
         beanFactory = new BeanFactory(preInstantiateBeans);
@@ -85,12 +84,10 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     }
 
     private HandlerExecution getHandlerInternal(HandlerKey requestHandlerKey) {
-        for (Map.Entry<HandlerKey, HandlerExecution> entry : handlerExecutions.entrySet()) {
-            if (entry.getKey().isMatch(requestHandlerKey)) {
-                return entry.getValue();
-            }
-        }
-
-        return null;
+        return handlerExecutions.entrySet().stream()
+                .filter(entry -> entry.getKey().isMatch(requestHandlerKey))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
     }
 }
