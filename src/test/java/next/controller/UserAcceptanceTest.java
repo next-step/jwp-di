@@ -3,6 +3,7 @@ package next.controller;
 import next.dto.UserCreatedDto;
 import next.dto.UserUpdatedDto;
 import next.model.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,5 +48,8 @@ public class UserAcceptanceTest {
         assertThat(actual.getPassword()).isEqualTo(updateUser.getPassword());
         assertThat(actual.getName()).isEqualTo(updateUser.getName());
         assertThat(actual.getEmail()).isEqualTo(updateUser.getEmail());
+
+        // 삭제
+        client.deleteResource(location);
     }
 }

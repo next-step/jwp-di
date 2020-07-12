@@ -29,13 +29,17 @@ public class AnnotationHandlerMappingTest {
         createUser(user);
         assertThat(userDao.findByUserId(user.getUserId())).isEqualTo(user);
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
+        MockHttpServletRequest request = loginUser(user);
+        request.setMethod("GET");
+        request.setRequestURI("/users");
+
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
 
-        assertThat(request.getAttribute("user")).isEqualTo(user);
+        assertThat(request.getSession().getAttribute("user")).isEqualTo(user);
     }
 
     private void createUser(User user) throws Exception {
@@ -44,8 +48,22 @@ public class AnnotationHandlerMappingTest {
         request.setParameter("password", user.getPassword());
         request.setParameter("name", user.getName());
         request.setParameter("email", user.getEmail());
+
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
     }
+
+    private MockHttpServletRequest loginUser(User user) throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/users/login");
+        request.setParameter("userId", user.getUserId());
+        request.setParameter("password", user.getPassword());
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
+
+        execution.handle(request, response);
+        return request;
+    }
+
 }

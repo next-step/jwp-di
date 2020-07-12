@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class ApiUserController {
-    private static final Logger logger = LoggerFactory.getLogger( ApiUserController.class );
+    private static final Logger logger = LoggerFactory.getLogger(ApiUserController.class);
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -62,6 +62,17 @@ public class ApiUserController {
         User user = userDao.findByUserId(userId);
         user.update(updateDto);
         userDao.update(user);
+
+        return new ModelAndView(new JsonView());
+    }
+
+    @RequestMapping(value = "/api/users", method = RequestMethod.DELETE)
+    public ModelAndView delete(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String userId = request.getParameter("userId");
+        logger.debug("userId : {}", userId);
+
+        User user = userDao.findByUserId(userId);
+        userDao.delete(user);
 
         return new ModelAndView(new JsonView());
     }
