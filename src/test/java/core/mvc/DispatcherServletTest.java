@@ -4,7 +4,15 @@ import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.BeanScanner;
-import core.di.factory.BeanFactory;
+import core.di.context.AnnotationConfigApplicationContext;
+import core.di.context.ApplicationContext;
+import core.di.factory.example.IntegrationConfig;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import javax.sql.DataSource;
+import next.config.NextConfiguration;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,17 +30,19 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        BeanScanner beanScanner = new BeanScanner("next");
-        BeanFactory beanFactory = new BeanFactory(beanScanner.scan(Controller.class, Service.class, Repository.class));
-        beanFactory.initialize();
+        ApplicationContext ac = new AnnotationConfigApplicationContext(IntegrationConfig.class);
+        DBInitializer.initialize(ac.getBean(DataSource.class));
 
-        dispatcher = new DispatcherServlet(beanFactory);
+        dispatcher = new DispatcherServlet(ac);
+        dispatcher.addHandlerMapping(new RequestMapping());
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(ac));
+        dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        dispatcher.addHandlerAdapter(new ControllerHandlerAdapter());
         dispatcher.init();
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
 
-        DBInitializer.initialize();
     }
 
     @Test

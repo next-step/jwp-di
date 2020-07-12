@@ -6,8 +6,7 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.BeanScanner;
-import core.di.factory.BeanFactory;
+import core.di.context.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -19,9 +18,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +40,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
     private final Object[] controllers;
 
-    public AnnotationHandlerMapping(Object[] controllers) {
-        this.controllers = controllers;
+
+    public AnnotationHandlerMapping(ApplicationContext ac) {
+        this.controllers = ac.getBeans(Controller.class);
     }
 
     public void initialize() {

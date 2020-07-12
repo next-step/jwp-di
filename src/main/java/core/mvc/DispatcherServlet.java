@@ -1,11 +1,6 @@
 package core.mvc;
 
-import core.annotation.web.Controller;
-import core.di.factory.BeanFactory;
-import core.mvc.asis.ControllerHandlerAdapter;
-import core.mvc.asis.RequestMapping;
-import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import core.di.context.ApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,30 +16,31 @@ public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private HandlerMappingRegistry handlerMappingRegistry;
+    private final HandlerMappingRegistry handlerMappingRegistry;
 
-    private HandlerAdapterRegistry handlerAdapterRegistry;
+    private final HandlerAdapterRegistry handlerAdapterRegistry;
 
-    private HandlerExecutor handlerExecutor;
+    private final HandlerExecutor handlerExecutor;
 
-    private final BeanFactory beanFactory;
+    private final ApplicationContext applicationContext;
 
-    public DispatcherServlet(BeanFactory beanFactory){
-        this.beanFactory = beanFactory;
+    public DispatcherServlet(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        this.handlerMappingRegistry = new HandlerMappingRegistry();
+        this.handlerAdapterRegistry = new HandlerAdapterRegistry();
+        this.handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+    }
+
+    public void addHandlerMapping(HandlerMapping handlerMapping){
+        this.handlerMappingRegistry.addHandlerMpping(handlerMapping);
+    }
+
+    public void addHandlerAdapter(HandlerAdapter handlerAdapter){
+        this.handlerAdapterRegistry.addHandlerAdapter(handlerAdapter);
     }
 
     @Override
     public void init() {
-
-        handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getAnnotationBeans(Controller.class).values().toArray()));
-
-        handlerAdapterRegistry = new HandlerAdapterRegistry();
-        handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
-        handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
-
-        handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
     }
 
     @Override

@@ -1,5 +1,11 @@
 package core.mvc.tobe;
 
+import core.di.context.AnnotationConfigApplicationContext;
+import core.di.context.ApplicationContext;
+import core.di.factory.example.IntegrationConfig;
+import core.mvc.ModelAndView;
+import javax.sql.DataSource;
+import next.config.NextConfiguration;
 import next.controller.ApiUserController;
 import next.controller.UserController;
 import next.dao.UserDao;
@@ -18,11 +24,14 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping(new Object[]{new MyController()});
+        ApplicationContext ac = new AnnotationConfigApplicationContext(IntegrationConfig.class);
+
+        DBInitializer.initialize(ac.getBean(DataSource.class));
+
+        handlerMapping = new AnnotationHandlerMapping(ac);
         handlerMapping.initialize();
 
-        DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+        userDao = ac.getBean(UserDao.class);
     }
 
     @Test
@@ -31,13 +40,13 @@ public class AnnotationHandlerMappingTest {
         createUser(user);
         assertThat(userDao.findByUserId(user.getUserId())).isEqualTo(user);
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users/profile");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
-        execution.handle(request, response);
+        ModelAndView modelAndView = execution.handle(request, response);
 
-        assertThat(request.getAttribute("user")).isEqualTo(user);
+        assertThat(modelAndView.getObject("user")).isEqualTo(user);
     }
 
     private void createUser(User user) throws Exception {

@@ -1,5 +1,8 @@
 package next.dao;
 
+import core.annotation.Component;
+import core.annotation.Inject;
+import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
@@ -11,17 +14,15 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.List;
 
+@Repository
 public class AnswerDao {
     private static final Logger logger = LoggerFactory.getLogger( AnswerDao.class );
 
-    private static AnswerDao answerDao = new AnswerDao();
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
+    private JdbcTemplate jdbcTemplate;
 
-    private AnswerDao() {
-    }
-
-    public static AnswerDao getInstance() {
-        return answerDao;
+    @Inject
+    public AnswerDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Answer insert(Answer answer) {
