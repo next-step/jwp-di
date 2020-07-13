@@ -22,17 +22,14 @@ public class DispatcherServlet extends HttpServlet {
 
     private final HandlerExecutor handlerExecutor;
 
-    private final ApplicationContext applicationContext;
-
-    public DispatcherServlet(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public DispatcherServlet() {
         this.handlerMappingRegistry = new HandlerMappingRegistry();
         this.handlerAdapterRegistry = new HandlerAdapterRegistry();
         this.handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
     }
 
     public void addHandlerMapping(HandlerMapping handlerMapping){
-        this.handlerMappingRegistry.addHandlerMpping(handlerMapping);
+        this.handlerMappingRegistry.addHandlerMapping(handlerMapping);
     }
 
     public void addHandlerAdapter(HandlerAdapter handlerAdapter){

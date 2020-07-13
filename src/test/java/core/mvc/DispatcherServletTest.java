@@ -1,9 +1,5 @@
 package core.mvc;
 
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
-import core.di.BeanScanner;
 import core.di.context.AnnotationConfigApplicationContext;
 import core.di.context.ApplicationContext;
 import core.di.factory.example.IntegrationConfig;
@@ -12,7 +8,6 @@ import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import javax.sql.DataSource;
-import next.config.NextConfiguration;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +28,7 @@ class DispatcherServletTest {
         ApplicationContext ac = new AnnotationConfigApplicationContext(IntegrationConfig.class);
         DBInitializer.initialize(ac.getBean(DataSource.class));
 
-        dispatcher = new DispatcherServlet(ac);
+        dispatcher = new DispatcherServlet();
         dispatcher.addHandlerMapping(new RequestMapping());
         dispatcher.addHandlerMapping(new AnnotationHandlerMapping(ac));
         dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
@@ -42,7 +37,6 @@ class DispatcherServletTest {
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
-
     }
 
     @Test

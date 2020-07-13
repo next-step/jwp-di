@@ -31,7 +31,7 @@ public class NextWebApplicationInitializer implements WebApplicationInitializer 
 
         initDatabase(ac.getBean(DataSource.class));
 
-        DispatcherServlet servlet = new DispatcherServlet(ac);
+        DispatcherServlet servlet = new DispatcherServlet();
         servlet.addHandlerMapping(new RequestMapping());
         servlet.addHandlerMapping(new AnnotationHandlerMapping(ac));
         servlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
