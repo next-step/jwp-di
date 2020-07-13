@@ -33,19 +33,20 @@ public class BeanFactory {
         }
     }
 
-    private Object makeBean(Class<?> findClass) {
+    private Object makeBean(Class findClass) {
         findClass = BeanFactoryUtils.findConcreteClass(findClass, preInstanticateBeans);
 
-        if (!Optional.ofNullable(BeanFactoryUtils.getInjectedConstructor(findClass)).isPresent()) {
+        if (!existInjectConstructor(findClass)) {
             Object instance = BeanUtils.instantiateClass(findClass);
             this.beans.put(findClass, instance);
             return instance;
         }
 
         return injectBean(findClass);
+
     }
 
-    private Object injectBean(Class<?> injectClass) {
+    private Object injectBean(Class injectClass) {
         Constructor constructor = BeanFactoryUtils.getInjectedConstructor(injectClass);
         List<Object> constructorValues = new ArrayList<>();
 
@@ -58,5 +59,9 @@ public class BeanFactory {
         beans.put(injectClass, obj);
         return obj;
 
+    }
+
+    private boolean existInjectConstructor(Class findClass) {
+        return Optional.ofNullable(BeanFactoryUtils.getInjectedConstructor(findClass)).isPresent();
     }
 }
