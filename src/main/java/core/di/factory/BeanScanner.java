@@ -71,5 +71,4 @@ public class BeanScanner {
         }
         return beans;
     }
-
 }
