@@ -38,4 +38,5 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
     public <T> T getBean(Class<T> clazz) {
         return beanFactory.getBean(clazz);
     }
+
 }
