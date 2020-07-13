@@ -40,20 +40,27 @@ public class BeanScanner {
 
 
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+        BeanFactory beanFactory = initializeBeanFactory(basePackage);
+        Map<Class<?>,Object> controllers = beanFactory.getControllers();
 
-        BeanFactory beanFactory = new BeanFactory(preInstanticateClazz);
-
-        Set<Class<?>> controllers = getTypesAnnotatedWith(reflections, Controller.class);
-        for (Class<?> controller : controllers) {
-            Object target = beanFactory.getBean(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
+        for (Class<?> controllerKey : controllers.keySet()) {
+            addHandlerExecution(handlers, controllers.get(controllerKey), controllerKey.getMethods());
         }
 
         return handlers;
     }
+
+
+    private BeanFactory initializeBeanFactory(Object... basePackage) {
+        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+
+        return new BeanFactory(preInstanticateClazz);
+    }
+
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)

@@ -1,12 +1,15 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -33,19 +36,20 @@ public class BeanFactory {
         }
     }
 
-    private Object makeBean(Class<?> findClass) {
+    private Object makeBean(Class findClass) {
         findClass = BeanFactoryUtils.findConcreteClass(findClass, preInstanticateBeans);
 
-        if (!Optional.ofNullable(BeanFactoryUtils.getInjectedConstructor(findClass)).isPresent()) {
+        if (!existInjectConstructor(findClass)) {
             Object instance = BeanUtils.instantiateClass(findClass);
             this.beans.put(findClass, instance);
             return instance;
         }
 
         return injectBean(findClass);
+
     }
 
-    private Object injectBean(Class<?> injectClass) {
+    private Object injectBean(Class injectClass) {
         Constructor constructor = BeanFactoryUtils.getInjectedConstructor(injectClass);
         List<Object> constructorValues = new ArrayList<>();
 
@@ -57,6 +61,18 @@ public class BeanFactory {
         Object obj = BeanUtils.instantiateClass(constructor, constructorValues.toArray());
         beans.put(injectClass, obj);
         return obj;
+
+    }
+
+    private boolean existInjectConstructor(Class findClass) {
+        return Optional.ofNullable(BeanFactoryUtils.getInjectedConstructor(findClass)).isPresent();
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        return this.preInstanticateBeans
+                .stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(Function.identity(), clazz -> getBean(clazz)));
 
     }
 }
