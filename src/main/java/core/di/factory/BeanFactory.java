@@ -29,12 +29,12 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
+    public void initialize() throws BeanInitException {
         for (final Class<?> preInstanticateBean : preInstanticateBeans) {
             try {
                 instantiateClass(preInstanticateBean);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new BeanInitException(e.getMessage());
             }
         }
 
