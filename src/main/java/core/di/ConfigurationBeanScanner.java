@@ -52,6 +52,4 @@ public class ConfigurationBeanScanner {
             })
             .collect(Collectors.toSet());
     }
-
-
 }
