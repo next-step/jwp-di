@@ -42,16 +42,13 @@ public class BeanScanner {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
-        for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
-        }
-
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
         BeanFactory beanFactory = new BeanFactory(preInstanticateClazz);
         beanFactory.initialize();
-
+        Map<Class<?>, Object> controllers = beanFactory.getControllers();
+        for (final Map.Entry<Class<?>, Object> clazz : controllers.entrySet()) {
+            addHandlerExecution(handlers, clazz.getValue(), clazz.getKey().getMethods());
+        }
         return handlers;
     }
 
