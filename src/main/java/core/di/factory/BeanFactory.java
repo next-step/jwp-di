@@ -9,8 +9,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +25,16 @@ public class BeanFactory {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     private final Map<BeanDefinition, Object> beans = new HashMap<>();
-    private final List<BeanDefinition> beanDefinitions;
+    private final Set<BeanDefinition> beanDefinitions = new HashSet<>();
 
-    public BeanFactory(List<BeanDefinition> beanDefinitions) {
-        this.beanDefinitions = beanDefinitions;
+    public BeanFactory() {
+    }
+
+    public void addBeanDefinition(BeanDefinition beanDefinition){
+        beanDefinitions.add(beanDefinition);
+    }
+    public void addBeanDefinitions(Set<BeanDefinition> beanDefinition){
+        beanDefinitions.addAll(beanDefinition);
     }
 
     public void initialize() {
@@ -75,7 +83,8 @@ public class BeanFactory {
         BeanDefinition configClassBean = this.beanDefinitions.stream()
             .filter(b -> b.getBeanClass()
                 .isAssignableFrom(beanDefinition.getMethod().getDeclaringClass()))
-            .findFirst().get();
+            .findFirst()
+            .get();
 
         Object bean = this.beans.get(configClassBean);
         if (bean == null) {

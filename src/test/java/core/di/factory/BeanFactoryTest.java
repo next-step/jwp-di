@@ -29,7 +29,8 @@ public class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
-        List<BeanDefinition> beanDefinitions =  Arrays.asList(new BeanDefinition() {
+
+        Set<BeanDefinition> definitions = Sets.newHashSet(new BeanDefinition() {
             @Override
             public String getName() {
                 return JdbcUserRepository.class.getSimpleName();
@@ -55,7 +56,8 @@ public class BeanFactoryTest {
             }
         });
 
-        beanFactory = new BeanFactory(beanDefinitions);
+        beanFactory = new BeanFactory();
+        beanFactory.addBeanDefinitions(definitions);
         beanFactory.initialize();;
     }
 
