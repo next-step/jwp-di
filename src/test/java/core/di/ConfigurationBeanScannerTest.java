@@ -19,10 +19,9 @@ class ConfigurationBeanScannerTest {
     @Test
     public void register_simple() {
         BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
-        cbs.register(ExampleConfig.class);
-
-        beanFactory.addBeanDefinition(new BeanDefinition() {
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner();
+        beanFactory.addBeanDefinitions(cbs.scan(ExampleConfig.class));
+        beanFactory.addBeanDefinitions(Sets.newHashSet(new BeanDefinition() {
             @Override
             public String getName() {
                 return ExampleConfig.class.getSimpleName();
@@ -43,20 +42,21 @@ class ConfigurationBeanScannerTest {
             public Class<?> getBeanClass() {
                 return ExampleConfig.class;
             }
-        });
-        beanFactory.initialize();
+        }));
 
+        beanFactory.initialize();
         assertNotNull(beanFactory.getBean(DataSource.class));
     }
+
 
     @Test
     public void register_classpathBeanScanner_통합() {
         BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
-        cbs.register(IntegrationConfig.class);
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner();
+        beanFactory.addBeanDefinitions(cbs.scan(IntegrationConfig.class));
 
-        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
-        cbds.doScan(Sets.newHashSet("core.di"));
+        ClasspathBeanScanner cbds = new ClasspathBeanScanner();
+        beanFactory.addBeanDefinitions(cbds.scan(Sets.newHashSet("core.di")));
 
         beanFactory.initialize();
 
