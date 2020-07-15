@@ -23,8 +23,12 @@ public class BeanScanner {
     private static final Class<WebApplication> WEB_APPLICATION_ANNOTATION = WebApplication.class;
     private static final Class<Component> COMPONENT_ANNOTATION = Component.class;
 
-    private Object[] basePackage;
+    private Object[] basePackage = {};
     private Reflections reflections;
+
+    public BeanScanner(Object... basePackage) {
+        this.basePackage = basePackage;
+    }
 
     @SuppressWarnings("unchecked")
     public Set<Class<?>> scan() {
@@ -36,6 +40,10 @@ public class BeanScanner {
     }
 
     private Object[] findBasePackage() {
+        if (this.basePackage.length != 0) {
+            return this.basePackage;
+        }
+
         Reflections wholeReflections = new Reflections("");
         Object[] wholeBasePackage = wholeReflections.getTypesAnnotatedWith(WEB_APPLICATION_ANNOTATION)
                 .stream()
@@ -67,7 +75,7 @@ public class BeanScanner {
     private Set<Class<?>> getTypesAnnotatedWith(Set<Class<? extends Annotation>> annotations) {
         Set<Class<?>> annotatedClasses = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
-            annotatedClasses.addAll(reflections.getTypesAnnotatedWith(annotation));
+            annotatedClasses.addAll(reflections.getTypesAnnotatedWith(annotation, true));
         }
         return annotatedClasses;
     }
