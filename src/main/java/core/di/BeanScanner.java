@@ -30,7 +30,6 @@ public class BeanScanner {
         this.basePackage = basePackage;
     }
 
-    @SuppressWarnings("unchecked")
     public Set<Class<?>> scan() {
         this.basePackage = findBasePackage();
         this.reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
@@ -71,7 +70,6 @@ public class BeanScanner {
         return annotations;
     }
 
-    @SuppressWarnings("unchecked")
     private Set<Class<?>> getTypesAnnotatedWith(Set<Class<? extends Annotation>> annotations) {
         Set<Class<?>> annotatedClasses = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
