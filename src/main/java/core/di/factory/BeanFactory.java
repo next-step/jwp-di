@@ -49,7 +49,7 @@ public class BeanFactory {
 
     }
 
-    private Object injectBean(Class injectClass) {
+    private <T> T injectBean(Class<T> injectClass) {
         Constructor constructor = BeanFactoryUtils.getInjectedConstructor(injectClass);
         List<Object> constructorValues = new ArrayList<>();
 
@@ -60,12 +60,12 @@ public class BeanFactory {
 
         Object obj = BeanUtils.instantiateClass(constructor, constructorValues.toArray());
         beans.put(injectClass, obj);
-        return obj;
+        return (T) obj;
 
     }
 
     private boolean existInjectConstructor(Class findClass) {
-        return Optional.ofNullable(BeanFactoryUtils.getInjectedConstructor(findClass)).isPresent();
+        return BeanFactoryUtils.getInjectedConstructor(findClass) != null;
     }
 
     public Map<Class<?>, Object> getControllers() {
