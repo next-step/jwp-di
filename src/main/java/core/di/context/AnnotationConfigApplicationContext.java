@@ -8,6 +8,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,13 +18,15 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
 
     public AnnotationConfigApplicationContext(Class<?> clazz) {
         this.beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(this.beanFactory);
-        cbs.register(clazz);
+
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner();
+        this.beanFactory.addBeanDefinitions(cbs.scan(clazz));
 
         ComponentScan componentScan = clazz.getAnnotation(ComponentScan.class);
         if(componentScan != null){
-            ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(this.beanFactory);
-            classpathBeanScanner.doScan(Stream.of(componentScan.basePackages()).collect(Collectors.toSet()));
+            ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner();
+            Set<String> basePackages = Stream.of(componentScan.basePackages()).collect(Collectors.toSet());
+            this.beanFactory.addBeanDefinitions(classpathBeanScanner.scan(basePackages));
         }
 
         this.beanFactory.initialize();

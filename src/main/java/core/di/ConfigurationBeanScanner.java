@@ -2,28 +2,21 @@ package core.di;
 
 import core.annotation.Bean;
 import core.annotation.Configuration;
-import core.di.factory.BeanFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ConfigurationBeanScanner {
 
-    private final BeanFactory beanFactory;
-
-    public ConfigurationBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-    }
-
-    public void register(Class<?> clazz){
+    public Set<BeanDefinition> scan(Class<?> clazz){
         if(!clazz.isAnnotationPresent(Configuration.class)){
-            return;
+            return Collections.EMPTY_SET;
         }
 
-        Set<BeanDefinition> beanDefinitions = createBeanDefinitions(clazz);
-        this.beanFactory.addBeanDefinitions(beanDefinitions);
+        return createBeanDefinitions(clazz);
     }
 
     private Set<BeanDefinition> createBeanDefinitions(Class<?> clazz) {

@@ -30,9 +30,6 @@ public class BeanFactory {
     public BeanFactory() {
     }
 
-    public void addBeanDefinition(BeanDefinition beanDefinition){
-        beanDefinitions.add(beanDefinition);
-    }
     public void addBeanDefinitions(Set<BeanDefinition> beanDefinition){
         beanDefinitions.addAll(beanDefinition);
     }
@@ -84,7 +81,7 @@ public class BeanFactory {
             .filter(b -> b.getBeanClass()
                 .isAssignableFrom(beanDefinition.getMethod().getDeclaringClass()))
             .findFirst()
-            .get();
+            .orElseThrow(() -> new RuntimeException("not found config bean"));
 
         Object bean = this.beans.get(configClassBean);
         if (bean == null) {
