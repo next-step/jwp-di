@@ -1,5 +1,8 @@
-package core.mvc.tobe;
+package core.di.factory;
 
+import com.google.common.collect.Sets;
+import core.annotation.Repository;
+import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.mvc.tobe.HandlerExecution;
@@ -14,33 +17,37 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
-public class ControllerScanner {
+public class BeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
-                new HttpRequestArgumentResolver(),
-                new HttpResponseArgumentResolver(),
-                new RequestParamArgumentResolver(),
-                new PathVariableArgumentResolver(),
-                new ModelArgumentResolver()
-        );
-
+            new HttpRequestArgumentResolver(),
+            new HttpResponseArgumentResolver(),
+            new RequestParamArgumentResolver(),
+            new PathVariableArgumentResolver(),
+            new ModelArgumentResolver()
+    );
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
+
+    private static BeanFactory beanFactory;
 
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+        Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+        beanFactory = new BeanFactory(preInstantiateClazz);
+        beanFactory.initialize();
 
+        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
         Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
         for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
+            Object target = beanFactory.getBean(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
         }
 
@@ -59,4 +66,11 @@ public class ControllerScanner {
                 });
     }
 
+    private static Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
+        Set<Class<?>> beans = Sets.newHashSet();
+        for (Class<? extends Annotation> annotation : annotations) {
+            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
+        }
+        return beans;
+    }
 }
