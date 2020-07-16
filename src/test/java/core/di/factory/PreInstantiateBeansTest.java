@@ -1,8 +1,12 @@
 package core.di.factory;
 
+import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -10,7 +14,9 @@ public class PreInstantiateBeansTest {
 
     @Test
     public void repositoryCreateBeanObject() {
-        PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans();
+        Set<Class<?>> classes = new HashSet<>();
+        classes.add(JdbcUserRepository.class);
+        PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans(classes);
 
         Object object = preInstantiateBeans.createBeanObject(JdbcUserRepository.class);
         assertThat(object).isNotEqualTo(null);
@@ -18,9 +24,13 @@ public class PreInstantiateBeansTest {
 
     @Test
     public void serviceCreateBeanObject() {
-        PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans();
+        Set<Class<?>> classes = new HashSet<>();
+        classes.add(JdbcUserRepository.class);
+        classes.add(JdbcQuestionRepository.class);
 
-        Object object = preInstantiateBeans.createBeanObject(MyQnaService.class);
+        PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans(classes);
+
+        Object object = preInstantiateBeans.createBeanServiceObject(MyQnaService.class);
         assertThat(object).isNotEqualTo(null);
     }
 
