@@ -41,4 +41,8 @@ public class PreInstantiateBeans {
             throw new RuntimeException(ex);
         }
     }
+
+    public Object createBeanControllerObject(Class<?> clazz) {
+        return null;
+    }
 }

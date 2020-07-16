@@ -3,6 +3,7 @@ package core.di.factory;
 import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
+import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -31,6 +32,19 @@ public class PreInstantiateBeansTest {
         PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans(classes);
 
         Object object = preInstantiateBeans.createBeanServiceObject(MyQnaService.class);
+        assertThat(object).isNotEqualTo(null);
+    }
+
+    @Test
+    public void controllerCreateBeanObject() {
+        Set<Class<?>> classes = new HashSet<>();
+        classes.add(JdbcUserRepository.class);
+        classes.add(JdbcQuestionRepository.class);
+        classes.add(MyQnaService.class);
+
+        PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans(classes);
+
+        Object object = preInstantiateBeans.createBeanControllerObject(QnaController.class);
         assertThat(object).isNotEqualTo(null);
     }
 
