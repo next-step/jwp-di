@@ -43,6 +43,19 @@ public class PreInstantiateBeans {
     }
 
     public Object createBeanControllerObject(Class<?> clazz) {
-        return null;
+        try {
+            Constructor constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+            logger.debug("{}", constructor);
+
+            List<Object> objects = new ArrayList<>();
+            for (Class param : constructor.getParameterTypes()) {
+                Object obj = createBeanServiceObject(param);
+                objects.add(obj);
+            }
+
+            return constructor.newInstance(objects.toArray());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
