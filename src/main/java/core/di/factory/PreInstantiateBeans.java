@@ -18,8 +18,18 @@ public class PreInstantiateBeans {
     private static final Logger logger = LoggerFactory.getLogger(PreInstantiateBeans.class);
     public Object createBeanObject(Class<?> clazz) {
         try {
+            Constructor constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+            logger.debug("{}", constructor);
             Class conClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
-            return conClass.newInstance();
+            if (constructor == null) return conClass.newInstance();
+
+            List<Object> objects = new ArrayList<>();
+            for (Class param : constructor.getParameterTypes()) {
+                Object obj = createBeanObject(param);
+                objects.add(obj);
+            }
+
+            return constructor.newInstance(objects.toArray());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -49,7 +59,7 @@ public class PreInstantiateBeans {
 
             List<Object> objects = new ArrayList<>();
             for (Class param : constructor.getParameterTypes()) {
-                Object obj = createBeanServiceObject(param);
+                Object obj = createBeanObject(param);
                 objects.add(obj);
             }
 
