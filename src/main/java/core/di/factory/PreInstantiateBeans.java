@@ -6,16 +6,25 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PreInstantiateBeans {
+    private static final Logger logger = LoggerFactory.getLogger(PreInstantiateBeans.class);
+
     private Set<Class<?>> preInstantiateBeans;
 
     public PreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
         this.preInstantiateBeans = preInstantiateBeans;
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(PreInstantiateBeans.class);
+    public Map<Class<?>, Object> createBeansObject() {
+        return preInstantiateBeans.stream()
+                .collect(Collectors.toMap(b -> b, b -> createBeanObject(b)));
+    }
+
+
     public Object createBeanObject(Class<?> clazz) {
         try {
             Constructor constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
