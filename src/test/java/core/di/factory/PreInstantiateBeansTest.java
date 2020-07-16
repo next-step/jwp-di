@@ -31,7 +31,7 @@ public class PreInstantiateBeansTest {
 
         PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans(classes);
 
-        Object object = preInstantiateBeans.createBeanServiceObject(MyQnaService.class);
+        Object object = preInstantiateBeans.createBeanObject(MyQnaService.class);
         assertThat(object).isNotEqualTo(null);
     }
 
@@ -44,7 +44,7 @@ public class PreInstantiateBeansTest {
 
         PreInstantiateBeans preInstantiateBeans = new PreInstantiateBeans(classes);
 
-        Object object = preInstantiateBeans.createBeanControllerObject(QnaController.class);
+        Object object = preInstantiateBeans.createBeanObject(QnaController.class);
         assertThat(object).isNotEqualTo(null);
     }
 
