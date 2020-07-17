@@ -21,7 +21,7 @@ public class PreInstantiateBeans {
 
     public Map<Class<?>, Object> createBeansObject() {
         return preInstantiateBeans.stream()
-                .collect(Collectors.toMap(b -> b, b -> createBeanObject(b)));
+                .collect(Collectors.toMap(b -> b, this::createBeanObject));
     }
 
 
