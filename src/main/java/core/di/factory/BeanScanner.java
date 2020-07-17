@@ -40,9 +40,7 @@ public class BeanScanner {
 
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstantiateClazz);
-        beanFactory.initialize();
+        createBeanFactory(reflections);
 
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
         Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
@@ -66,7 +64,13 @@ public class BeanScanner {
                 });
     }
 
-    private static Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
+    private void createBeanFactory(Reflections reflections) {
+        Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+        beanFactory = new BeanFactory(preInstantiateClazz);
+        beanFactory.initialize();
+    }
+
+    private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
         Set<Class<?>> beans = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));

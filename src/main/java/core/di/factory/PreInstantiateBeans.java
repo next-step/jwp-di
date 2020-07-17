@@ -21,26 +21,29 @@ public class PreInstantiateBeans {
 
     public Map<Class<?>, Object> createBeansObject() {
         return preInstantiateBeans.stream()
-                .collect(Collectors.toMap(b -> b, b -> createBeanObject(b)));
+                .collect(Collectors.toMap(b -> b, this::createBeanObject));
     }
 
 
     public Object createBeanObject(Class<?> clazz) {
         try {
-            Constructor constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+            Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
             logger.debug("{}", constructor);
-            Class conClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
+            Class<?> conClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
+
             if (constructor == null) return conClass.newInstance();
-
-            List<Object> objects = new ArrayList<>();
-            for (Class param : constructor.getParameterTypes()) {
-                Object obj = createBeanObject(param);
-                objects.add(obj);
-            }
-
-            return constructor.newInstance(objects.toArray());
+            return instantiateConstructor(constructor);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    private Object instantiateConstructor(Constructor<?> constructor) throws Exception {
+        List<Object> objects = new ArrayList<>();
+        for (Class param : constructor.getParameterTypes()) {
+            Object obj = createBeanObject(param);
+            objects.add(obj);
+        }
+        return constructor.newInstance(objects.toArray());
     }
 }
