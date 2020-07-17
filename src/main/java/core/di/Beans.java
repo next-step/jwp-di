@@ -1,7 +1,5 @@
 package core.di;
 
-import static core.di.factory.BeanFactoryUtils.findConcreteClass;
-
 import com.google.common.collect.Maps;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -18,11 +16,12 @@ public class Beans {
 
     private static final Logger logger = LoggerFactory.getLogger(Beans.class);
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
-    private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
+    private BeanDefinitions beanDefinitions;
 
-    public void instantiateBeans(Map<Class<?>, BeanDefinition> beanDefinitions) {
-        this.beanDefinitions.putAll(beanDefinitions);
-        beanDefinitions.forEach((clazz, beandef) -> beans.put(clazz, instantiate(beandef)));
+    public void instantiateBeans(BeanDefinitions beanDefinitions1) {
+        this.beanDefinitions = beanDefinitions1;
+        beanDefinitions1.getBeanDefinitionMap()
+                        .forEach((clazz, beandef) -> beans.put(clazz, instantiate(beandef)));
     }
 
     public Object get(Class<?> beanClass) {
@@ -45,18 +44,17 @@ public class Beans {
 
     private Object instantiateConstructor(Constructor<?> constructor) {
         Class<?>[] parameterTypes = constructor.getParameterTypes();
-        List<Object> list = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
         for (Class<?> parameterType : parameterTypes) {
-            Class<?> parameterClass = findConcreteClass(parameterType, beanDefinitions.keySet());
-            Object instantiate = instantiate(beanDefinitions.get(parameterClass));
-            list.add(instantiate);
+            Object instantiatedParam = instantiate(beanDefinitions.getConcreteBeanDefinition(parameterType));
+            params.add(instantiatedParam);
         }
         return BeanUtils.instantiateClass(constructor,
-                                          list.toArray());
+                                          params.toArray());
     }
 
     private Object instantiateBean(BeanDefinition beandef) {
-        return BeanUtils.instantiateClass(findConcreteClass(beandef.getBeanClass(), beanDefinitions.keySet()));
+        return BeanUtils.instantiateClass(beanDefinitions.getConcreteClass(beandef.getBeanClass()));
     }
 
     private boolean isPresent(Class<?> beanClass) {

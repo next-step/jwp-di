@@ -1,7 +1,6 @@
 package core.di.factory;
 
-import com.google.common.collect.Maps;
-import core.di.BeanDefinition;
+import core.di.BeanDefinitions;
 import core.di.Beans;
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -13,15 +12,14 @@ public class BeanFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
     private final Beans beans = new Beans();
-    private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
-    private final BeanScanner beanScanner;
+    private final BeanDefinitions beanDefinitions;
 
     public BeanFactory(Object... basePackage) {
-        beanScanner = new BeanScanner(basePackage);
+        beanDefinitions = new BeanDefinitions(new BeanScanner(basePackage));
     }
 
     public void initialize(Class<? extends Annotation>... annotations) {
-        beanDefinitions.putAll(beanScanner.scanAnnotatedWith(annotations));
+        beanDefinitions.addAnnotatedWith(annotations);
         beans.instantiateBeans(beanDefinitions);
     }
 
@@ -32,7 +30,7 @@ public class BeanFactory {
     }
 
     public Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {
-        return beanDefinitions.keySet()
+        return beanDefinitions.getPreInstantiateBeans()
                               .stream()
                               .filter(clazz -> clazz.isAnnotationPresent(annotation))
                               .collect(Collectors.toMap(clazz -> clazz, beans::get, (a, b) -> b));
