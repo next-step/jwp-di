@@ -29,7 +29,7 @@ public class PreInstantiateBeans {
         try {
             Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
             logger.debug("{}", constructor);
-            Class conClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
+            Class<?> conClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
             if (constructor == null) return conClass.newInstance();
 
             List<Object> objects = new ArrayList<>();
