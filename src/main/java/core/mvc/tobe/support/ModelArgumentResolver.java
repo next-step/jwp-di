@@ -1,20 +1,19 @@
 package core.mvc.tobe.support;
 
+import static core.util.ReflectionUtils.hasFieldMethod;
+import static core.util.StringUtil.upperFirstChar;
+
 import core.mvc.tobe.MethodParameter;
 import core.util.ReflectionUtils;
-import org.apache.commons.lang3.ClassUtils;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
-import org.springframework.core.ParameterNameDiscoverer;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import static core.util.ReflectionUtils.hasFieldMethod;
-import static core.util.StringUtil.upperFirstChar;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.ClassUtils;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.ParameterNameDiscoverer;
 
 public class ModelArgumentResolver implements ArgumentResolver {
 
@@ -22,16 +21,20 @@ public class ModelArgumentResolver implements ArgumentResolver {
 
     @Override
     public boolean supports(MethodParameter methodParameter) {
-        return !isSimpleType(methodParameter.getType()) && !isRequestType(methodParameter.getType());
+        return !isSimpleType(methodParameter.getType()) && !isRequestType(methodParameter.getType()) && !isResponseType(methodParameter.getType());
+    }
+
+    private boolean isSimpleType(Class<?> clazz) {
+        return ClassUtils.isPrimitiveOrWrapper(clazz)
+            || CharSequence.class.isAssignableFrom(clazz);
     }
 
     private boolean isRequestType(Class<?> clazz) {
         return clazz == HttpServletRequest.class;
     }
 
-    private boolean isSimpleType(Class<?> clazz) {
-        return ClassUtils.isPrimitiveOrWrapper(clazz)
-                || CharSequence.class.isAssignableFrom(clazz);
+    private boolean isResponseType(Class<?> clazz) {
+        return clazz == HttpServletResponse.class;
     }
 
     @Override
@@ -49,7 +52,8 @@ public class ModelArgumentResolver implements ArgumentResolver {
         }
     }
 
-    private Object resolveArgumentInternal(MethodParameter methodParameter, HttpServletRequest request, HttpServletResponse response) throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
+    private Object resolveArgumentInternal(MethodParameter methodParameter, HttpServletRequest request, HttpServletResponse response)
+        throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
         Class<?> clazz = methodParameter.getType();
         Object argument = getDefaultInstance(clazz, request);
 
@@ -60,16 +64,8 @@ public class ModelArgumentResolver implements ArgumentResolver {
         return argument;
     }
 
-    private void populateArgument(Object target, Class<?> clazz, Field field, HttpServletRequest request) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        final String setterMethod = "set" + upperFirstChar(field.getName());
-
-        if (hasFieldMethod(clazz, setterMethod, field.getType())) {
-            final Method method = clazz.getDeclaredMethod(setterMethod, field.getType());
-            method.invoke(target, ReflectionUtils.convertStringValue(request.getParameter(field.getName()), field.getType()));
-        }
-    }
-
-    private <T> T getDefaultInstance(Class<T> clazz, HttpServletRequest request) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    private <T> T getDefaultInstance(Class<T> clazz, HttpServletRequest request)
+        throws IllegalAccessException, InvocationTargetException, InstantiationException {
         for (Constructor constructor : clazz.getConstructors()) {
             final String[] parameterNames = nameDiscoverer.getParameterNames(constructor);
             assert parameterNames != null;
@@ -86,6 +82,16 @@ public class ModelArgumentResolver implements ArgumentResolver {
         }
 
         throw new IllegalStateException("[" + clazz.getName() + "] supported constructor is empty");
+    }
+
+    private void populateArgument(Object target, Class<?> clazz, Field field, HttpServletRequest request)
+        throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        final String setterMethod = "set" + upperFirstChar(field.getName());
+
+        if (hasFieldMethod(clazz, setterMethod, field.getType())) {
+            final Method method = clazz.getDeclaredMethod(setterMethod, field.getType());
+            method.invoke(target, ReflectionUtils.convertStringValue(request.getParameter(field.getName()), field.getType()));
+        }
     }
 
 }
