@@ -27,7 +27,7 @@ public class PreInstantiateBeans {
 
     public Object createBeanObject(Class<?> clazz) {
         try {
-            Constructor constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+            Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
             logger.debug("{}", constructor);
             Class conClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
             if (constructor == null) return conClass.newInstance();
