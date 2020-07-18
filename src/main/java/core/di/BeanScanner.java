@@ -5,13 +5,8 @@ import core.annotation.Component;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,18 +17,16 @@ public class BeanScanner implements Scanner<Class<?>> {
     private static final String ANNOTATION_BASE_PACKAGE = "core.annotation";
     private static final Class<Component> COMPONENT_ANNOTATION = Component.class;
 
-    private Set<Object> basePackage = new HashSet<>();
+    private Object[] basePackage = {};
     private Reflections reflections;
 
     public BeanScanner(Object... basePackage) {
-        this.basePackage = Collections.singleton(basePackage);
+        this.basePackage = basePackage;
     }
 
     @Override
     public Set<Class<?>> scan() {
-        ComponentBasePackageScanner basePackageScanner = new ComponentBasePackageScanner();
-        this.basePackage = basePackageScanner.scan();
-        this.reflections = new Reflections(this.basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+        this.reflections = new Reflections(this.basePackage);
 
         Set<Class<? extends Annotation>> componentAnnotations = getComponentAnnotations();
         return getTypesAnnotatedWith(componentAnnotations);

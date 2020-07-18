@@ -4,6 +4,7 @@ import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
@@ -15,21 +16,26 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @Slf4j
+@NoArgsConstructor
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    private Object[] basePackage;
     private HandlerMappingRegistry handlerMappingRegistry;
     private HandlerAdapterRegistry handlerAdapterRegistry;
     private HandlerExecutor handlerExecutor;
+
+    public DispatcherServlet(Object... basePackage) {
+        this.basePackage = basePackage;
+    }
 
     @Override
     public void init() {
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMapping(new RequestMapping());
-
-        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping());
+        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(basePackage));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

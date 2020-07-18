@@ -5,6 +5,7 @@ import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.BeanScanner;
+import core.di.ComponentBasePackageScanner;
 import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
@@ -44,8 +45,13 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private BeanFactory beanFactory;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping() {
-        beanScanner = new BeanScanner();
+    public AnnotationHandlerMapping(Object... basePackage) {
+        if (isEmpty(basePackage)) {
+            ComponentBasePackageScanner basePackageScanner = new ComponentBasePackageScanner();
+            basePackage = basePackageScanner.scan().toArray();
+        }
+
+        beanScanner = new BeanScanner(basePackage);
         Set<Class<?>> preInstantiateBeans = beanScanner.scan();
 
         beanFactory = new BeanFactory(preInstantiateBeans);
@@ -71,6 +77,10 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         return getHandlerInternal(new HandlerKey(requestUri, rm));
     }
 
+    private boolean isEmpty(Object[] basePackage) {
+        return basePackage == null || basePackage.length == 0;
+    }
+
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
@@ -90,4 +100,5 @@ public class AnnotationHandlerMapping implements HandlerMapping {
                 .findFirst()
                 .orElse(null);
     }
+
 }

@@ -1,6 +1,5 @@
 package core.di;
 
-import core.di.factory.componentscan.ExampleConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -10,20 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ComponentBasePackageScannerTest {
 
-    @DisplayName("ComponentScan annotation 의 basePackage 등록하기")
-    @Test
-    void registerBasePackage() {
-        /* given */
-        ComponentBasePackageScanner basePackageScanner = new ComponentBasePackageScanner("core.di.factory.componentscan");
-
-        /* when */
-        basePackageScanner.registerBasePackage(ExampleConfiguration.class);
-
-        /* then */
-        assertThat(basePackageScanner.getBasePackages()).containsExactly("core");
-    }
-
-    @DisplayName("")
+    @DisplayName("@ComponentScan의 basePackage 와 @ComponentScan이 달려 있는 모든 어노테이션의 package 를 스캔하기")
     @Test
     void scan() {
         /* given */

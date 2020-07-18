@@ -16,7 +16,7 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping();
+        handlerMapping = new AnnotationHandlerMapping("next");
         handlerMapping.initialize();
 
         DBInitializer.initialize();
