@@ -18,23 +18,29 @@ public class ConfigurationBeanScanner implements Scanner<Class<?>> {
     private static final Class<Configuration> CONFIGURATION_ANNOTATION = Configuration.class;
     private static final Class<Bean> BEAN_ANNOTATION = Bean.class;
 
+    private Reflections reflections = new Reflections("");
     private final Map<Class<?>, Method> beanCreationMethods = new HashMap<>();
-    private Object[] basePackage = {};
 
     public ConfigurationBeanScanner(Object... basePackage) {
-        this.basePackage = basePackage;
+        this.reflections = new Reflections(basePackage);
     }
 
     @Override
     public Set<Class<?>> scan() {
-        Reflections reflections = new Reflections(this.basePackage);
-
-        Set<Class<?>> configurationClasses = reflections.getTypesAnnotatedWith(CONFIGURATION_ANNOTATION);
+        Set<Class<?>> configurationClasses = this.reflections.getTypesAnnotatedWith(CONFIGURATION_ANNOTATION, true);
         for (Class<?> configurationClass : configurationClasses) {
             registerBeanCreationMethods(configurationClass);
         }
 
         return beanCreationMethods.keySet();
+    }
+
+    public boolean contains(Class<?> preInstantiateBean) {
+        return beanCreationMethods.containsKey(preInstantiateBean);
+    }
+
+    public Method getBeanCreationMethod(Class<?> preInstantiateBean) {
+        return beanCreationMethods.get(preInstantiateBean);
     }
 
     private void registerBeanCreationMethods(Class<?> configurationClass) {

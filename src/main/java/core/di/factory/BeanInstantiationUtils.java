@@ -6,13 +6,14 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class BeanFactoryUtils {
+public class BeanInstantiationUtils {
 
     /**
      * 인자로 전달하는 클래스의 생성자 중 @Inject 애노테이션이 설정되어 있는 생성자를 반환
@@ -50,6 +51,17 @@ public class BeanFactoryUtils {
             }
         }
 
-        throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+        return injectedClazz;
     }
+
+    public static Object invokeMethod(Method method, Object... args) {
+        try {
+            Class<?> declaringClass = method.getDeclaringClass();
+
+            return method.invoke(declaringClass.getDeclaredConstructor().newInstance(), args);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("method invoke failed.");
+        }
+    }
+
 }

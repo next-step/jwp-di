@@ -1,13 +1,13 @@
 package core.di.factory;
 
 import core.di.BeanScanner;
+import core.di.BeanScanners;
+import core.di.ConfigurationBeanScanner;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import core.di.factory.exception.CircularReferenceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,10 +44,8 @@ public class BeanFactoryTest {
     }
 
     private BeanFactory createBeanFactory(String basePackage) {
-        BeanScanner beanScanner = new BeanScanner(basePackage);
-        Set<Class<?>> preInstantiateClazz = beanScanner.scan();
-
-        return new BeanFactory(preInstantiateClazz);
+        BeanScanners beanScanners = new BeanScanners(new BeanScanner(basePackage), new ConfigurationBeanScanner(basePackage));
+        return new BeanFactory(beanScanners);
     }
 
 }

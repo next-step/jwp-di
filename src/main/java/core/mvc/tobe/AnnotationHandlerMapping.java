@@ -5,7 +5,9 @@ import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.BeanScanner;
+import core.di.BeanScanners;
 import core.di.ComponentBasePackageScanner;
+import core.di.ConfigurationBeanScanner;
 import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
@@ -41,7 +43,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
     private static final Class<Controller> HANDLER_ANNOTATION = Controller.class;
 
-    private BeanScanner beanScanner;
     private BeanFactory beanFactory;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
@@ -51,10 +52,11 @@ public class AnnotationHandlerMapping implements HandlerMapping {
             basePackage = basePackageScanner.scan().toArray();
         }
 
-        beanScanner = new BeanScanner(basePackage);
-        Set<Class<?>> preInstantiateBeans = beanScanner.scan();
+        BeanScanner beanScanner = new BeanScanner(basePackage);
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(basePackage);
+        BeanScanners beanScanners = new BeanScanners(beanScanner, configurationBeanScanner);
 
-        beanFactory = new BeanFactory(preInstantiateBeans);
+        beanFactory = new BeanFactory(beanScanners);
         beanFactory.initialize();
     }
 

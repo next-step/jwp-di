@@ -2,6 +2,7 @@ package core.di;
 
 import com.google.common.collect.Sets;
 import core.annotation.Component;
+import core.di.factory.BeanInstantiationUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
@@ -17,19 +18,26 @@ public class BeanScanner implements Scanner<Class<?>> {
     private static final String ANNOTATION_BASE_PACKAGE = "core.annotation";
     private static final Class<Component> COMPONENT_ANNOTATION = Component.class;
 
-    private Object[] basePackage = {};
-    private Reflections reflections;
+    private Reflections reflections = new Reflections("");
+    private Set<Class<?>> preInstantiateBeans;
 
     public BeanScanner(Object... basePackage) {
-        this.basePackage = basePackage;
+        this.reflections = new Reflections(basePackage);
     }
 
     @Override
     public Set<Class<?>> scan() {
-        this.reflections = new Reflections(this.basePackage);
-
         Set<Class<? extends Annotation>> componentAnnotations = getComponentAnnotations();
-        return getTypesAnnotatedWith(componentAnnotations);
+        this.preInstantiateBeans = getTypesAnnotatedWith(componentAnnotations);
+        return preInstantiateBeans;
+    }
+
+    public boolean contains(Class<?> preInstantiateBean) {
+        return preInstantiateBeans.contains(preInstantiateBean);
+    }
+
+    public Class<?> findConcreteClass(Class<?> preInstantiateBean) {
+        return BeanInstantiationUtils.findConcreteClass(preInstantiateBean, preInstantiateBeans);
     }
 
     private Set<Class<? extends Annotation>> getComponentAnnotations() {
@@ -48,7 +56,7 @@ public class BeanScanner implements Scanner<Class<?>> {
     private Set<Class<?>> getTypesAnnotatedWith(Set<Class<? extends Annotation>> annotations) {
         Set<Class<?>> annotatedClasses = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
-            annotatedClasses.addAll(reflections.getTypesAnnotatedWith(annotation, true));
+            annotatedClasses.addAll(this.reflections.getTypesAnnotatedWith(annotation, true));
         }
         return annotatedClasses;
     }
