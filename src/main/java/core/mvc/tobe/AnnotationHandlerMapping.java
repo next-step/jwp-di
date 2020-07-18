@@ -3,6 +3,7 @@ package core.mvc.tobe;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
+import core.di.factory.BeanScanner;
 import core.mvc.HandlerMapping;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +18,11 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private final BeanFactory beanFactory;
 
     public AnnotationHandlerMapping(Object... basePackage) {
-        beanFactory = new BeanFactory(basePackage);
-        beanFactory.initialize(Controller.class);
+        beanFactory = new BeanFactory();
+        BeanScanner beanScanner = new BeanScanner(beanFactory);
+        beanScanner.setAnnotations(Controller.class);
+        beanScanner.doScan(basePackage);
+        beanFactory.initialize();
     }
 
     public void initialize() {

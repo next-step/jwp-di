@@ -8,18 +8,13 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BeanFactory {
+public class BeanFactory implements BeanDefinitionRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
     private final Beans beans = new Beans();
-    private final BeanDefinitions beanDefinitions;
+    private BeanDefinitions beanDefinitions;
 
-    public BeanFactory(Object... basePackage) {
-        beanDefinitions = new BeanDefinitions(new BeanScanner(basePackage));
-    }
-
-    public void initialize(Class<? extends Annotation>... annotations) {
-        beanDefinitions.addAnnotatedWith(annotations);
+    public void initialize() {
         beans.instantiateBeans(beanDefinitions);
     }
 
@@ -34,5 +29,10 @@ public class BeanFactory {
                               .stream()
                               .filter(clazz -> clazz.isAnnotationPresent(annotation))
                               .collect(Collectors.toMap(clazz -> clazz, beans::get, (a, b) -> b));
+    }
+
+    @Override
+    public void registerBeanDefinitions(BeanDefinitions beanDefinitions) {
+        this.beanDefinitions = beanDefinitions;
     }
 }

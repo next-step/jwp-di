@@ -17,8 +17,11 @@ class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        beanFactory = new BeanFactory("core.di.factory.example");
-        beanFactory.initialize(Controller.class, Service.class, Repository.class);
+        beanFactory = new BeanFactory();
+        BeanScanner beanScanner = new BeanScanner(beanFactory);
+        beanScanner.setAnnotations(Controller.class, Service.class, Repository.class);
+        beanScanner.doScan("core.di.factory.example");
+        beanFactory.initialize();
     }
 
     @Test

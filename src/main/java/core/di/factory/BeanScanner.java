@@ -4,7 +4,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import core.di.BeanDefinition;
 import core.di.BeanDefinitionImpl;
+import core.di.BeanDefinitions;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.reflections.Reflections;
@@ -18,27 +21,38 @@ public class BeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
-    private final Reflections reflections;
+    private final BeanDefinitionRegistry beanDefinitionRegistry;
+    private List<Class<? extends Annotation>> annotations;
+    private Reflections reflections;
 
-    public BeanScanner(Object... basePackage) {
-        this.reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+    public BeanScanner(BeanDefinitionRegistry beanDefinitionRegistry) {
+        this.beanDefinitionRegistry = beanDefinitionRegistry;
     }
 
-    public Map<Class<?>, BeanDefinition> scanAnnotatedWith(Class<? extends Annotation>... annotations) {
+    public void setAnnotations(Class<? extends Annotation>... annotations) {
+        this.annotations = Arrays.asList(annotations);
+    }
+
+    public void doScan(Object... basePackage) {
+        this.reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+        beanDefinitionRegistry.registerBeanDefinitions(scanAnnotatedWith(annotations));
+    }
+
+    private BeanDefinitions scanAnnotatedWith(List<Class<? extends Annotation>> annotations) {
         Map<Class<?>, BeanDefinition> beanDefinitionMap = Maps.newHashMap();
         Set<Class<?>> preInstantiateBeans = getTypesAnnotatedWith(annotations);
         for (Class<?> clazz : preInstantiateBeans) {
             beanDefinitionMap.put(clazz, new BeanDefinitionImpl(clazz));
         }
-        return beanDefinitionMap;
+        return new BeanDefinitions(beanDefinitionMap);
     }
 
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
+    private Set<Class<?>> getTypesAnnotatedWith(List<Class<? extends Annotation>> annotations) {
+        Set<Class<?>> beanClazz = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
+            beanClazz.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
-        logger.debug("Found {} Classes", beans.size());
-        return beans;
+        logger.debug("Found {} Classes", beanClazz.size());
+        return beanClazz;
     }
 }

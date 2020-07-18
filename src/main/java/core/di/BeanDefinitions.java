@@ -1,9 +1,6 @@
 package core.di;
 
-import com.google.common.collect.Maps;
 import core.di.factory.BeanFactoryUtils;
-import core.di.factory.BeanScanner;
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -13,15 +10,10 @@ import java.util.Set;
  */
 public class BeanDefinitions {
 
-    private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
-    private final BeanScanner beanScanner;
+    private final Map<Class<?>, BeanDefinition> beanDefinitions;
 
-    public BeanDefinitions(BeanScanner beanScanner) {
-        this.beanScanner = beanScanner;
-    }
-
-    public void addAnnotatedWith(Class<? extends Annotation>... annotations) {
-        beanDefinitions.putAll(beanScanner.scanAnnotatedWith(annotations));
+    public BeanDefinitions(Map<Class<?>, BeanDefinition> beanDefinitions) {
+        this.beanDefinitions = beanDefinitions;
     }
 
     public Map<Class<?>, BeanDefinition> getBeanDefinitionMap() {
@@ -32,7 +24,7 @@ public class BeanDefinitions {
         return get(getConcreteClass(typeClass));
     }
 
-    public BeanDefinition get(Class<?> clazz) {
+    private BeanDefinition get(Class<?> clazz) {
         return beanDefinitions.get(clazz);
     }
 
