@@ -49,6 +49,7 @@ public class BeanFactory {
 
     }
 
+    // 주입!
     private <T> T injectBean(Class<T> injectClass) {
         Constructor constructor = BeanFactoryUtils.getInjectedConstructor(injectClass);
         List<Object> constructorValues = new ArrayList<>();
