@@ -17,8 +17,6 @@ public class UserDaoTest {
     @BeforeEach
     public void setup() {
         DBInitializer.initialize();
-
-        userDao = UserDao.getInstance();
     }
 
     @Test

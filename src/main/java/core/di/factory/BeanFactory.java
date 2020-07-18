@@ -49,7 +49,8 @@ public class BeanFactory {
 
     }
 
-    private Object injectBean(Class injectClass) {
+    // 주입!
+    private <T> T injectBean(Class<T> injectClass) {
         Constructor constructor = BeanFactoryUtils.getInjectedConstructor(injectClass);
         List<Object> constructorValues = new ArrayList<>();
 
@@ -60,12 +61,12 @@ public class BeanFactory {
 
         Object obj = BeanUtils.instantiateClass(constructor, constructorValues.toArray());
         beans.put(injectClass, obj);
-        return obj;
+        return (T) obj;
 
     }
 
     private boolean existInjectConstructor(Class findClass) {
-        return Optional.ofNullable(BeanFactoryUtils.getInjectedConstructor(findClass)).isPresent();
+        return BeanFactoryUtils.getInjectedConstructor(findClass) != null;
     }
 
     public Map<Class<?>, Object> getControllers() {
@@ -73,6 +74,9 @@ public class BeanFactory {
                 .stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
                 .collect(Collectors.toMap(Function.identity(), clazz -> getBean(clazz)));
+    }
 
+    public void addBeans(Map<Class<?>, Object> beans) {
+        this.beans.putAll(beans);
     }
 }

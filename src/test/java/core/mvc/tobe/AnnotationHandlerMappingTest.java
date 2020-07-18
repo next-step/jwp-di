@@ -20,7 +20,7 @@ public class AnnotationHandlerMappingTest {
         handlerMapping.initialize();
 
         DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+        //userDao = UserDao.getInstance();
     }
 
     @Test

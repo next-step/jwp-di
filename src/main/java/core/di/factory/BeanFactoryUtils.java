@@ -48,4 +48,20 @@ public class BeanFactoryUtils {
 
         throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
     }
+
+    /**
+     * 파라미터가 없는 기본 생성자를 return
+     * @param clazz
+     * @return
+     */
+    public static Constructor getDefaultConstructor(Class<?> clazz) {
+        Constructor[] constructors = clazz.getConstructors();
+
+        for(Constructor constructor : constructors) {
+            if(constructor.getParameters().length == 0) {
+                return constructor;
+            }
+        }
+        return null;
+    }
 }
