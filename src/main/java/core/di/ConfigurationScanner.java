@@ -1,8 +1,10 @@
 package core.di;
 
+import core.annotation.Configuration;
+import core.di.factory.ConfigurationFactory;
 import org.reflections.Reflections;
 
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -10,10 +12,22 @@ import java.util.Set;
  */
 public class ConfigurationScanner {
 
-    /*Set<Class<?>> configurations = new HashSet<>();
+    private ConfigurationFactory configurationFactory;
 
     public void initialize() {
         Reflections reflections = new Reflections("");
-        reflections.getTypesAnnotatedWith(Configuration.c)
-    }*/
+        Set<Class<?>> configurations = reflections.getTypesAnnotatedWith(Configuration.class);
+
+        configurationFactory = new ConfigurationFactory(configurations);
+        configurationFactory.initialize();
+    }
+
+    public Map<Class<?>,Object> beans() {
+        return configurationFactory.getAllBeans();
+    }
+
+    public Object[] basePackages() {
+        return configurationFactory.getComponentScan();
+    }
+
 }

@@ -38,11 +38,14 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-
+        ConfigurationScanner configurationScanner = new ConfigurationScanner();
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        BeanFactory beanFactory = initializeBeanFactory(basePackage);
+        configurationScanner.initialize();
+
+        BeanFactory beanFactory = initializeBeanFactory(configurationScanner.basePackages());
+        beanFactory.addBeans(configurationScanner.beans());
+        beanFactory.initialize();
         Map<Class<?>,Object> controllers = beanFactory.getControllers();
 
         for (Class<?> controllerKey : controllers.keySet()) {
@@ -55,12 +58,11 @@ public class BeanScanner {
 
     private BeanFactory initializeBeanFactory(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
 
         return new BeanFactory(preInstanticateClazz);
     }
-
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)

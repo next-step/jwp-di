@@ -3,6 +3,7 @@ package core.di.factory;
 import com.google.common.collect.Maps;
 import core.BeanMethodInfo;
 import core.annotation.Bean;
+import core.annotation.ComponentScan;
 import org.springframework.beans.BeanUtils;
 
 import java.util.*;
@@ -47,7 +48,9 @@ public class ConfigurationFactory {
         BeanMethodInfo beanMethodInfo = beanMethodInfos.get(findClass);
 
         if(beanMethodInfo.hasNoParameter()) {
-            return beanMethodInfo.methodInvoke(new Object[0]);
+            Object bean = beanMethodInfo.methodInvoke(new Object[0]);
+            beans.put(beanMethodInfo.getReturnType(), bean);
+            return bean;
         }
 
         return injectBean(findClass);
@@ -72,6 +75,19 @@ public class ConfigurationFactory {
                 .filter(method -> method.getAnnotation(Bean.class) != null)
                 .map(method -> {return new BeanMethodInfo(method, BeanUtils.instantiateClass(configClass),method.getReturnType());})
                 .collect(Collectors.toMap(beanMethodInfo -> beanMethodInfo.getReturnType(), Function.identity()));
+    }
+
+    public String[] getComponentScan() {
+        Class<?> componentClass = configurations.stream()
+                .filter(clazz-> clazz.isAnnotationPresent(ComponentScan.class))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+        ComponentScan componentScan = componentClass.getAnnotation(ComponentScan.class);
+        return componentScan.value();
+    }
+
+    public Map<Class<?>,Object> getAllBeans() {
+        return this.beans;
     }
 
 }

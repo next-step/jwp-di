@@ -22,10 +22,6 @@ public class BeanMethodInfo {
         return method;
     }
 
-    public Object getConfig() {
-        return config;
-    }
-
     public Class<?> getReturnType() {
         return returnType;
     }

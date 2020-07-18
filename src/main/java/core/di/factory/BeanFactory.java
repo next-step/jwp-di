@@ -74,6 +74,9 @@ public class BeanFactory {
                 .stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
                 .collect(Collectors.toMap(Function.identity(), clazz -> getBean(clazz)));
+    }
 
+    public void addBeans(Map<Class<?>, Object> beans) {
+        this.beans.putAll(beans);
     }
 }
