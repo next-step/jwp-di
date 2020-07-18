@@ -20,11 +20,11 @@ class BeanScannerTest {
         BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
 
         /* when */
-        Set<Class<?>> preInstantiateClazz = beanScanner.scan();
+        Set<Class<?>> preInstantiateClasses = beanScanner.scan();
 
         /* then */
-        assertThat(preInstantiateClazz).hasSize(4);
-        assertThat(preInstantiateClazz).containsExactlyInAnyOrder(QnaController.class, MyQnaService.class, JdbcUserRepository.class, JdbcQuestionRepository.class);
+        assertThat(preInstantiateClasses).hasSize(4);
+        assertThat(preInstantiateClasses).containsExactlyInAnyOrder(QnaController.class, MyQnaService.class, JdbcUserRepository.class, JdbcQuestionRepository.class);
     }
 
 }
