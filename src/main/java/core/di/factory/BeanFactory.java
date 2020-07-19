@@ -2,14 +2,7 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.Bean;
-import core.annotation.Configuration;
 import core.annotation.web.Controller;
-import org.reflections.Reflections;
-import org.reflections.scanners.MemberUsageScanner;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.MethodParameterScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -36,13 +29,6 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(""))
-                .addScanners(new MemberUsageScanner(), new MethodAnnotationsScanner(), new MethodParameterScanner()));
-        Set<Class<?>> configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
-
-        configurationClasses.stream()
-                .forEach(this::addConfigurationScan);
-
         beans.putAll(preInstantiateBeans());
     }
 
@@ -84,6 +70,11 @@ public class BeanFactory {
             }
         }
         return controllers;
+    }
+
+    public void instantiateConfiguration(Set<Class<?>> configurationClasses) {
+        configurationClasses.stream()
+                .forEach(this::addConfigurationScan);
     }
 
     private void addConfigurationScan(Class<?> configurationClass) {

@@ -1,16 +1,10 @@
 package core.di.factory;
 
 import core.annotation.Bean;
-import core.annotation.Configuration;
 import core.di.factory.example.ExampleConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
-import org.reflections.scanners.MemberUsageScanner;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.MethodParameterScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,15 +22,17 @@ public class ConfigurationTest {
     private Reflections reflections;
     private Set<Class<?>> configurationClasses;
     private BeanFactory beanFactory;
+    private BeanScanner beanScanner;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(""))
-                .addScanners(new MemberUsageScanner(), new MethodAnnotationsScanner(), new MethodParameterScanner()));
-        configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
+        beanScanner = new BeanScanner();
+        this.configurationClasses = beanScanner.scanConfiguration();
         beanFactory = new BeanFactory(configurationClasses);
         beanFactory.initialize();
+        beanFactory.instantiateConfiguration(beanScanner.scanConfiguration());
+
     }
 
     @Test
