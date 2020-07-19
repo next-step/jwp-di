@@ -1,10 +1,11 @@
 package core.di;
 
+import static core.di.BeansUtils.getParameterObjects;
+
 import com.google.common.collect.Maps;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -43,12 +44,8 @@ public class Beans {
         }
 
         Method beanMethod = beandef.getMethod();
-        Class<?>[] parameterTypes = beanMethod.getParameterTypes();
-        List<Object> params = new ArrayList<>();
-        for (Class<?> paramClass : parameterTypes) {
-            Object paramInstance = instantiateConfigBean(beanDefinitions.getConfigBeanDefinition(paramClass));
-            params.add(paramInstance);
-        }
+        List<Object> params = getParameterObjects(beanMethod.getParameterTypes(),
+                                                  parameterType -> instantiateConfigBean(beanDefinitions.getConfigBeanDefinition(parameterType)));
         return putAndGet(beanMethod.getReturnType(), instantiateWithMethod(beanMethod, params.toArray()));
     }
 
@@ -76,12 +73,8 @@ public class Beans {
     }
 
     private Object instantiateConstructor(Constructor<?> constructor) {
-        Class<?>[] parameterTypes = constructor.getParameterTypes();
-        List<Object> params = new ArrayList<>();
-        for (Class<?> parameterType : parameterTypes) {
-            Object instantiatedParam = instantiate(beanDefinitions.getConcreteBeanDefinition(parameterType));
-            params.add(instantiatedParam);
-        }
+        List<Object> params = getParameterObjects(constructor.getParameterTypes(),
+                                                  parameterType -> instantiate(beanDefinitions.getConcreteBeanDefinition(parameterType)));
         return BeanUtils.instantiateClass(constructor,
                                           params.toArray());
     }
