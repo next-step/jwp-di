@@ -3,7 +3,11 @@ package core.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +17,12 @@ public class JdbcTemplate {
     private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
     private JdbcTemplate() {
+    }
+
+    public DataSource dataSource;
+
+    public JdbcTemplate(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public static JdbcTemplate getInstance() {
