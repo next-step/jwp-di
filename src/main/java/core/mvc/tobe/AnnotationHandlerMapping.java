@@ -43,6 +43,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         this.basePackage = basePackage;
         beanScanner = new BeanScanner();
         beanFactory = new BeanFactory(beanScanner.scan(basePackage));
+        beanFactory.initialize();
     }
 
     public void initialize() {
