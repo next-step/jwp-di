@@ -3,10 +3,12 @@ package core.mvc.tobe;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.ClasspathBeanDefinitionScanner;
+import core.di.factory.ConfigurationBeanDefinitionScanner;
 import core.mvc.HandlerMapping;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+import next.support.config.MyWebAppConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,9 +21,13 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public AnnotationHandlerMapping(Object... basePackage) {
         beanFactory = new BeanFactory();
-        BeanScanner beanScanner = new BeanScanner(beanFactory);
-        beanScanner.setAnnotations(Controller.class);
-        beanScanner.doScan(basePackage);
+        ConfigurationBeanDefinitionScanner configBds = new ConfigurationBeanDefinitionScanner(beanFactory);
+        configBds.register(MyWebAppConfiguration.class);
+
+        ClasspathBeanDefinitionScanner classpathBds = new ClasspathBeanDefinitionScanner(beanFactory);
+        classpathBds.setAnnotations(Controller.class);
+        classpathBds.doScan(basePackage);
+
         beanFactory.initialize();
     }
 

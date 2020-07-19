@@ -18,9 +18,9 @@ class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         beanFactory = new BeanFactory();
-        BeanScanner beanScanner = new BeanScanner(beanFactory);
-        beanScanner.setAnnotations(Controller.class, Service.class, Repository.class);
-        beanScanner.doScan("core.di.factory.example");
+        ClasspathBeanDefinitionScanner classpathBeanDefinitionScanner = new ClasspathBeanDefinitionScanner(beanFactory);
+        classpathBeanDefinitionScanner.setAnnotations(Controller.class, Service.class, Repository.class);
+        classpathBeanDefinitionScanner.doScan("core.di.factory.example");
         beanFactory.initialize();
     }
 

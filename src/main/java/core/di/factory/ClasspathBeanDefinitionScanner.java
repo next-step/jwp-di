@@ -3,7 +3,7 @@ package core.di.factory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import core.di.BeanDefinition;
-import core.di.BeanDefinitionImpl;
+import core.di.ClasspathBeanDefinition;
 import core.di.BeanDefinitions;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -17,15 +17,15 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BeanScanner {
+public class ClasspathBeanDefinitionScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClasspathBeanDefinitionScanner.class);
 
     private final BeanDefinitionRegistry beanDefinitionRegistry;
     private List<Class<? extends Annotation>> annotations;
     private Reflections reflections;
 
-    public BeanScanner(BeanDefinitionRegistry beanDefinitionRegistry) {
+    public ClasspathBeanDefinitionScanner(BeanDefinitionRegistry beanDefinitionRegistry) {
         this.beanDefinitionRegistry = beanDefinitionRegistry;
     }
 
@@ -42,9 +42,9 @@ public class BeanScanner {
         Map<Class<?>, BeanDefinition> beanDefinitionMap = Maps.newHashMap();
         Set<Class<?>> preInstantiateBeans = getTypesAnnotatedWith(annotations);
         for (Class<?> clazz : preInstantiateBeans) {
-            beanDefinitionMap.put(clazz, new BeanDefinitionImpl(clazz));
+            beanDefinitionMap.put(clazz, new ClasspathBeanDefinition(clazz));
         }
-        return new BeanDefinitions(beanDefinitionMap);
+        return BeanDefinitions.fromMap(beanDefinitionMap);
     }
 
     private Set<Class<?>> getTypesAnnotatedWith(List<Class<? extends Annotation>> annotations) {

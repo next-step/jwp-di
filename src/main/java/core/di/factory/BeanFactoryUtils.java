@@ -46,6 +46,6 @@ public class BeanFactoryUtils {
             }
         }
 
-        throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+        throw new IllegalStateException(injectedClazz + " 인터페이스를 구현하는 Bean이 존재하지 않는다.");
     }
 }

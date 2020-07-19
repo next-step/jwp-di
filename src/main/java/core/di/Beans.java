@@ -2,6 +2,8 @@ package core.di;
 
 import com.google.common.collect.Maps;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +20,10 @@ public class Beans {
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
     private BeanDefinitions beanDefinitions;
 
-    public void instantiateBeans(BeanDefinitions beanDefinitions1) {
-        this.beanDefinitions = beanDefinitions1;
-        beanDefinitions1.getBeanDefinitionMap()
-                        .forEach((clazz, beandef) -> beans.put(clazz, instantiate(beandef)));
+    public void instantiateBeans(BeanDefinitions beanDefinitions) {
+        this.beanDefinitions = beanDefinitions;
+        beanDefinitions.getBeanDefinitionMap()
+                       .forEach((clazz, beandef) -> beans.put(clazz, instantiate(beandef)));
     }
 
     public Object get(Class<?> beanClass) {
@@ -29,6 +31,37 @@ public class Beans {
     }
 
     private Object instantiate(BeanDefinition beandef) {
+        if (beandef instanceof ClasspathBeanDefinition) {
+            return instantiateClasspathBean(beandef);
+        }
+        return instantiateConfigBean(beandef);
+    }
+
+    private Object instantiateConfigBean(BeanDefinition beandef) {
+        if (isPresent(beandef.getBeanClass())) {
+            return beans.get(beandef.getBeanClass());
+        }
+
+        Method beanMethod = beandef.getMethod();
+        Class<?>[] parameterTypes = beanMethod.getParameterTypes();
+        List<Object> params = new ArrayList<>();
+        for (Class<?> paramClass : parameterTypes) {
+            Object paramInstance = instantiateConfigBean(beanDefinitions.getConfigBeanDefinition(paramClass));
+            params.add(paramInstance);
+        }
+        return putAndGet(beanMethod.getReturnType(), instantiateWithMethod(beanMethod, params.toArray()));
+    }
+
+    private Object instantiateWithMethod(Method method, Object[] params) {
+        Object configBean = instantiateClasspathBean(beanDefinitions.getConfigBeanDefinition(method.getDeclaringClass()));
+        try {
+            return method.invoke(configBean, params);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private Object instantiateClasspathBean(BeanDefinition beandef) {
         if (isPresent(beandef.getBeanClass())) {
             return beans.get(beandef.getBeanClass());
         }
