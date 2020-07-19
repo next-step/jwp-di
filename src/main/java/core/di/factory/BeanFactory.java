@@ -1,12 +1,11 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.di.BeanScanners;
 import core.di.factory.exception.CircularReferenceException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
@@ -19,12 +18,15 @@ public class BeanFactory {
     private Set<Class<?>> preInstantiateBeans;
     private Deque<Class<?>> beanInstantiateHistory = new ArrayDeque<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
+    private BeanScanners beanScanners;
 
-    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
-        this.preInstantiateBeans = preInstantiateBeans;
+    public BeanFactory(BeanScanners beanScanners) {
+        this.beanScanners = beanScanners;
     }
 
     public void initialize() {
+        this.preInstantiateBeans = beanScanners.scan();
+
         for (Class<?> preInstantiateBean : preInstantiateBeans) {
             instantiate(preInstantiateBean);
         }
@@ -58,27 +60,26 @@ public class BeanFactory {
     }
 
     private Object instantiateWithInjectedConstructor(Class<?> preInstantiateBean) {
-        Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstantiateBean);
-        if (injectedConstructor == null) {
-            return instantiateWithDefaultConstructor(preInstantiateBean);
+        Class<?>[] parameterTypes = beanScanners.getParameterTypesForInstantiation(preInstantiateBean);
+        if (parameterTypes.length == 0) {
+            return registerBeanWithInstantiating(preInstantiateBean);
         }
 
-        Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
         Object[] parameterInstances = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> concreteParameterType = BeanFactoryUtils.findConcreteClass(parameterTypes[i], preInstantiateBeans);
+            Class<?> concreteParameterType = beanScanners.findConcreteClass(parameterTypes[i]);
+
             parameterInstances[i] = instantiate(concreteParameterType);
         }
 
-        Object instance = BeanUtils.instantiateClass(injectedConstructor, parameterInstances);
-        this.beans.put(preInstantiateBean, instance);
-        return instance;
+        return registerBeanWithInstantiating(preInstantiateBean, parameterInstances);
     }
 
-    private Object instantiateWithDefaultConstructor(Class<?> preInstantiateBean) {
-        Object instance = BeanUtils.instantiateClass(preInstantiateBean);
+    private Object registerBeanWithInstantiating(Class<?> preInstantiateBean, Object... parameterInstances) {
+        Object instance = beanScanners.instantiate(preInstantiateBean, parameterInstances);
 
         this.beans.put(preInstantiateBean, instance);
         return instance;
     }
+
 }

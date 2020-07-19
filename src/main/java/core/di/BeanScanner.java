@@ -2,52 +2,42 @@ package core.di;
 
 import com.google.common.collect.Sets;
 import core.annotation.Component;
-import core.annotation.WebApplication;
+import core.di.factory.BeanInstantiationUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @NoArgsConstructor
-public class BeanScanner {
+public class BeanScanner implements Scanner<Class<?>> {
 
     private static final String ANNOTATION_BASE_PACKAGE = "core.annotation";
-    private static final Class<WebApplication> WEB_APPLICATION_ANNOTATION = WebApplication.class;
     private static final Class<Component> COMPONENT_ANNOTATION = Component.class;
 
-    private Object[] basePackage;
-    private Reflections reflections;
+    private Reflections reflections = new Reflections("");
+    private Set<Class<?>> preInstantiateBeans;
 
-    @SuppressWarnings("unchecked")
-    public Set<Class<?>> scan() {
-        this.basePackage = findBasePackage();
-        this.reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-
-        Set<Class<? extends Annotation>> componentAnnotations = getComponentAnnotations();
-        return getTypesAnnotatedWith(componentAnnotations);
+    public BeanScanner(Object... basePackage) {
+        this.reflections = new Reflections(basePackage);
     }
 
-    private Object[] findBasePackage() {
-        Reflections wholeReflections = new Reflections("");
-        Object[] wholeBasePackage = wholeReflections.getTypesAnnotatedWith(WEB_APPLICATION_ANNOTATION)
-                .stream()
-                .map(this::findBasePackages)
-                .flatMap(Arrays::stream)
-                .toArray();
+    @Override
+    public Set<Class<?>> scan() {
+        Set<Class<? extends Annotation>> componentAnnotations = getComponentAnnotations();
+        this.preInstantiateBeans = getTypesAnnotatedWith(componentAnnotations);
+        return preInstantiateBeans;
+    }
 
-        if (wholeBasePackage.length == 0) {
-            throw new IllegalStateException("Base package not initialized");
-        }
+    public boolean contains(Class<?> preInstantiateBean) {
+        return preInstantiateBeans.contains(preInstantiateBean);
+    }
 
-        return wholeBasePackage;
+    public Class<?> findConcreteClass(Class<?> preInstantiateBean) {
+        return BeanInstantiationUtils.findConcreteClass(preInstantiateBean, preInstantiateBeans);
     }
 
     private Set<Class<? extends Annotation>> getComponentAnnotations() {
@@ -63,19 +53,12 @@ public class BeanScanner {
         return annotations;
     }
 
-    @SuppressWarnings("unchecked")
     private Set<Class<?>> getTypesAnnotatedWith(Set<Class<? extends Annotation>> annotations) {
         Set<Class<?>> annotatedClasses = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
-            annotatedClasses.addAll(reflections.getTypesAnnotatedWith(annotation));
+            annotatedClasses.addAll(this.reflections.getTypesAnnotatedWith(annotation, true));
         }
         return annotatedClasses;
-    }
-
-    private String[] findBasePackages(Class<?> clazz) {
-        String[] packages = clazz.getAnnotation(WEB_APPLICATION_ANNOTATION).basePackages();
-
-        return packages.length == 0 ? new String[]{clazz.getPackage().getName()} : packages;
     }
 
 }

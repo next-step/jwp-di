@@ -1,36 +1,27 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
+import core.di.BeanScanner;
+import core.di.BeanScanners;
+import core.di.ConfigurationBeanScanner;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
-import org.junit.jupiter.api.BeforeEach;
+import core.di.factory.exception.CircularReferenceException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
-
-import java.lang.annotation.Annotation;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BeanFactoryTest {
 
-    private Reflections reflections;
-    private BeanFactory beanFactory;
-
-    @BeforeEach
-    @SuppressWarnings("unchecked")
-    public void setup() {
-        reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstantiateClazz);
-        beanFactory.initialize();
-    }
-
+    @DisplayName("BasePackage 를 기준으로 BeanFactory 정상 동작")
     @Test
     public void di() {
+        /* given */
+        String basePackage = "core.di.factory.example";
+        BeanFactory beanFactory = createBeanFactory(basePackage);
+        beanFactory.initialize();
+
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
@@ -41,12 +32,20 @@ public class BeanFactoryTest {
         assertNotNull(qnaService.getQuestionRepository());
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
+    @DisplayName("Bean 들이 순환참조를 하면 Exception")
+    @Test
+    public void circularReferenceException() {
+        /* given */
+        String basePackage = "core.di.factory.illegal.circular";
+        BeanFactory beanFactory = createBeanFactory(basePackage);
+
+        /* when */ /* then */
+        assertThrows(CircularReferenceException.class, beanFactory::initialize);
     }
+
+    private BeanFactory createBeanFactory(String basePackage) {
+        BeanScanners beanScanners = new BeanScanners(new BeanScanner(basePackage), new ConfigurationBeanScanner(basePackage));
+        return new BeanFactory(beanScanners);
+    }
+
 }

@@ -5,6 +5,9 @@ import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.BeanScanner;
+import core.di.BeanScanners;
+import core.di.ComponentBasePackageScanner;
+import core.di.ConfigurationBeanScanner;
 import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
@@ -40,15 +43,20 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
     private static final Class<Controller> HANDLER_ANNOTATION = Controller.class;
 
-    private BeanScanner beanScanner;
     private BeanFactory beanFactory;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping() {
-        beanScanner = new BeanScanner();
-        Set<Class<?>> preInstantiateBeans = beanScanner.scan();
+    public AnnotationHandlerMapping(Object... basePackage) {
+        if (isEmpty(basePackage)) {
+            ComponentBasePackageScanner basePackageScanner = new ComponentBasePackageScanner();
+            basePackage = basePackageScanner.scan().toArray();
+        }
 
-        beanFactory = new BeanFactory(preInstantiateBeans);
+        BeanScanner beanScanner = new BeanScanner(basePackage);
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(basePackage);
+        BeanScanners beanScanners = new BeanScanners(beanScanner, configurationBeanScanner);
+
+        beanFactory = new BeanFactory(beanScanners);
         beanFactory.initialize();
     }
 
@@ -71,6 +79,10 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         return getHandlerInternal(new HandlerKey(requestUri, rm));
     }
 
+    private boolean isEmpty(Object[] basePackage) {
+        return basePackage == null || basePackage.length == 0;
+    }
+
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
@@ -90,4 +102,5 @@ public class AnnotationHandlerMapping implements HandlerMapping {
                 .findFirst()
                 .orElse(null);
     }
+
 }

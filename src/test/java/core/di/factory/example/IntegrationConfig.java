@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 @Configuration
 public class IntegrationConfig {
+
     @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();
@@ -22,4 +23,5 @@ public class IntegrationConfig {
     public MyJdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new MyJdbcTemplate(dataSource);
     }
+
 }

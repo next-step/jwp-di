@@ -17,7 +17,7 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        dispatcher = new DispatcherServlet();
+        dispatcher = new DispatcherServlet("next");
         dispatcher.init();
 
         request = new MockHttpServletRequest();
