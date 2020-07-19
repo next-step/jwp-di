@@ -40,18 +40,8 @@ public class BeanFactory {
                 .addScanners(new MemberUsageScanner(), new MethodAnnotationsScanner(), new MethodParameterScanner()));
         Set<Class<?>> configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
 
-        try {
-            for (Class<?> configurationClass : configurationClasses) {
-                Object instance = configurationClass.newInstance();
-                Method[] methods = configurationClass.getDeclaredMethods();
-                Arrays.stream(methods)
-                        .filter(m -> m.getDeclaredAnnotation(Bean.class) != null)
-                        .forEach(m -> addConfigurationBean(m, instance));
-            }
-
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        configurationClasses.stream()
+                .forEach(this::addConfigurationScan);
 
         beans.putAll(preInstantiateBeans());
     }
@@ -94,6 +84,18 @@ public class BeanFactory {
             }
         }
         return controllers;
+    }
+
+    private void addConfigurationScan(Class<?> configurationClass) {
+        try {
+            Object instance = configurationClass.newInstance();
+            Method[] methods = configurationClass.getDeclaredMethods();
+            Arrays.stream(methods)
+                    .filter(m -> m.getDeclaredAnnotation(Bean.class) != null)
+                    .forEach(m -> addConfigurationBean(m, instance));
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void addConfigurationBean(Method method, Object instance) {
