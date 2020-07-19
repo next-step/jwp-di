@@ -1,5 +1,7 @@
 package core.mvc;
 
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import next.controller.UserSessionUtils;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +20,8 @@ class DispatcherServletTest {
     @BeforeEach
     void setUp() {
         dispatcher = new DispatcherServlet();
-        dispatcher.init();
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping("next.controller"));
+        dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
