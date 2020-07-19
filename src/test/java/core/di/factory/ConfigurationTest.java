@@ -4,6 +4,7 @@ import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.IntegrationConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +27,10 @@ public class ConfigurationTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         beanScanner = new BeanScanner();
-        this.configurationClasses = beanScanner.scanConfiguration();
+        this.configurationClasses = beanScanner.scan(Configuration.class);
         beanFactory = new BeanFactory(configurationClasses);
         beanFactory.initialize();
-        beanFactory.instantiateConfiguration(beanScanner.scanConfiguration());
+        beanFactory.instantiateConfiguration(beanScanner.scan(Configuration.class));
 
     }
 

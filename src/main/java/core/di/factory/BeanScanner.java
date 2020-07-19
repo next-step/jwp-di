@@ -1,7 +1,6 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
-import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -28,12 +27,12 @@ public class BeanScanner {
         return preInstantiateClazz;
     }
 
-    public Set<Class<?>> scanConfiguration() {
+    public Set<Class<?>> scan(Class<? extends Annotation> annotations) {
         Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(""))
                 .addScanners(new MemberUsageScanner(), new MethodAnnotationsScanner(), new MethodParameterScanner()));
-        Set<Class<?>> configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
+        Set<Class<?>> classes = getTypesAnnotatedWith(reflections, annotations);
 
-        return configurationClasses;
+        return classes;
     }
 
     private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {

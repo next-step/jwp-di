@@ -1,6 +1,7 @@
 package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
+import core.annotation.Configuration;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
@@ -43,7 +44,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         this.basePackage = basePackage;
         beanScanner = new BeanScanner();
         beanFactory = new BeanFactory(beanScanner.scan(basePackage));
-        beanFactory.instantiateConfiguration(beanScanner.scanConfiguration());
+        beanFactory.instantiateConfiguration(beanScanner.scan(Configuration.class));
         beanFactory.initialize();
     }
 
