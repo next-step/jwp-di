@@ -2,12 +2,12 @@ package core.di.factory.example;
 
 import core.annotation.Bean;
 import core.annotation.Configuration;
-import org.apache.commons.dbcp2.BasicDataSource;
-
 import javax.sql.DataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 @Configuration
 public class ExampleConfig {
+
     @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();

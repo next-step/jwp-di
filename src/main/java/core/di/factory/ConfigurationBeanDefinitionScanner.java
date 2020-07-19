@@ -21,11 +21,14 @@ public class ConfigurationBeanDefinitionScanner {
     public void register(Class<?>... configClasses) {
         for (Class<?> configClass : configClasses) {
             beanDefinitionRegistry.registerBeanDefinitions(BeanDefinitions.from(new ClasspathBeanDefinition(configClass)));
-            Method[] methods = configClass.getMethods();
-            Arrays.stream(methods)
-                  .filter(method -> method.isAnnotationPresent(Bean.class))
-                  .map(method -> BeanDefinitions.from(new ConfigBeanDefinition(method.getReturnType(), method)))
-                  .forEach(beanDefinitionRegistry::registerBeanDefinitions);
+            registerConfigMethodBeanDefinition(configClass.getMethods());
         }
+    }
+
+    private void registerConfigMethodBeanDefinition(Method[] methods) {
+        Arrays.stream(methods)
+              .filter(method -> method.isAnnotationPresent(Bean.class))
+              .map(method -> BeanDefinitions.from(new ConfigBeanDefinition(method.getReturnType(), method)))
+              .forEach(beanDefinitionRegistry::registerBeanDefinitions);
     }
 }

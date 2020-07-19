@@ -35,6 +35,10 @@ public class BeanFactoryUtils {
      * @return
      */
     public static Class<?> findConcreteClass(Class<?> injectedClazz, Set<Class<?>> preInstanticateBeans) {
+        if (preInstanticateBeans.contains(injectedClazz)) {
+            return injectedClazz;
+        }
+
         if (!injectedClazz.isInterface()) {
             return injectedClazz;
         }

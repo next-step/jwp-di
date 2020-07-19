@@ -1,10 +1,14 @@
 package next.controller;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import next.CannotDeleteException;
 import next.dao.AnswerDao;
 import next.dao.QuestionDao;
@@ -13,15 +17,19 @@ import next.model.Question;
 import next.model.User;
 import next.service.QnaService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-
 @Controller
 public class QnaController extends AbstractNewController {
-    private QuestionDao questionDao = QuestionDao.getInstance();
-    private AnswerDao answerDao = AnswerDao.getInstance();
-    private QnaService qnaService = QnaService.getInstance();
+
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
+    private final QnaService qnaService;
+
+    @Inject
+    public QnaController(QuestionDao questionDao, AnswerDao answerDao, QnaService qnaService) {
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
+        this.qnaService = qnaService;
+    }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
     public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -38,7 +46,7 @@ public class QnaController extends AbstractNewController {
         }
         User user = UserSessionUtils.getUserFromSession(request.getSession());
         Question question = new Question(user.getUserId(), request.getParameter("title"),
-                request.getParameter("contents"));
+                                         request.getParameter("contents"));
         questionDao.insert(question);
         return jspView("redirect:/");
     }
@@ -83,7 +91,7 @@ public class QnaController extends AbstractNewController {
         }
 
         Question newQuestion = new Question(question.getWriter(), request.getParameter("title"),
-                request.getParameter("contents"));
+                                            request.getParameter("contents"));
         question.update(newQuestion);
         questionDao.update(question);
         return jspView("redirect:/");
@@ -101,8 +109,8 @@ public class QnaController extends AbstractNewController {
             return jspView("redirect:/");
         } catch (CannotDeleteException e) {
             return jspView("show.jsp").addObject("question", qnaService.findById(questionId))
-                    .addObject("answers", qnaService.findAllByQuestionId(questionId))
-                    .addObject("errorMessage", e.getMessage());
+                                      .addObject("answers", qnaService.findAllByQuestionId(questionId))
+                                      .addObject("errorMessage", e.getMessage());
         }
     }
 }

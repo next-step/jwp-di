@@ -1,22 +1,27 @@
 package core.mvc.tobe;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.mvc.ModelAndView;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import next.dao.UserDao;
 import next.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 @Controller
 public class MyController {
-    private static final Logger logger = LoggerFactory.getLogger(MyController.class);
 
-    private UserDao userDao = UserDao.getInstance();
+    private static final Logger logger = LoggerFactory.getLogger(MyController.class);
+    private final UserDao userDao;
+
+    @Inject
+    public MyController(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public ModelAndView findUserId(HttpServletRequest request, HttpServletResponse response) {
@@ -30,10 +35,10 @@ public class MyController {
     @RequestMapping(value = "/users", method = RequestMethod.POST)
     public ModelAndView save(HttpServletRequest request, HttpServletResponse response) {
         User user = new User(
-                request.getParameter("userId"),
-                request.getParameter("password"),
-                request.getParameter("name"),
-                request.getParameter("email"));
+            request.getParameter("userId"),
+            request.getParameter("password"),
+            request.getParameter("name"),
+            request.getParameter("email"));
         logger.debug("User : {}", user);
         userDao.insert(user);
         return null;

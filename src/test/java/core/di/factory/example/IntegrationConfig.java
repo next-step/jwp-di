@@ -1,13 +1,15 @@
 package core.di.factory.example;
 
 import core.annotation.Bean;
+import core.annotation.ComponentScan;
 import core.annotation.Configuration;
+import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
-import javax.sql.DataSource;
-
 @Configuration
+@ComponentScan({"core.di.factory.example"})
 public class IntegrationConfig {
+
     @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();

@@ -1,6 +1,6 @@
 package next.support.config;
 
-import core.jdbc.ConnectionManager;
+import core.di.factory.ApplicationContext;
 import core.mvc.DispatcherServlet;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
@@ -10,6 +10,7 @@ import core.web.WebApplicationInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -25,14 +26,11 @@ public class MyWebApplicationInitializer implements WebApplicationInitializer {
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(new ClassPathResource("jwp.sql"));
-        DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
-
-        logger.info("Completed Load ServletContext!");
+        ApplicationContext ac = new ApplicationContext(MyWebAppConfiguration.class);
+        initializeDB(ac);
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet();
-        dispatcherServlet.addHandlerMapping(new AnnotationHandlerMapping("next.controller"));
+        dispatcherServlet.addHandlerMapping(new AnnotationHandlerMapping(ac));
         dispatcherServlet.addHandlerMapping(new RequestMapping());
         dispatcherServlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcherServlet.addHandlerAdapter(new ControllerHandlerAdapter());
@@ -42,5 +40,13 @@ public class MyWebApplicationInitializer implements WebApplicationInitializer {
         dispatcher.addMapping("/");
 
         logger.info("MyServletContainer Initializer start");
+    }
+
+    private void initializeDB(ApplicationContext ac) {
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+        populator.addScript(new ClassPathResource("jwp.sql"));
+        DatabasePopulatorUtils.execute(populator, ac.getBean(DataSource.class));
+
+        logger.info("Completed Load ServletContext!");
     }
 }

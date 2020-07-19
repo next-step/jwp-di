@@ -3,7 +3,7 @@ package next.support.config;
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
-import core.jdbc.JdbcTemplate1;
+import core.jdbc.JdbcTemplate;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -30,8 +30,8 @@ public class MyWebAppConfiguration {
     }
 
     @Bean
-    public JdbcTemplate1 getJdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate1(dataSource);
+    public JdbcTemplate getJdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 
 }

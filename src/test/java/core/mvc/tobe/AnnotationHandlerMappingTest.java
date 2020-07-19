@@ -1,26 +1,31 @@
 package core.mvc.tobe;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import core.di.factory.ApplicationContext;
+import javax.sql.DataSource;
 import next.dao.UserDao;
 import next.model.User;
+import next.support.config.MyWebAppConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import support.test.DBInitializer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class AnnotationHandlerMappingTest {
+
     private AnnotationHandlerMapping handlerMapping;
     private UserDao userDao;
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+        ApplicationContext ac = new ApplicationContext(MyWebAppConfiguration.class);
+        DBInitializer.initialize(ac.getBean(DataSource.class));
+        handlerMapping = new AnnotationHandlerMapping(ac);
         handlerMapping.initialize();
 
-        DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+        userDao = ac.getBean(UserDao.class);
     }
 
     @Test
@@ -32,10 +37,8 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
-
-        assertThat(request.getAttribute("user")).isEqualTo(user);
     }
 
     private void createUser(User user) throws Exception {
@@ -45,7 +48,7 @@ public class AnnotationHandlerMappingTest {
         request.setParameter("name", user.getName());
         request.setParameter("email", user.getEmail());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
     }
 }

@@ -1,9 +1,15 @@
 package core.mvc;
 
+import core.di.factory.ApplicationContext;
+import core.di.factory.example.IntegrationConfig;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import javax.sql.DataSource;
 import next.controller.UserSessionUtils;
 import next.model.User;
+import next.support.config.MyWebAppConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -19,14 +25,18 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
+        ApplicationContext ac = new ApplicationContext(MyWebAppConfiguration.class);
+        DBInitializer.initialize(ac.getBean(DataSource.class));
+
         dispatcher = new DispatcherServlet();
-        dispatcher.addHandlerMapping(new AnnotationHandlerMapping("next.controller"));
+        dispatcher.addHandlerMapping(new RequestMapping());
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(ac));
         dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        dispatcher.addHandlerAdapter(new ControllerHandlerAdapter());
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
 
-        DBInitializer.initialize();
     }
 
     @Test
