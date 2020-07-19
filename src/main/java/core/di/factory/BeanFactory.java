@@ -10,10 +10,8 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
@@ -40,7 +38,8 @@ public class BeanFactory {
 
     private Object instantiate(Class<?> clazz) {
         if (references.contains(clazz)) {
-            throw new BeanCurrentlyInCreationException("순환참조가 발생했습니다.");
+            logger.error(String.format("순환참조가 발생했습니다.[%s]", getReferenceSimpleNames()));
+            throw new BeanCurrentlyInCreationException(String.format("순환참조가 발생했습니다.[%s]", getReferenceSimpleNames()));
         }
 
         if (beans.containsKey(clazz)) {
@@ -85,6 +84,12 @@ public class BeanFactory {
                 .filter(m -> m.getKey().isAnnotationPresent(Controller.class))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+    }
+
+    private String getReferenceSimpleNames() {
+        return references.stream()
+                .map(Class::getSimpleName)
+                .collect(Collectors.joining(","));
     }
 
 }

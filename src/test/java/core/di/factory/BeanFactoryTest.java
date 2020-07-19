@@ -13,7 +13,6 @@ public class BeanFactoryTest {
     private BeanScanner beanScanner;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     public void setup() {
         beanScanner = new BeanScanner();
         beanFactory = new BeanFactory(beanScanner.scan("core.di.factory.example"));
