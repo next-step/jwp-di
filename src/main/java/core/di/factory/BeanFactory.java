@@ -22,6 +22,7 @@ public class BeanFactory {
         this.preInstanticateBeans = preInstanticateBeans;
     }
 
+
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         if (beans.containsKey(requiredType)) {

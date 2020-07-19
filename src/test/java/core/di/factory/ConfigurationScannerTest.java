@@ -1,7 +1,9 @@
 package core.di.factory;
 
-import core.di.ConfigurationScanner;
+import core.di.factory.example.ExampleConfig;
 import org.junit.jupiter.api.Test;
+
+import javax.sql.DataSource;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -12,9 +14,11 @@ public class ConfigurationScannerTest {
 
     @Test
     public void configurationScannerTest() {
-        ConfigurationScanner configurationScanner = new ConfigurationScanner();
-        configurationScanner.initialize();
+        BeanFactory beanFactory = new BeanFactory();
+        ConfigurationBeanScanner2 cbs = new ConfigurationBeanScanner2(beanFactory);
+        cbs.register(ExampleConfig.class);
+        beanFactory.initialize();
 
-        assertNotNull(configurationScanner.beans());
+        assertNotNull(beanFactory.getBean(DataSource.class));
     }
 }
