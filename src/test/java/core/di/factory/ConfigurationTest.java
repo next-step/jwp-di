@@ -4,7 +4,6 @@ import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.IntegrationConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +20,14 @@ public class ConfigurationTest {
     private Reflections reflections;
     private Set<Class<?>> configurationClasses;
     private BeanFactory beanFactory;
-    private BeanScanner beanScanner;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        beanScanner = new BeanScanner();
-        this.configurationClasses = beanScanner.scan(Configuration.class);
+        this.configurationClasses = ConfigurationBeanScanner.scan();
         beanFactory = new BeanFactory(configurationClasses);
         beanFactory.initialize();
-        beanFactory.instantiateConfiguration(beanScanner.scan(Configuration.class));
+        beanFactory.instantiateConfiguration(ConfigurationBeanScanner.scan());
 
     }
 
