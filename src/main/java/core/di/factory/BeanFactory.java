@@ -9,6 +9,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,10 +75,10 @@ public class BeanFactory {
 
     public void instantiateConfiguration(Set<Class<?>> configurationClasses) {
         configurationClasses.stream()
-                .forEach(this::addConfigurationScan);
+                .forEach(this::configurationBeanMethod);
     }
 
-    private void addConfigurationScan(Class<?> configurationClass) {
+    private void configurationBeanMethod(Class<?> configurationClass) {
         try {
             Object instance = configurationClass.newInstance();
             Method[] methods = configurationClass.getDeclaredMethods();
@@ -92,7 +93,16 @@ public class BeanFactory {
     private void addConfigurationBean(Method method, Object instance) {
         try {
             Class<?> returnType = method.getReturnType();
-            Object obj = method.invoke(instance);
+            if (beans.containsKey(returnType)) {
+                return;
+            }
+
+            Parameter[] parameters = method.getParameters();
+            List<Object> objects = new ArrayList<>();
+            for (Parameter parameter : parameters) {
+                objects.add(getBean(parameter.getType()));
+            }
+            Object obj = method.invoke(instance, objects.toArray());
 
             beans.put(returnType, obj);
         } catch (Exception ex) {
