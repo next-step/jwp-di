@@ -5,6 +5,8 @@ import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +20,7 @@ public class BeanScanner {
     private Reflections reflections;
 
     public Set<Class<?>> scan(Object... basePackage) {
-        reflections = new Reflections(basePackage);
+        reflections = new Reflections(basePackage, new SubTypesScanner(), new TypeAnnotationsScanner());
         return getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
     }
 

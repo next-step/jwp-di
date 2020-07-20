@@ -1,6 +1,7 @@
 package next.dao;
 
 import core.annotation.Repository;
+import core.jdbc.ConnectionManager;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
@@ -21,7 +22,7 @@ import java.util.List;
 public class AnswerDao {
     private static final Logger logger = LoggerFactory.getLogger(AnswerDao.class);
 
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
+    private JdbcTemplate jdbcTemplate = new JdbcTemplate(ConnectionManager.getDataSource());
 
     AnswerDao() {
     }
