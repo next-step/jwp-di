@@ -21,8 +21,14 @@ public class BeanFactory {
     private Set<Class<?>> references = new HashSet<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory() { }
+    public BeanFactory() {
+    }
+
     public BeanFactory(Set<Class<?>> preInstantiateBeans) {
+        this.preInstantiateBeans.addAll(preInstantiateBeans);
+    }
+
+    public void addPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
         this.preInstantiateBeans.addAll(preInstantiateBeans);
     }
 

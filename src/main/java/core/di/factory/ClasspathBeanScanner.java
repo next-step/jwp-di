@@ -1,0 +1,15 @@
+package core.di.factory;
+
+public class ClasspathBeanScanner {
+
+    private final BeanFactory beanFactory;
+
+    public ClasspathBeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public void doScan(String basePackage) {
+        BeanScanner beanScanner = new BeanScanner();
+        beanFactory.addPreInstantiateBeans(beanScanner.scan(basePackage));
+    }
+}
