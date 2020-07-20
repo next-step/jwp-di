@@ -20,7 +20,14 @@ public class ConfigurationBeanScanner {
         this.beanFactory = beanFactory;
     }
 
-    public void register(Class<?> clazz) {
+    public void register(Class<?>... configurations) {
+        for (Class<?> configuration : configurations) {
+            registerConfiguration(configuration);
+        }
+
+    }
+
+    private void registerConfiguration(Class<?> clazz) {
         try {
             Object instance = clazz.newInstance();
             Map<Class<?>, Object> beans = new HashMap<>();

@@ -1,4 +1,4 @@
-package core.di.factory.circular;
+package core.circular;
 
 import core.annotation.Inject;
 import core.annotation.Service;

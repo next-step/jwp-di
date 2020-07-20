@@ -1,4 +1,4 @@
-package core.di.factory.circular;
+package core.circular;
 
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
@@ -16,7 +16,7 @@ public class CircularReferenceTest {
     @BeforeEach
     public void setup() {
         beanScanner = new BeanScanner();
-        beanFactory = new BeanFactory(beanScanner.scan("core.di.factory.circular"));
+        beanFactory = new BeanFactory(beanScanner.scan("core.circular"));
     }
 
     @DisplayName("순환참조가 일어나면 에러가 발생한다.")

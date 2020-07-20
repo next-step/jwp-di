@@ -8,7 +8,7 @@ public class ClasspathBeanScanner {
         this.beanFactory = beanFactory;
     }
 
-    public void doScan(String basePackage) {
+    public void doScan(Object... basePackage) {
         BeanScanner beanScanner = new BeanScanner();
         beanFactory.addPreInstantiateBeans(beanScanner.scan(basePackage));
     }
