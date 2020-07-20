@@ -28,11 +28,13 @@ public class DispatcherServlet extends HttpServlet {
 
     private HandlerExecutor handlerExecutor;
 
+    private BeanScanner beanScanner;
+
     @Override
     public void init() {
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(BeanScanner.getBasePackagesWithComponentScan()));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanScanner.getBasePackagesWithComponentScan()));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

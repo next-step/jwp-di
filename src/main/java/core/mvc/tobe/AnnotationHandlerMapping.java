@@ -25,6 +25,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
     private Object[] basePackage;
+    private BeanScanner beanScanner;
     private BeanFactory beanFactory;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
@@ -41,7 +42,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;
-        beanFactory = new BeanFactory(BeanScanner.scan(basePackage));
+        beanScanner = new BeanScanner();
+        beanFactory = new BeanFactory(beanScanner.scan(basePackage));
         beanFactory.instantiateConfiguration(ConfigurationBeanScanner.scan());
         beanFactory.initialize();
     }
