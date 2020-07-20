@@ -47,12 +47,17 @@ public class ApplicationContext {
     }
 
     private Object[] readBasePackage() {
-        return this.configs.stream()
+        Object[] basePackage = this.configs.stream()
                 .filter(clazz -> clazz.isAnnotationPresent(ComponentScan.class))
                 .map(clazz->clazz.getAnnotation(ComponentScan.class))
                 .map(ComponentScan::value)
                 .flatMap(Arrays::stream)
                 .toArray();
+
+        if(basePackage.length == 0) {
+            return new Object[]{""};
+        }
+        return basePackage;
     }
 
     public Map<HandlerKey, HandlerExecution> getHandler() {
