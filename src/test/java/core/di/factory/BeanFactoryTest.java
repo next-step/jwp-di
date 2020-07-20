@@ -2,16 +2,17 @@ package core.di.factory;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
-import core.di.factory.example.IntegrationConfig;
-import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
+import core.di.BeanDefinitions;
+import core.di.ClasspathBeanDefinition;
+import core.di.factory.example.JdbcQuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class BeanFactoryTest {
+/**
+ * Created by iltaek on 2020/07/20 Blog : http://blog.iltaek.me Github : http://github.com/iltaek
+ */
+public class BeanFactoryTest {
 
     private BeanFactory beanFactory;
 
@@ -19,24 +20,18 @@ class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         beanFactory = new BeanFactory();
-        ConfigurationBeanDefinitionScanner configBds = new ConfigurationBeanDefinitionScanner(beanFactory);
-        configBds.register(IntegrationConfig.class);
-
-        ClasspathBeanDefinitionScanner classpathBeanDefinitionScanner = new ClasspathBeanDefinitionScanner(beanFactory);
-        classpathBeanDefinitionScanner.setAnnotations(Controller.class, Service.class, Repository.class);
-        classpathBeanDefinitionScanner.doScan("core.di.factory.example");
-        beanFactory.initialize();
     }
 
+    @DisplayName("BeanRepository 인터페이스 구현 테스트")
     @Test
-    void di() {
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
+    void beanRepositoryTest() {
+        Class<JdbcQuestionRepository> jdbcClazz = JdbcQuestionRepository.class;
+        beanFactory.registerBeanDefinitions(BeanDefinitions.from(new ClasspathBeanDefinition(jdbcClazz)));
+        beanFactory.initialize();
 
-        assertNotNull(qnaController);
-        assertNotNull(qnaController.getQnaService());
+        JdbcQuestionRepository jdbcQuestionRepository = beanFactory.getBean(jdbcClazz);
 
-        MyQnaService qnaService = qnaController.getQnaService();
-        assertNotNull(qnaService.getUserRepository());
-        assertNotNull(qnaService.getQuestionRepository());
+        assertNotNull(jdbcQuestionRepository);
+
     }
 }
