@@ -15,6 +15,7 @@ public class BeanFactory2 {
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
 
+
     public void initialize() {
         registerBeanInfos.keySet()
                 .forEach(findBean -> getBean(findBean));
@@ -35,7 +36,8 @@ public class BeanFactory2 {
     }
 
     private <T> T makeBean(Class<T> requiredType) {
-        return BeanInjector.injectBean(registerBeanInfos.get(requiredType),this);
+        Class<?> requiredClass = BeanFactoryUtils.findConcreteClass(requiredType,registerBeanInfos.keySet());
+        return BeanInjector.injectBean(registerBeanInfos.get(requiredClass),this);
     }
 
 }

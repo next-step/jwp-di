@@ -14,7 +14,7 @@ public class ConfigurationScannerTest {
 
     @Test
     public void configurationScannerTest() {
-        BeanFactory beanFactory = new BeanFactory();
+        BeanFactory2 beanFactory = new BeanFactory2();
         ConfigurationBeanScanner2 cbs = new ConfigurationBeanScanner2(beanFactory);
         cbs.register(ExampleConfig.class);
         beanFactory.initialize();

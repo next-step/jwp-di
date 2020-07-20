@@ -1,6 +1,8 @@
 package core.di.factory;
 
 
+import org.springframework.beans.BeanUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -23,13 +25,13 @@ public class MethodBeanMaker implements BeanMaker {
 
         try {
             if (parameters.length == 0) {
-                return (T) method.invoke(beanInfo.getDefineClazz(), objects);
+                return (T) method.invoke(BeanUtils.instantiateClass(beanInfo.getDefineClazz()), objects);
             }
 
             for (int i = 0; i < parameters.length; i++) {
                 objects[i] = beanFactory.getBean(parameters[i].getType());
             }
-            return (T) method.invoke(beanInfo.getDefineClazz(), objects);
+            return (T) method.invoke(BeanUtils.instantiateClass(beanInfo.getDefineClazz()), objects);
         }  catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalArgumentException("make bean error!");
         }

@@ -1,5 +1,7 @@
 package core.di.factory;
 
+import org.apache.tomcat.util.bcel.Const;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -8,11 +10,20 @@ import java.util.Set;
  * Created By kjs4395 on 7/20/20
  */
 public class BeanInfo {
-    private Class<?> returnType;
-    private Class<?> defineClazz;
-    private BeanInvokeType beanInvokeType;
-    private Constructor constructor ;
-    private Method method;
+    private final Class<?> returnType;
+    private final Class<?> defineClazz;
+    private final BeanInvokeType beanInvokeType;
+    private final Constructor constructor ;
+    private final Method method;
+
+    public BeanInfo(Class<?> returnType, Class<?> defineClazz, BeanInvokeType beanInvokeType, Constructor constRuctor, Method method) {
+        this.returnType = returnType;
+        this.defineClazz = defineClazz;
+        this.beanInvokeType = beanInvokeType;
+        this.constructor = constRuctor;
+        this.method = method;
+    }
+
 
     public BeanInvokeType getBeanInvokeType() {
         return beanInvokeType;

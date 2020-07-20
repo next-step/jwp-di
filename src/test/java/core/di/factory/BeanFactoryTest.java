@@ -13,12 +13,13 @@ import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
     private Reflections reflections;
-    private BeanFactory beanFactory;
+    private BeanFactory2 beanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
@@ -28,8 +29,8 @@ public class BeanFactoryTest {
 
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
-        beanFactory.addBeans(configurationScanner.beans());
+        beanFactory = new BeanFactory2();
+        beanFactory.register(getBeanInfos(preInstanticateClazz));
         beanFactory.initialize();
     }
 
@@ -52,5 +53,13 @@ public class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    private Set<BeanInfo> getBeanInfos(Set<Class<?>> preInstanticateClazz) {
+        return preInstanticateClazz.stream()
+                .map(clazz -> {
+                    return new BeanInfo(clazz, clazz, BeanInvokeType.CONSTRUCTOR,
+                            BeanFactoryUtils.getInjectedConstructor(clazz), null);})
+                .collect(Collectors.toSet());
     }
 }

@@ -6,10 +6,10 @@ import core.jdbc.JdbcTemplate;
 
 @Repository
 public class JdbcUserRepository implements UserRepository {
-    private final JdbcTemplate jdbcTemplate;
+    /*private final JdbcTemplate jdbcTemplate;
 
     @Inject
     public JdbcUserRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-    }
+    }*/
 }

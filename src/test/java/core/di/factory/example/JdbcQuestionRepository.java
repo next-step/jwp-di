@@ -5,10 +5,10 @@ import core.annotation.Repository;
 
 @Repository
 public class JdbcQuestionRepository implements QuestionRepository {
-    private final MyJdbcTemplate jdbcTemplate;
+ /*   private final MyJdbcTemplate jdbcTemplate;
 
     @Inject
     public JdbcQuestionRepository(MyJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-    }
+    }*/
 }

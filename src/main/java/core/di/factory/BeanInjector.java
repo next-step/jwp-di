@@ -1,6 +1,7 @@
 package core.di.factory;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,7 +9,7 @@ import java.util.List;
  */
 public class BeanInjector {
 
-    public static List<BeanMaker> beanMakers;
+    public static List<BeanMaker> beanMakers = new ArrayList<>();
 
     static {
         beanMakers.add(new ConstructorBeanMaker());
