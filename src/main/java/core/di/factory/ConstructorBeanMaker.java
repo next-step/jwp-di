@@ -11,15 +11,15 @@ import java.util.List;
  */
 public class ConstructorBeanMaker implements BeanMaker{
 
-    public BeanFactory beanFactory;
-
     @Override
     public boolean isSupport(BeanInfo beanInfo) {
         return beanInfo.getBeanInvokeType().equals(BeanInvokeType.CONSTRUCTOR);
     }
 
     @Override
-    public <T> T makeBean(BeanInfo beanInfo) {
+
+    public <T> T makeBean(BeanInfo beanInfo, BeanFactory2 beanFactory) {
+
         Class<?> findClass = beanInfo.getReturnType();
 
         if(BeanFactoryUtils.getInjectedConstructor(findClass) == null) {

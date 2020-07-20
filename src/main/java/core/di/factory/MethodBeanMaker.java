@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,7 +10,6 @@ import java.lang.reflect.Parameter;
  * Created By kjs4395 on 7/20/20
  */
 public class MethodBeanMaker implements BeanMaker {
-    private BeanFactory beanFactory;
 
     @Override
     public boolean isSupport(BeanInfo beanInfo) {
@@ -17,20 +17,25 @@ public class MethodBeanMaker implements BeanMaker {
     }
 
     @Override
-    public <T> T makeBean(BeanInfo beanInfo) {
+    public <T> T makeBean(BeanInfo beanInfo, BeanFactory2 beanFactory) {
+
         Method method = beanInfo.getMethod();
         Parameter[] parameters = method.getParameters();
         Object[] objects = new Object[parameters.length];
 
         try {
             if (parameters.length == 0) {
-                return (T) method.invoke(beanInfo.getDefineClazz(), objects);
+
+                return (T) method.invoke(BeanUtils.instantiateClass(beanInfo.getDefineClazz()), objects);
+
             }
 
             for (int i = 0; i < parameters.length; i++) {
                 objects[i] = beanFactory.getBean(parameters[i].getType());
             }
-            return (T) method.invoke(beanInfo.getDefineClazz(), objects);
+
+            return (T) method.invoke(BeanUtils.instantiateClass(beanInfo.getDefineClazz()), objects);
+
         }  catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalArgumentException("make bean error!");
         }
