@@ -1,9 +1,11 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created By kjs4395 on 7/20/20
@@ -36,12 +38,18 @@ public class BeanFactory2 {
     }
 
     private <T> T makeBean(Class<T> requiredType) {
-
-        //Class<?> requiredClass = BeanFactoryUtils.findConcreteClass(requiredType,registerBeanInfos.keySet());
         T bean =  BeanInjector.injectBean(registerBeanInfos.get(requiredType),this);
         beans.put(requiredType, bean);
 
         return bean;
+    }
+
+    public Set<Object> controllers() {
+        return this.registerBeanInfos.keySet()
+                        .stream()
+                        .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                        .map(clazz -> {return getBean(clazz);})
+                        .collect(Collectors.toSet());
     }
 
 }
