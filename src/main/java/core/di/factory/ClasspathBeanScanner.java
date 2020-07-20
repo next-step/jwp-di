@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BeanScanner {
+public class ClasspathBeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClasspathBeanScanner.class);
 
     public Set<Class<?>> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage);

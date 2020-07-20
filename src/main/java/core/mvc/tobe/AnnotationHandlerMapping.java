@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.ClasspathBeanScanner;
 import core.di.factory.ConfigurationBeanScanner;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.*;
@@ -26,7 +26,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private Object[] basePackage;
     private ConfigurationBeanScanner configurationBeanScanner;
-    private BeanScanner beanScanner;
+    private ClasspathBeanScanner beanScanner;
     private BeanFactory beanFactory;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
@@ -43,7 +43,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;
-        beanScanner = new BeanScanner();
+        beanScanner = new ClasspathBeanScanner();
         configurationBeanScanner = new ConfigurationBeanScanner();
         beanFactory = new BeanFactory(beanScanner.scan(basePackage));
         beanFactory.instantiateConfiguration(configurationBeanScanner.scan());

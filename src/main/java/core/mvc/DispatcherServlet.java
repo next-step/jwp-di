@@ -1,6 +1,6 @@
 package core.mvc;
 
-import core.di.factory.BeanScanner;
+import core.di.factory.ClasspathBeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -28,7 +28,7 @@ public class DispatcherServlet extends HttpServlet {
 
     private HandlerExecutor handlerExecutor;
 
-    private BeanScanner beanScanner;
+    private ClasspathBeanScanner beanScanner;
 
     @Override
     public void init() {

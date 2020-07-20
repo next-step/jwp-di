@@ -12,7 +12,7 @@ public class ComponentScanTest {
 
     @Test
     public void componentScan() {
-        BeanScanner beanScanner = new BeanScanner();
+        ClasspathBeanScanner beanScanner = new ClasspathBeanScanner();
         String[] basePackages = beanScanner.getBasePackagesWithComponentScan();
         BeanFactory beanFactory = new BeanFactory(beanScanner.scan(basePackages));
         beanFactory.initialize();
