@@ -17,12 +17,17 @@ import java.util.stream.Collectors;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstantiateBeans;
+    private Set<Class<?>> preInstantiateBeans = new HashSet<>();
     private Set<Class<?>> references = new HashSet<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
+    public BeanFactory() { }
     public BeanFactory(Set<Class<?>> preInstantiateBeans) {
-        this.preInstantiateBeans = preInstantiateBeans;
+        this.preInstantiateBeans.addAll(preInstantiateBeans);
+    }
+
+    public void addBeans(Map<Class<?>, Object> beans) {
+        this.beans.putAll(beans);
     }
 
     @SuppressWarnings("unchecked")
