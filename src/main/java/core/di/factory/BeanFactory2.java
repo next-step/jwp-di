@@ -37,8 +37,11 @@ public class BeanFactory2 {
 
     private <T> T makeBean(Class<T> requiredType) {
 
-        Class<?> requiredClass = BeanFactoryUtils.findConcreteClass(requiredType,registerBeanInfos.keySet());
-        return BeanInjector.injectBean(registerBeanInfos.get(requiredClass),this);
+        //Class<?> requiredClass = BeanFactoryUtils.findConcreteClass(requiredType,registerBeanInfos.keySet());
+        T bean =  BeanInjector.injectBean(registerBeanInfos.get(requiredType),this);
+        beans.put(requiredType, bean);
+
+        return bean;
     }
 
 }

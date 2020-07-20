@@ -35,7 +35,7 @@ public class ConfigurationScannerTest {
         beanFactory.initialize();
 
         ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
-        cbds.doScan("di.examples");
+        cbds.doScan("core.di.factory.example");
 
         assertNotNull(beanFactory.getBean(DataSource.class));
 
