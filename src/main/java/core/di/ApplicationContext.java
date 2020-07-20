@@ -8,6 +8,7 @@ import core.di.factory.ConfigurationBeanScanner2;
 import core.mvc.tobe.HandlerExecution;
 import core.mvc.tobe.HandlerKey;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +39,7 @@ public class ApplicationContext {
     private void initialize() {
         initializeConfigBean();
         this.classpathBeanScanner = new ClasspathBeanScanner(this.beanFactory);
+
         classpathBeanScanner.doScan(readBasePackage());
     }
 
@@ -50,6 +52,7 @@ public class ApplicationContext {
                 .filter(clazz -> clazz.isAnnotationPresent(ComponentScan.class))
                 .map(clazz->clazz.getAnnotation(ComponentScan.class))
                 .map(ComponentScan::value)
+                .flatMap(Arrays::stream)
                 .toArray();
     }
 

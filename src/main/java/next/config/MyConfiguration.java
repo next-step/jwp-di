@@ -12,7 +12,7 @@ import javax.sql.DataSource;
  * Created By kjs4395 on 7/18/20
  */
 @Configuration
-@ComponentScan({"core","next"})
+@ComponentScan({"next"})
 public class MyConfiguration {
     @Bean
     public DataSource dataSource() {
