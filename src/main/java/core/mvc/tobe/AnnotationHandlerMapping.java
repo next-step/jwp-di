@@ -4,8 +4,6 @@ import com.google.common.collect.Maps;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.di.factory.ApplicationContext;
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -38,18 +36,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
             new PathVariableArgumentResolver(),
             new ModelArgumentResolver()
     );
-//    private final Object[] basePackage;
-//    private final BeanScanner beanScanner;
-//    private final BeanFactory beanFactory;
 
     private final ApplicationContext context;
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
-
-//    public AnnotationHandlerMapping(Object... basePackage) {
-//        this.basePackage = basePackage;
-//        beanScanner = new BeanScanner();
-//        beanFactory = new BeanFactory(beanScanner.scan(basePackage));
-//    }
 
     public AnnotationHandlerMapping(ApplicationContext context) {
         this.context = context;
@@ -57,7 +46,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-
         handlerExecutions.putAll(findControllers());
     }
 

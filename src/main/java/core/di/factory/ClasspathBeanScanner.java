@@ -10,6 +10,6 @@ public class ClasspathBeanScanner {
 
     public void doScan(Object... basePackage) {
         BeanScanner beanScanner = new BeanScanner();
-        beanFactory.addPreInstantiateBeans(beanScanner.scan(basePackage));
+        beanFactory.addAllPreInstantiateBeans(beanScanner.scan(basePackage));
     }
 }

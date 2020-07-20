@@ -1,6 +1,8 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import core.annotation.Bean;
 import core.annotation.web.Controller;
 import core.di.factory.exception.BeanCurrentlyInCreationException;
 import org.slf4j.Logger;
@@ -9,7 +11,12 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,23 +24,23 @@ import java.util.stream.Collectors;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstantiateBeans = new HashSet<>();
-    private Set<Class<?>> references = new HashSet<>();
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
+    private final Set<Class<?>> preInstantiateBeans = Sets.newHashSet();
+    private final Set<Class<?>> configurations = Sets.newHashSet();
+    private final Set<Class<?>> references = Sets.newHashSet();
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory() {
-    }
+    public BeanFactory() { }
 
     public BeanFactory(Set<Class<?>> preInstantiateBeans) {
         this.preInstantiateBeans.addAll(preInstantiateBeans);
     }
 
-    public void addPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
+    public void addAllPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
         this.preInstantiateBeans.addAll(preInstantiateBeans);
     }
 
-    public void addBeans(Map<Class<?>, Object> beans) {
-        this.beans.putAll(beans);
+    public void addAllConfigurations(List<Class<?>> configurations) {
+        this.configurations.addAll(configurations);
     }
 
     @SuppressWarnings("unchecked")
@@ -44,6 +51,10 @@ public class BeanFactory {
     public void initialize() {
         for (Class<?> preInstantiateBean : preInstantiateBeans) {
             beans.put(preInstantiateBean, instantiate(preInstantiateBean));
+        }
+
+        for (Class<?> configuration : configurations) {
+            registerConfiguration(configuration);
         }
     }
 
@@ -74,6 +85,23 @@ public class BeanFactory {
         return null;
     }
 
+    private void registerConfiguration(Class<?> clazz) {
+        try {
+            Object instance = clazz.newInstance();
+            List<Method> beanMethods = getBeans(clazz);
+            for (Method beanMethod : beanMethods) {
+                Parameter[] parameters = beanMethod.getParameters();
+                Object[] args = new Object[parameters.length];
+                setArguments(parameters, args);
+                Object result = beanMethod.invoke(instance, args);
+                beans.put(beanMethod.getReturnType(), result);
+            }
+
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            logger.error("Error ", e);
+        }
+    }
+
     private Object instantiateClass(Class<?> clazz) {
         Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
         Object bean = BeanUtils.instantiateClass(concreteClass);
@@ -88,6 +116,21 @@ public class BeanFactory {
             params[i] = instantiate(parameterTypes[i]);
         }
         return params;
+    }
+
+    private List<Method> getBeans(Class<?> clazz) {
+        return Arrays.stream(clazz.getMethods())
+                .filter(m -> m.isAnnotationPresent(Bean.class))
+                .sorted(Comparator.comparing(m -> m.getParameters().length))
+                .collect(Collectors.toList());
+    }
+
+    private void setArguments(Parameter[] parameters, Object[] args) {
+        for (int i = 0; i < parameters.length; i++) {
+            if (beans.containsKey(parameters[i].getType())) {
+                args[i] = beans.get(parameters[i].getType());
+            }
+        }
     }
 
     public Map<Class<?>, Object> getControllers() {
