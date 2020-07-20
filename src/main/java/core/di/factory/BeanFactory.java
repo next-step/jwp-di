@@ -12,7 +12,7 @@ public class BeanFactory implements BeanDefinitionRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
     private final Beans beans = new Beans();
-    private BeanDefinitions beanDefinitions = BeanDefinitions.newInstance();
+    private final BeanDefinitions beanDefinitions = BeanDefinitions.newInstance();
 
     public void initialize() {
         beans.instantiateBeans(beanDefinitions);

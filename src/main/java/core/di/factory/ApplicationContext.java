@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class ApplicationContext {
 
-    private BeanFactory beanFactory;
+    private final BeanFactory beanFactory;
 
     public ApplicationContext(Class<?>... configClasses) {
         Object[] basePackage = findBasePackages(configClasses);
