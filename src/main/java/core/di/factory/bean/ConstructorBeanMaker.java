@@ -1,5 +1,7 @@
-package core.di.factory;
+package core.di.factory.bean;
 
+import core.di.factory.BeanFactory;
+import core.di.factory.BeanFactoryUtils;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
@@ -9,7 +11,7 @@ import java.util.List;
 /**
  * Created By kjs4395 on 7/20/20
  */
-public class ConstructorBeanMaker implements BeanMaker{
+public class ConstructorBeanMaker implements BeanMaker {
 
     @Override
     public boolean isSupport(BeanInfo beanInfo) {
@@ -18,7 +20,7 @@ public class ConstructorBeanMaker implements BeanMaker{
 
     @Override
 
-    public <T> T makeBean(BeanInfo beanInfo, BeanFactory2 beanFactory) {
+    public <T> T makeBean(BeanInfo beanInfo, BeanFactory beanFactory) {
 
         Class<?> findClass = beanInfo.getReturnType();
 

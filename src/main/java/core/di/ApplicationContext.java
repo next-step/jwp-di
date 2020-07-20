@@ -2,9 +2,8 @@ package core.di;
 
 import core.annotation.ComponentScan;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanFactory2;
-import core.di.factory.ClasspathBeanScanner;
-import core.di.factory.ConfigurationBeanScanner2;
+import core.di.factory.scanner.ClasspathBeanScanner;
+import core.di.factory.scanner.ConfigurationBeanScanner;
 import core.mvc.tobe.HandlerExecution;
 import core.mvc.tobe.HandlerKey;
 
@@ -18,21 +17,21 @@ import java.util.Set;
  */
 public class ApplicationContext {
     private final Set<Class<?>> configs = new HashSet<>();
-    private final BeanFactory2 beanFactory;
-    private final ConfigurationBeanScanner2 configurationScanner;
+    private final BeanFactory beanFactory;
+    private final ConfigurationBeanScanner configurationScanner;
     private ClasspathBeanScanner classpathBeanScanner;
 
     public ApplicationContext(Class<?> config) {
         configs.add(config);
-        this.beanFactory = new BeanFactory2();
-        this.configurationScanner = new ConfigurationBeanScanner2(beanFactory);
+        this.beanFactory = new BeanFactory();
+        this.configurationScanner = new ConfigurationBeanScanner(beanFactory);
         this.initialize();
     }
 
     public ApplicationContext(Set<Class<?>> configs) {
         this.configs.addAll(configs);
-        this.beanFactory = new BeanFactory2();
-        this.configurationScanner = new ConfigurationBeanScanner2(beanFactory);
+        this.beanFactory = new BeanFactory();
+        this.configurationScanner = new ConfigurationBeanScanner(beanFactory);
         this.initialize();
     }
 

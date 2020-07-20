@@ -3,7 +3,6 @@ package core.mvc.tobe;
 import com.google.common.collect.Maps;
 import core.annotation.web.RequestMethod;
 import core.di.ApplicationContext;
-import core.di.BeanScanner;
 import core.mvc.HandlerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

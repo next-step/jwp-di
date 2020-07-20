@@ -1,5 +1,7 @@
-package core.di.factory;
+package core.di.factory.bean;
 
+
+import core.di.factory.BeanFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ public class BeanInjector {
         beanMakers.add(new MethodBeanMaker());
     }
 
-    public static <T> T injectBean(BeanInfo beanInfo, BeanFactory2 beanFactory) {
+    public static <T> T injectBean(BeanInfo beanInfo, BeanFactory beanFactory) {
         return beanMakers.stream()
                 .filter(beanMaker -> beanMaker.isSupport(beanInfo))
                 .findFirst()

@@ -2,82 +2,56 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
+import core.di.factory.bean.BeanInfo;
+import core.di.factory.bean.BeanInjector;
 
-import java.lang.reflect.Constructor;
-import java.util.*;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Created By kjs4395 on 7/20/20
+ */
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
+    private Map<Class<?>, BeanInfo> registerBeanInfos = Maps.newHashMap();
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+
+
+    public void initialize() {
+        registerBeanInfos.keySet()
+                .forEach(findBean -> getBean(findBean));
     }
 
+    public void register(Set<BeanInfo> beanInfos) {
+        beanInfos.forEach(beanInfo -> {
+            this.registerBeanInfos.put(beanInfo.getReturnType(), beanInfo);
+        });
+    }
 
-    @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         if (beans.containsKey(requiredType)) {
             return (T) beans.get(requiredType);
         }
+
         return (T) makeBean(requiredType);
     }
 
-    public void initialize() {
-        for (Class<?> bean : preInstanticateBeans) {
-            getBean(bean);
-        }
+    private <T> T makeBean(Class<T> requiredType) {
+        T bean =  BeanInjector.injectBean(registerBeanInfos.get(requiredType),this);
+        beans.put(requiredType, bean);
+
+        return bean;
     }
 
-    private Object makeBean(Class findClass) {
-        findClass = BeanFactoryUtils.findConcreteClass(findClass, preInstanticateBeans);
-
-        if (!existInjectConstructor(findClass)) {
-            Object instance = BeanUtils.instantiateClass(findClass);
-            this.beans.put(findClass, instance);
-            return instance;
-        }
-
-        return injectBean(findClass);
-
+    public Set<Object> controllers() {
+        return this.registerBeanInfos.keySet()
+                        .stream()
+                        .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                        .map(clazz -> {return getBean(clazz);})
+                        .collect(Collectors.toSet());
     }
 
-    // 주입!
-    private <T> T injectBean(Class<T> injectClass) {
-        Constructor constructor = BeanFactoryUtils.getInjectedConstructor(injectClass);
-        List<Object> constructorValues = new ArrayList<>();
-
-        for (Class<?> findClass : constructor.getParameterTypes()) {
-
-            constructorValues.add(getBean(BeanFactoryUtils.findConcreteClass(findClass, preInstanticateBeans)));
-        }
-
-        Object obj = BeanUtils.instantiateClass(constructor, constructorValues.toArray());
-        beans.put(injectClass, obj);
-        return (T) obj;
-
-    }
-
-    private boolean existInjectConstructor(Class findClass) {
-        return BeanFactoryUtils.getInjectedConstructor(findClass) != null;
-    }
-
-    public Map<Class<?>, Object> getControllers() {
-        return this.preInstanticateBeans
-                .stream()
-                .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
-                .collect(Collectors.toMap(Function.identity(), clazz -> getBean(clazz)));
-    }
-
-    public void addBeans(Map<Class<?>, Object> beans) {
-        this.beans.putAll(beans);
-    }
 }

@@ -1,4 +1,6 @@
-package core.di.factory;
+package core.di.factory.bean;
+
+import core.di.factory.bean.BeanInvokeType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

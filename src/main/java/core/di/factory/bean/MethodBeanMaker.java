@@ -1,5 +1,6 @@
-package core.di.factory;
+package core.di.factory.bean;
 
+import core.di.factory.BeanFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +18,7 @@ public class MethodBeanMaker implements BeanMaker {
     }
 
     @Override
-    public <T> T makeBean(BeanInfo beanInfo, BeanFactory2 beanFactory) {
+    public <T> T makeBean(BeanInfo beanInfo, BeanFactory beanFactory) {
 
         Method method = beanInfo.getMethod();
         Parameter[] parameters = method.getParameters();

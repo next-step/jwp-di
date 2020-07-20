@@ -1,17 +1,21 @@
-package core.di.factory;
+package core.di.factory.scanner;
 
 import core.annotation.Bean;
+import core.di.factory.BeanFactory;
+import core.di.factory.bean.BeanInfo;
+import core.di.factory.bean.BeanInvokeType;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
  * Created By kjs4395 on 7/19/20
  */
-public class ConfigurationBeanScanner2 {
+public class ConfigurationBeanScanner {
 
-    private final BeanFactory2 beanFactory;
+    private final BeanFactory beanFactory;
 
-    public ConfigurationBeanScanner2(BeanFactory2 beanFactory) {
+    public ConfigurationBeanScanner(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
