@@ -35,6 +35,10 @@ public class BeanFactoryUtils {
      * @return
      */
     public static Class<?> findConcreteClass(Class<?> injectedClazz, Set<Class<?>> preInstanticateBeans) {
+        if (preInstanticateBeans.contains(injectedClazz)) {
+            return injectedClazz;
+        }
+
         if (!injectedClazz.isInterface()) {
             return injectedClazz;
         }
@@ -46,6 +50,6 @@ public class BeanFactoryUtils {
             }
         }
 
-        throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+        throw new IllegalStateException(injectedClazz + " 인터페이스를 구현하는 Bean이 존재하지 않는다.");
     }
 }

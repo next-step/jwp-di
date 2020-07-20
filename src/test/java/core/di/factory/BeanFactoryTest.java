@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +18,14 @@ class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        beanFactory = new BeanFactory("core.di.factory.example");
-        beanFactory.initialize(Controller.class, Service.class, Repository.class);
+        beanFactory = new BeanFactory();
+        ConfigurationBeanDefinitionScanner configBds = new ConfigurationBeanDefinitionScanner(beanFactory);
+        configBds.register(IntegrationConfig.class);
+
+        ClasspathBeanDefinitionScanner classpathBeanDefinitionScanner = new ClasspathBeanDefinitionScanner(beanFactory);
+        classpathBeanDefinitionScanner.setAnnotations(Controller.class, Service.class, Repository.class);
+        classpathBeanDefinitionScanner.doScan("core.di.factory.example");
+        beanFactory.initialize();
     }
 
     @Test

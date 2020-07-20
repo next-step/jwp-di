@@ -1,28 +1,26 @@
 package core.mvc.tobe;
 
 import core.mvc.ModelAndView;
-import core.mvc.tobe.support.ArgumentResolver;
-import org.springframework.core.ParameterNameDiscoverer;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.core.ParameterNameDiscoverer;
 
 public class HandlerExecution {
 
     private static final Map<Method, MethodParameter[]> methodParameterCache = new ConcurrentHashMap<>();
-    private List<ArgumentResolver> argumentResolver;
+    private ArgumentResolverComposite argumentResolverComposite;
     private ParameterNameDiscoverer parameterNameDiscoverer;
     private Object target;
     private Method method;
 
-    public HandlerExecution(ParameterNameDiscoverer parameterNameDiscoverer, List<ArgumentResolver> argumentResolvers, Object target, Method method) {
+    public HandlerExecution(ParameterNameDiscoverer parameterNameDiscoverer, ArgumentResolverComposite argumentResolverComposite, Object target,
+        Method method) {
         this.parameterNameDiscoverer = parameterNameDiscoverer;
-        this.argumentResolver = argumentResolvers;
+        this.argumentResolverComposite = argumentResolverComposite;
         this.target = target;
         this.method = method;
     }
@@ -58,13 +56,7 @@ public class HandlerExecution {
     }
 
     private Object getArguments(MethodParameter methodParameter, HttpServletRequest request, HttpServletResponse response) {
-        for (ArgumentResolver resolver : argumentResolver) {
-            if (resolver.supports(methodParameter)) {
-                return resolver.resolveArgument(methodParameter, request, response);
-            }
-        }
-
-        throw new IllegalStateException("No suitable resolver for argument: " + methodParameter.getType());
+        return argumentResolverComposite.resolveArgument(methodParameter, request, response);
     }
 
 
