@@ -20,14 +20,16 @@ public class ConfigurationTest {
     private Reflections reflections;
     private Set<Class<?>> configurationClasses;
     private BeanFactory beanFactory;
+    private ConfigurationBeanScanner configurationBeanScanner;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        this.configurationClasses = ConfigurationBeanScanner.scan();
+        configurationBeanScanner = new ConfigurationBeanScanner();
+        this.configurationClasses = configurationBeanScanner.scan();
         beanFactory = new BeanFactory(configurationClasses);
         beanFactory.initialize();
-        beanFactory.instantiateConfiguration(ConfigurationBeanScanner.scan());
+        beanFactory.instantiateConfiguration(configurationBeanScanner.scan());
 
     }
 

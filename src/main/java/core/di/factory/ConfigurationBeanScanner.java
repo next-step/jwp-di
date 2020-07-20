@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class ConfigurationBeanScanner {
 
-    public static Set<Class<?>> scan() {
+    public Set<Class<?>> scan() {
         Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(""))
                 .addScanners(new MemberUsageScanner(), new MethodAnnotationsScanner(), new MethodParameterScanner()));
         Set<Class<?>> classes = getTypesAnnotatedWith(reflections, Configuration.class);
@@ -22,7 +22,7 @@ public class ConfigurationBeanScanner {
         return classes;
     }
 
-    private static Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
+    private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
         Set<Class<?>> beans = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
