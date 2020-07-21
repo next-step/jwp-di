@@ -80,7 +80,7 @@ public class BeanFactory {
 
     private void configurationBeanMethod(Class<?> configurationClass) {
         try {
-            Object instance = configurationClass.newInstance();
+            Object instance = instantiateClass(configurationClass);
             Method[] methods = configurationClass.getDeclaredMethods();
             Arrays.stream(methods)
                     .filter(m -> m.getDeclaredAnnotation(Bean.class) != null)

@@ -1,5 +1,7 @@
 package core.mvc.tobe;
 
+import core.di.factory.ApplicationContext;
+import core.mvc.MyConfiguration;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,15 +10,24 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import support.test.DBInitializer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnnotationHandlerMappingTest {
     private AnnotationHandlerMapping handlerMapping;
     private UserDao userDao;
 
+    ApplicationContext applicationContext;
+
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+        Set<Class<?>> configurationClasses = new HashSet<>();
+        configurationClasses.add(MyConfiguration.class);
+        applicationContext = new ApplicationContext(configurationClasses);
+
+        handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
 
         DBInitializer.initialize();

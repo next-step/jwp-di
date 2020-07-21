@@ -19,18 +19,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BeanScanner {
+public class ClasspathBeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClasspathBeanScanner.class);
 
-    public static Set<Class<?>> scan(Object... basePackage) {
+    public Set<Class<?>> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage);
         Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
 
         return preInstantiateClazz;
     }
 
-    public static String[] getBasePackagesWithComponentScan() {
+    public String[] getBasePackagesWithComponentScan() {
         Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage(""))
                 .addScanners(new MemberUsageScanner(), new MethodAnnotationsScanner(), new MethodParameterScanner()));
         Set<Class<?>> classes = getTypesAnnotatedWith(reflections, ComponentScan.class);
@@ -46,7 +46,7 @@ public class BeanScanner {
         return basePackages.toArray(basePackagesArray);
     }
 
-    private static Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
+    private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
         Set<Class<?>> beans = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));

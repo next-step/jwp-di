@@ -12,8 +12,9 @@ public class ComponentScanTest {
 
     @Test
     public void componentScan() {
-        String[] basePackages = BeanScanner.getBasePackagesWithComponentScan();
-        BeanFactory beanFactory = new BeanFactory(BeanScanner.scan(basePackages));
+        ClasspathBeanScanner beanScanner = new ClasspathBeanScanner();
+        String[] basePackages = beanScanner.getBasePackagesWithComponentScan();
+        BeanFactory beanFactory = new BeanFactory(beanScanner.scan(basePackages));
         beanFactory.initialize();
         Object obj = beanFactory.getBean(QnaController.class);
         assertThat(obj).isNotEqualTo(null);

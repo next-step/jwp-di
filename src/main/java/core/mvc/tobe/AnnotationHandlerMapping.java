@@ -3,9 +3,7 @@ package core.mvc.tobe;
 import com.google.common.collect.Maps;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
-import core.di.factory.ConfigurationBeanScanner;
+import core.di.factory.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.*;
 import org.slf4j.Logger;
@@ -24,8 +22,7 @@ import static java.util.Arrays.asList;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Object[] basePackage;
-    private BeanFactory beanFactory;
+    private ApplicationContext applicationContext;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
@@ -39,16 +36,13 @@ public class AnnotationHandlerMapping implements HandlerMapping {
             new ModelArgumentResolver()
     );
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
-        beanFactory = new BeanFactory(BeanScanner.scan(basePackage));
-        beanFactory.instantiateConfiguration(ConfigurationBeanScanner.scan());
-        beanFactory.initialize();
+    public AnnotationHandlerMapping(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        Map<Class<?>, Object> controllerBeans = beanFactory.getControllers();
+        Map<Class<?>, Object> controllerBeans = applicationContext.getControllers();
 
         for (Class<?> controller : controllerBeans.keySet()) {
             Object target = controllerBeans.get(controller);
