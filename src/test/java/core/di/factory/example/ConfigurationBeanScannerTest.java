@@ -1,5 +1,6 @@
 package core.di.factory.example;
 
+import core.di.factory.BeanDefinitions;
 import core.di.factory.BeanFactory;
 import core.di.factory.ClasspathBeanScanner;
 import core.di.factory.ConfigurationBeanScanner;
@@ -15,9 +16,10 @@ public class ConfigurationBeanScannerTest {
     @DisplayName("설정파일을 등록해서 Bean을 스캔한다.")
     @Test
     public void register_simple() {
-        BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+        BeanDefinitions beanDefinitions = new BeanDefinitions();
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanDefinitions);
         cbs.register(ExampleConfig.class);
+        BeanFactory beanFactory = new BeanFactory(beanDefinitions);
         beanFactory.initialize();
 
         assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
@@ -26,12 +28,13 @@ public class ConfigurationBeanScannerTest {
     @DisplayName("classpathBeanScanner와 설정파일을 통합한다.")
     @Test
     public void register_classpathBeanScanner_통합() {
-        BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+        BeanDefinitions beanDefinitions = new BeanDefinitions();
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanDefinitions);
         cbs.register(IntegrationConfig.class);
 
-        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
+        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanDefinitions);
         cbds.doScan("core.di.factory.example");
+        BeanFactory beanFactory = new BeanFactory(beanDefinitions);
         beanFactory.initialize();
 
         assertThat(beanFactory.getBean(DataSource.class)).isNotNull();

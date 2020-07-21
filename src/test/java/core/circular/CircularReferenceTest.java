@@ -1,7 +1,8 @@
 package core.circular;
 
+import core.di.factory.BeanDefinitions;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.ClasspathBeanScanner;
 import core.di.factory.exception.BeanCurrentlyInCreationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,12 +12,13 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class CircularReferenceTest {
     private BeanFactory beanFactory;
-    private BeanScanner beanScanner;
 
     @BeforeEach
     public void setup() {
-        beanScanner = new BeanScanner();
-        beanFactory = new BeanFactory(beanScanner.scan("core.circular"));
+        BeanDefinitions beanDefinitions = new BeanDefinitions();
+        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanDefinitions);
+        cbds.doScan(CircularReferenceTestConfig.class);
+        beanFactory = new BeanFactory(beanDefinitions);
     }
 
     @DisplayName("순환참조가 일어나면 에러가 발생한다.")

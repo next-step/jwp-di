@@ -2,14 +2,14 @@ package core.di.factory;
 
 public class ClasspathBeanScanner {
 
-    private final BeanFactory beanFactory;
+    private final BeanDefinitions beanDefinition;
 
-    public ClasspathBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public ClasspathBeanScanner(BeanDefinitions beanDefinition) {
+        this.beanDefinition = beanDefinition;
     }
 
     public void doScan(Object... basePackage) {
         BeanScanner beanScanner = new BeanScanner();
-        beanFactory.addAllPreInstantiateBeans(beanScanner.scan(basePackage));
+        beanDefinition.addAllPreInstantiateBeans(beanScanner.scan(basePackage));
     }
 }

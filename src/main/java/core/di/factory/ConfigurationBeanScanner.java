@@ -4,13 +4,13 @@ import java.util.Arrays;
 
 public class ConfigurationBeanScanner {
 
-    private final BeanFactory beanFactory;
+    private final BeanDefinitions beanDefinitions;
 
-    public ConfigurationBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public ConfigurationBeanScanner(BeanDefinitions beanDefinitions) {
+        this.beanDefinitions = beanDefinitions;
     }
 
     public void register(Class<?>... configurations) {
-        beanFactory.addAllConfigurations(Arrays.asList(configurations));
+        beanDefinitions.addAllConfigurations(Arrays.asList(configurations));
     }
 }

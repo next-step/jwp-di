@@ -8,14 +8,16 @@ import java.util.Map;
 public class ApplicationContext {
 
     private final BeanFactory beanFactory;
+    private final BeanDefinitions beanDefinitions;
 
     public ApplicationContext(Class<?>... configurations) {
-        beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+        beanDefinitions = new BeanDefinitions();
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanDefinitions);
         cbs.register(configurations);
 
-        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
+        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanDefinitions);
         cbds.doScan(getBasePackages(configurations));
+        beanFactory = new BeanFactory(beanDefinitions);
         beanFactory.initialize();
     }
 

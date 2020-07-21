@@ -2,7 +2,6 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import core.annotation.Bean;
 import core.annotation.web.Controller;
 import core.di.factory.exception.BeanCurrentlyInCreationException;
 import org.slf4j.Logger;
@@ -13,10 +12,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,23 +19,12 @@ import java.util.stream.Collectors;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private final Set<Class<?>> preInstantiateBeans = Sets.newHashSet();
-    private final Set<Class<?>> configurations = Sets.newHashSet();
+    private final BeanDefinitions beanDefinitions;
     private final Set<Class<?>> references = Sets.newHashSet();
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory() { }
-
-    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
-        this.preInstantiateBeans.addAll(preInstantiateBeans);
-    }
-
-    public void addAllPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
-        this.preInstantiateBeans.addAll(preInstantiateBeans);
-    }
-
-    public void addAllConfigurations(List<Class<?>> configurations) {
-        this.configurations.addAll(configurations);
+    public BeanFactory(BeanDefinitions beanDefinitions) {
+        this.beanDefinitions = beanDefinitions;
     }
 
     @SuppressWarnings("unchecked")
@@ -49,16 +33,23 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        for (Class<?> preInstantiateBean : preInstantiateBeans) {
-            beans.put(preInstantiateBean, instantiate(preInstantiateBean));
-        }
-
-        for (Class<?> configuration : configurations) {
-            registerConfiguration(configuration);
+        Map<Class<?>, BeanDefinition> beanDefinitions = this.beanDefinitions.getBeanDefinitions();
+        Set<Class<?>> classes = beanDefinitions.keySet();
+        for (Class<?> clazz : classes) {
+            beans.put(clazz, instantiateByClasspath(clazz, classes, beanDefinitions.get(clazz)));
         }
     }
 
-    private Object instantiate(Class<?> clazz) {
+    private Object instantiateByClasspath(Class<?> clazz, Set<Class<?>> preInstantiateBeans, BeanDefinition beanDefinition) {
+        Method method = beanDefinition.getMethod();
+        if (method == null) {
+            return instantiateByClasspath(clazz, preInstantiateBeans);
+        }
+
+        return instantiateByMethod(beanDefinition, method);
+    }
+
+    private Object instantiateByClasspath(Class<?> clazz, Set<Class<?>> preInstantiateBeans) {
         if (references.contains(clazz)) {
             logger.error(String.format("순환참조가 발생했습니다.[%s]", getReferenceSimpleNames()));
             throw new BeanCurrentlyInCreationException(String.format("순환참조가 발생했습니다.[%s]", getReferenceSimpleNames()));
@@ -70,12 +61,12 @@ public class BeanFactory {
 
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
         if (injectedConstructor == null) {
-            return instantiateClass(clazz);
+            return instantiateClass(clazz, preInstantiateBeans);
         }
 
         try {
             references.add(clazz);
-            Object bean = injectedConstructor.newInstance(instantiateConstructor(injectedConstructor));
+            Object bean = injectedConstructor.newInstance(instantiateConstructor(injectedConstructor, preInstantiateBeans));
             references.remove(clazz);
             beans.put(clazz, bean);
             return bean;
@@ -85,44 +76,32 @@ public class BeanFactory {
         return null;
     }
 
-    private void registerConfiguration(Class<?> clazz) {
+    private Object instantiateByMethod(BeanDefinition beanDefinition, Method method) {
         try {
-            Object instance = clazz.newInstance();
-            List<Method> beanMethods = getBeans(clazz);
-            for (Method beanMethod : beanMethods) {
-                Parameter[] parameters = beanMethod.getParameters();
-                Object[] args = new Object[parameters.length];
-                setArguments(parameters, args);
-                Object result = beanMethod.invoke(instance, args);
-                beans.put(beanMethod.getReturnType(), result);
-            }
-
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            Parameter[] parameters = method.getParameters();
+            Object[] args = new Object[parameters.length];
+            setArguments(parameters, args);
+            return method.invoke(beanDefinition.getClazz().newInstance(), args);
+        } catch (Exception e) {
             logger.error("Error ", e);
         }
+        return null;
     }
 
-    private Object instantiateClass(Class<?> clazz) {
+    private Object instantiateClass(Class<?> clazz, Set<Class<?>> preInstantiateBeans) {
         Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
         Object bean = BeanUtils.instantiateClass(concreteClass);
         beans.put(clazz, bean);
         return bean;
     }
 
-    private Object[] instantiateConstructor(Constructor<?> constructor) {
+    private Object[] instantiateConstructor(Constructor<?> constructor, Set<Class<?>> preInstantiateBeans) {
         Class<?>[] parameterTypes = constructor.getParameterTypes();
         Object[] params = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
-            params[i] = instantiate(parameterTypes[i]);
+            params[i] = instantiateByClasspath(parameterTypes[i], preInstantiateBeans);
         }
         return params;
-    }
-
-    private List<Method> getBeans(Class<?> clazz) {
-        return Arrays.stream(clazz.getMethods())
-                .filter(m -> m.isAnnotationPresent(Bean.class))
-                .sorted(Comparator.comparing(m -> m.getParameters().length))
-                .collect(Collectors.toList());
     }
 
     private void setArguments(Parameter[] parameters, Object[] args) {
@@ -133,17 +112,16 @@ public class BeanFactory {
         }
     }
 
-    public Map<Class<?>, Object> getControllers() {
-        return this.beans.entrySet().stream()
-                .filter(m -> m.getKey().isAnnotationPresent(Controller.class))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    }
-
     private String getReferenceSimpleNames() {
         return references.stream()
                 .map(Class::getSimpleName)
                 .collect(Collectors.joining(","));
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        return this.beans.entrySet().stream()
+                .filter(m -> m.getKey().isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
 }
