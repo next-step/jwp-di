@@ -4,7 +4,8 @@ import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.di.ConfigurationScanner;
+import core.di.factory.bean.BeanInfo;
+import core.di.factory.bean.BeanInvokeType;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -23,13 +25,11 @@ public class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        ConfigurationScanner configurationScanner = new ConfigurationScanner();
-        configurationScanner.initialize();
 
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
-        beanFactory.addBeans(configurationScanner.beans());
+        beanFactory = new BeanFactory();
+        beanFactory.register(getBeanInfos(preInstanticateClazz));
         beanFactory.initialize();
     }
 
@@ -52,5 +52,13 @@ public class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    private Set<BeanInfo> getBeanInfos(Set<Class<?>> preInstanticateClazz) {
+        return preInstanticateClazz.stream()
+                .map(clazz -> {
+                    return new BeanInfo(clazz, clazz, BeanInvokeType.CONSTRUCTOR,
+                            BeanFactoryUtils.getInjectedConstructor(clazz), null);})
+                .collect(Collectors.toSet());
     }
 }

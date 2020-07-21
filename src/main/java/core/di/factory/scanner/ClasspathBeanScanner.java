@@ -1,11 +1,15 @@
-package core.di;
+package core.di.factory.scanner;
 
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
+
 import core.di.factory.BeanFactory;
+import core.di.factory.BeanFactoryUtils;
+import core.di.factory.bean.BeanInfo;
+import core.di.factory.bean.BeanInvokeType;
 import core.mvc.tobe.HandlerExecution;
 import core.mvc.tobe.HandlerKey;
 import core.mvc.tobe.support.*;
@@ -21,12 +25,16 @@ import org.springframework.core.ParameterNameDiscoverer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-public class BeanScanner {
+/**
+ * Created By kjs4395 on 2020-07-20
+ */
+public class ClasspathBeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClasspathBeanScanner.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
             new HttpRequestArgumentResolver(),
@@ -38,30 +46,28 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        ConfigurationScanner configurationScanner = new ConfigurationScanner();
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        configurationScanner.initialize();
+    private final BeanFactory beanFactory;
 
-        BeanFactory beanFactory = initializeBeanFactory(configurationScanner.basePackages());
-        beanFactory.addBeans(configurationScanner.beans());
-        beanFactory.initialize();
-        Map<Class<?>,Object> controllers = beanFactory.getControllers();
-
-        for (Class<?> controllerKey : controllers.keySet()) {
-            addHandlerExecution(handlers, controllers.get(controllerKey), controllerKey.getMethods());
-        }
-
-        return handlers;
+    public ClasspathBeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
-
-    private BeanFactory initializeBeanFactory(Object... basePackage) {
+    public void doScan(Object...basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
 
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
 
-        return new BeanFactory(preInstanticateClazz);
+        beanFactory.register(getBeanInfos(preInstanticateClazz));
+    }
+
+    public Map<HandlerKey, HandlerExecution> scan() {
+        Set<Object> controllers = this.beanFactory.controllers();
+        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+
+        for (Object controller : controllers) {
+            addHandlerExecution(handlers, controller, controller.getClass().getMethods());
+        }
+        return handlers;
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
@@ -76,6 +82,14 @@ public class BeanScanner {
                 });
     }
 
+    private Set<BeanInfo> getBeanInfos(Set<Class<?>> preInstanticateClazz) {
+        return preInstanticateClazz.stream()
+                .map(clazz -> {
+                    return new BeanInfo(clazz, clazz, BeanInvokeType.CONSTRUCTOR,
+                            BeanFactoryUtils.getInjectedConstructor(clazz), null);})
+                .collect(Collectors.toSet());
+    }
+
     private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
         Set<Class<?>> beans = Sets.newHashSet();
         for (Class<? extends Annotation> annotation : annotations) {
@@ -83,5 +97,4 @@ public class BeanScanner {
         }
         return beans;
     }
-
 }
