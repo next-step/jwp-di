@@ -10,12 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
     private BeanFactory beanFactory;
-    private BeanScanner beanScanner;
 
     @BeforeEach
     public void setup() {
-        beanScanner = new BeanScanner();
-        beanFactory = new BeanFactory(beanScanner.scan("core.di.factory.example"));
+        BeanDefinitions beanDefinitions = new BeanDefinitions();
+        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanDefinitions);
+        cbds.doScan(BeanFactoryTestConfig.class);
+        beanFactory = new BeanFactory(beanDefinitions);
         beanFactory.initialize();
     }
 
@@ -31,4 +32,5 @@ public class BeanFactoryTest {
         assertNotNull(qnaService.getUserRepository());
         assertNotNull(qnaService.getQuestionRepository());
     }
+
 }
