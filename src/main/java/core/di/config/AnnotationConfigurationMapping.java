@@ -14,7 +14,7 @@ public class AnnotationConfigurationMapping {
         initiate();
     }
 
-    public void initiate() {
+    private void initiate() {
         Reflections reflections = new Reflections("");
         typesAnnotatedWith = reflections.getTypesAnnotatedWith(Configuration.class);
     }
