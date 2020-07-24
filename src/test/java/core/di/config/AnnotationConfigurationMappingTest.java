@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class AnnotationConfigurationMappingTest {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationConfigurationMappingTest.class);
@@ -38,5 +38,12 @@ class AnnotationConfigurationMappingTest {
         typesAnnotatedWith.forEach(clazz -> {
             logger.info(clazz.getName() + " : " + clazz.isAnnotationPresent(ComponentScan.class));
         });
+    }
+
+    @Test
+    void getBeanByFactory() {
+        annotationConfigurationMapping.scan();
+        final Object bean = annotationConfigurationMapping.getBean(DataSource.class);
+        assertThat(bean).isNotNull();
     }
 }

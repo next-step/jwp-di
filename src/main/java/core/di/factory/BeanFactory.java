@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,6 +45,54 @@ public class BeanFactory {
         }
     }
 
+    public void initializeByConfig() throws BeanInitException {
+        for (final Class<?> preInstanticateBean : preInstanticateBeans) {
+            try {
+                final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
+                for (final Method method : methods) {
+                    instantiateBean(preInstanticateBean, method);
+                }
+            } catch (Exception e) {
+                throw new BeanInitException(e.getMessage());
+            }
+        }
+
+        logger.info("bean register start");
+        for (final Class<?> aClass : beans.keySet()) {
+            logger.info("bean register : {}", aClass);
+        }
+    }
+
+
+    private Object instantiateBean(Class<?> concreteClass, Method method) throws Exception {
+        final Object bean = beans.get(method.getReturnType());
+        if (Objects.nonNull(bean)) {
+            return bean;
+        }
+
+        if (method.getParameterCount() == 0) {
+            final Object invoke = method.invoke(concreteClass.newInstance());
+            beans.put(method.getReturnType(), invoke);
+            return invoke;
+        }
+
+        final Object invokeMethod = instantiateMethod(concreteClass, method);
+        beans.put(method.getReturnType(), invokeMethod);
+        return invokeMethod;
+    }
+
+    private Object instantiateMethod(Class clazz, Method method) throws Exception {
+        List<Object> objects = Lists.newArrayList();
+        for (final Class<?> parameterType : method.getParameterTypes()) {
+            final Object bean = getBean(parameterType);
+            if (Objects.nonNull(bean)) {
+                objects.add(bean);
+            } else {
+                objects.add(instantiateBean(parameterType, method));
+            }
+        }
+        return method.invoke(clazz.newInstance(), objects.toArray());
+    }
 
     private Object instantiateClass(Class<?> clazz) throws Exception {
         final Object bean = beans.get(clazz);
