@@ -14,10 +14,10 @@ class AnnotationScannerTest {
     @Test
     void findAnnotationsAnnotatedBy() {
         /* given */
-        AnnotationScanner annotationScanner = new AnnotationScanner(ComponentScan.class);
+        AnnotationScanner annotationScanner = new AnnotationScanner();
 
         /* when */
-        Set<Class<? extends Annotation>> annotations = annotationScanner.scan();
+        Set<Class<? extends Annotation>> annotations = annotationScanner.scan(ComponentScan.class);
 
         /* then */
         assertThat(annotations).containsExactlyInAnyOrder(ComponentScan.class, WebApplication.class);

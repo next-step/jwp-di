@@ -1,6 +1,5 @@
 package core.annotation;
 
-import core.di.Scanner;
 import lombok.RequiredArgsConstructor;
 import org.reflections.Reflections;
 
@@ -12,29 +11,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class AnnotationScanner implements Scanner<Class<? extends Annotation>> {
+public class AnnotationScanner {
 
     private static final String ANNOTATION_BASE_PACKAGE = "core.annotation";
 
-    private final Class<? extends Annotation> target;
-    private final Reflections annotationReflections = new Reflections(ANNOTATION_BASE_PACKAGE);
+    public Set<Class<? extends Annotation>> scan(Class<? extends Annotation> targetAnnotation) {
+        Reflections annotationReflections = new Reflections(ANNOTATION_BASE_PACKAGE);
 
-    @Override
-    public Set<Class<? extends Annotation>> scan() {
-        return findAnnotationsAnnotatedBy(target);
-    }
-
-    private Set<Class<? extends Annotation>> findAnnotationsAnnotatedBy(Class<? extends Annotation> annotation) {
-        Set<Class<?>> annotations = annotationReflections.getTypesAnnotatedWith(annotation);
+        Set<Class<?>> annotations = annotationReflections.getTypesAnnotatedWith(targetAnnotation);
         if (annotations.isEmpty()) {
-            return new HashSet<>(Collections.singletonList(annotation));
+            return new HashSet<>(Collections.singletonList(targetAnnotation));
         }
 
         Set<Class<? extends Annotation>> scannedAnnotations = annotations.stream()
-                .map(clazz -> findAnnotationsAnnotatedBy((Class<? extends Annotation>) clazz))
+                .map(clazz -> this.scan((Class<? extends Annotation>) clazz))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
-        scannedAnnotations.add(annotation);
+        scannedAnnotations.add(targetAnnotation);
         return scannedAnnotations;
     }
 
