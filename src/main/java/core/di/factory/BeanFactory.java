@@ -1,34 +1,43 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.di.BeanScanners;
 import core.di.factory.exception.CircularReferenceException;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
+@NoArgsConstructor
 public class BeanFactory {
 
-    private Set<Class<?>> preInstantiateBeans;
+    private Set<Class<?>> preInstantiateBeans = new HashSet<>();
     private Deque<Class<?>> beanInstantiateHistory = new ArrayDeque<>();
+    private Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
-    private BeanScanners beanScanners;
-
-    public BeanFactory(BeanScanners beanScanners) {
-        this.beanScanners = beanScanners;
-    }
 
     public void initialize() {
-        this.preInstantiateBeans = beanScanners.scan();
-
         for (Class<?> preInstantiateBean : preInstantiateBeans) {
             instantiate(preInstantiateBean);
+        }
+    }
+
+    public void registerPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
+        for (Class<?> preInstantiateBean : preInstantiateBeans) {
+            if (this.preInstantiateBeans.contains(preInstantiateBean)) {
+                throw new IllegalStateException("preInstantiateBean is duplicate.");
+            }
+
+            this.preInstantiateBeans.add(preInstantiateBean);
         }
     }
 
@@ -60,14 +69,14 @@ public class BeanFactory {
     }
 
     private Object instantiateWithInjectedConstructor(Class<?> preInstantiateBean) {
-        Class<?>[] parameterTypes = beanScanners.getParameterTypesForInstantiation(preInstantiateBean);
+        Class<?>[] parameterTypes = getParameterTypesForInstantiation(preInstantiateBean);
         if (parameterTypes.length == 0) {
             return registerBeanWithInstantiating(preInstantiateBean);
         }
 
         Object[] parameterInstances = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> concreteParameterType = beanScanners.findConcreteClass(parameterTypes[i]);
+            Class<?> concreteParameterType = findConcreteClass(parameterTypes[i]);
 
             parameterInstances[i] = instantiate(concreteParameterType);
         }
@@ -76,10 +85,57 @@ public class BeanFactory {
     }
 
     private Object registerBeanWithInstantiating(Class<?> preInstantiateBean, Object... parameterInstances) {
-        Object instance = beanScanners.instantiate(preInstantiateBean, parameterInstances);
+        Object instance = instantiate(preInstantiateBean, parameterInstances);
 
         this.beans.put(preInstantiateBean, instance);
         return instance;
+    }
+
+    private Class<?>[] getParameterTypesForInstantiation(Class<?> preInstantiateBean) {
+        preInstantiateBean = BeanInstantiationUtils.findConcreteClass(preInstantiateBean, preInstantiateBeans);
+//        if (containsOnBeanScanner(preInstantiateBean)) {
+//            Constructor<?> injectedConstructor = BeanInstantiationUtils.getInjectedConstructor(preInstantiateBean);
+//            if (injectedConstructor == null) {
+//                return new Class<?>[0];
+//            }
+//
+//            return injectedConstructor.getParameterTypes();
+//        }
+
+//        if (containsOnConfigurationBeanScanner(preInstantiateBean)) {
+//            Method beanCreationMethod = configurationBeanScanner.getBeanCreationMethod(preInstantiateBean);
+//            return beanCreationMethod.getParameterTypes();
+//        }
+
+        return new Class<?>[0];
+    }
+
+    public Object instantiate(Class<?> preInstantiateBean, Object... parameterInstances) {
+        preInstantiateBean = BeanInstantiationUtils.findConcreteClass(preInstantiateBean, preInstantiateBeans);
+        // TODO: 2020/07/25 BeanDefinition 에서 필요한 것 : InjectedConstructor, BeanCreationMethod
+//        if (containsOnBeanScanner(preInstantiateBean)) {
+//            Constructor<?> injectedConstructor = BeanInstantiationUtils.getInjectedConstructor(preInstantiateBean);
+//            if (injectedConstructor == null) {
+//                return BeanUtils.instantiateClass(preInstantiateBean);
+//            }
+//
+//            return BeanUtils.instantiateClass(injectedConstructor, parameterInstances);
+//        }
+
+//        if (containsOnConfigurationBeanScanner(preInstantiateBean)) {
+//            Method beanCreationMethod = configurationBeanScanner.getBeanCreationMethod(preInstantiateBean);
+//            return BeanInstantiationUtils.invokeMethod(beanCreationMethod, parameterInstances);
+//        }
+
+        throw new IllegalStateException("illegal preInstantiateBean Class is instantiated.");
+    }
+
+    public Class<?> findConcreteClass(Class<?> preInstantiateBean) {
+//        if (containsOnBeanScanner(preInstantiateBean)) {
+//            return beanScanner.findConcreteClass(preInstantiateBean);
+//        }
+
+        return preInstantiateBean;
     }
 
 }

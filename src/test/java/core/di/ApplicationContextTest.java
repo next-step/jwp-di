@@ -15,16 +15,16 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class BeanScannersTest {
+class ApplicationContextTest {
 
     @DisplayName("BeanScanner 와 ConfigurationBeanScanner 를 통해 기준 package 하위에 있는 모든 Bean들을 스캔한다.")
     @Test
     void scan() {
         /* given */
-        BeanScanners beanScanners = createBeanScanners("core.di.factory.example");
+        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.example");
 
         /* when */
-        Set<Class<?>> preInstantiateBeans = beanScanners.scan();
+        Set<Class<?>> preInstantiateBeans = applicationContext.scan();
 
         /* then */
         assertThat(preInstantiateBeans).hasSize(6);
@@ -36,21 +36,21 @@ class BeanScannersTest {
     @Test
     void scan_exception() {
         /* given */
-        BeanScanners beanScanners = createBeanScanners("core.di.factory.illegal.configuration");
+        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.illegal.configuration");
 
         /* when */ /* then */
-        assertThrows(IllegalStateException.class, beanScanners::scan);
+        assertThrows(IllegalStateException.class, applicationContext::scan);
     }
 
     @DisplayName("특정 Bean 후보의 파라미터 타입 가져오기")
     @Test
     void getParameterTypesForInstantiation() {
         /* given */
-        BeanScanners beanScanners = createBeanScanners("core.di.factory.example");
-        beanScanners.scan();
+        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.example");
+        applicationContext.scan();
 
         /* when */
-        Class<?>[] parameterTypes = beanScanners.getParameterTypesForInstantiation(MyJdbcTemplate.class);
+        Class<?>[] parameterTypes = applicationContext.getParameterTypesForInstantiation(MyJdbcTemplate.class);
 
         /* then */
         assertThat(parameterTypes).hasSize(1);
@@ -61,23 +61,16 @@ class BeanScannersTest {
     @Test
     void instantiate() {
         /* given */
-        BeanScanners beanScanners = createBeanScanners("core.di.factory.example");
-        beanScanners.scan();
+        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.example");
+        applicationContext.scan();
 
         DataSource dataSource = new IntegrationConfig().dataSource();
 
         /* when */
-        Object instance = beanScanners.instantiate(MyJdbcTemplate.class, dataSource);
+        Object instance = applicationContext.instantiate(MyJdbcTemplate.class, dataSource);
 
         /* then */
         assertThat(instance).isNotNull();
-    }
-
-    private BeanScanners createBeanScanners(Object... basePackage) {
-        BeanScanner beanScanner = new BeanScanner(basePackage);
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(basePackage);
-
-        return new BeanScanners(beanScanner, configurationBeanScanner);
     }
 
 }

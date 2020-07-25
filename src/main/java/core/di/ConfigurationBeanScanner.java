@@ -2,7 +2,7 @@ package core.di;
 
 import core.annotation.Bean;
 import core.annotation.Configuration;
-import lombok.NoArgsConstructor;
+import core.di.factory.BeanFactory;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Method;
@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor
 public class ConfigurationBeanScanner implements Scanner<Class<?>> {
 
     private static final Class<Configuration> CONFIGURATION_ANNOTATION = Configuration.class;
@@ -20,19 +19,24 @@ public class ConfigurationBeanScanner implements Scanner<Class<?>> {
 
     private Reflections reflections = new Reflections("");
     private final Map<Class<?>, Method> beanCreationMethods = new HashMap<>();
+    private final BeanFactory beanFactory;
 
-    public ConfigurationBeanScanner(Object... basePackage) {
-        this.reflections = new Reflections(basePackage);
+    public ConfigurationBeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
     @Override
-    public Set<Class<?>> scan() {
+    public Set<Class<?>> scan(Object... basePackage) {
+        this.reflections = new Reflections(basePackage);
+
         Set<Class<?>> configurationClasses = this.reflections.getTypesAnnotatedWith(CONFIGURATION_ANNOTATION, true);
         for (Class<?> configurationClass : configurationClasses) {
             registerBeanCreationMethods(configurationClass);
         }
 
-        return beanCreationMethods.keySet();
+        Set<Class<?>> preInstantiateBeans = beanCreationMethods.keySet();
+        this.beanFactory.registerPreInstantiateBeans(preInstantiateBeans);
+        return preInstantiateBeans;
     }
 
     public boolean contains(Class<?> preInstantiateBean) {

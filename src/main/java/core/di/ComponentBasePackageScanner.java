@@ -26,7 +26,7 @@ public class ComponentBasePackageScanner implements Scanner<Object> {
     }
 
     @Override
-    public Set<Object> scan() {
+    public Set<Object> scan(Object... basePackage) {
         AnnotationScanner annotationScanner = new AnnotationScanner();
         Set<Class<? extends Annotation>> annotationsAnnotatedComponentScan = annotationScanner.scan(COMPONENT_SCAN_ANNOTATION);
 

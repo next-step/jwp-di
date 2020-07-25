@@ -6,6 +6,7 @@ import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import core.di.ApplicationContext;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.ServletException;
@@ -33,9 +34,11 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
+        ApplicationContext applicationContext = new ApplicationContext(basePackage);
+
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMapping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(basePackage));
+        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

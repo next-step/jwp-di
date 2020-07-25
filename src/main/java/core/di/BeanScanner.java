@@ -2,6 +2,7 @@ package core.di;
 
 import com.google.common.collect.Sets;
 import core.annotation.Component;
+import core.di.factory.BeanFactory;
 import core.di.factory.BeanInstantiationUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,15 +21,22 @@ public class BeanScanner implements Scanner<Class<?>> {
 
     private Reflections reflections = new Reflections("");
     private Set<Class<?>> preInstantiateBeans;
+    private BeanFactory beanFactory;
 
     public BeanScanner(Object... basePackage) {
         this.reflections = new Reflections(basePackage);
     }
 
+    public BeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
     @Override
-    public Set<Class<?>> scan() {
+    public Set<Class<?>> scan(Object... basePackage) {
         Set<Class<? extends Annotation>> componentAnnotations = getComponentAnnotations();
         this.preInstantiateBeans = getTypesAnnotatedWith(componentAnnotations);
+
+        this.beanFactory.registerPreInstantiateBeans(this.preInstantiateBeans);
         return preInstantiateBeans;
     }
 

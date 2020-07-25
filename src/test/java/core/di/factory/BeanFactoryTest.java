@@ -1,7 +1,7 @@
 package core.di.factory;
 
 import core.di.BeanScanner;
-import core.di.BeanScanners;
+import core.di.ApplicationContext;
 import core.di.ConfigurationBeanScanner;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
@@ -44,8 +44,8 @@ public class BeanFactoryTest {
     }
 
     private BeanFactory createBeanFactory(String basePackage) {
-        BeanScanners beanScanners = new BeanScanners(new BeanScanner(basePackage), new ConfigurationBeanScanner(basePackage));
-        return new BeanFactory(beanScanners);
+        ApplicationContext applicationContext = new ApplicationContext(new BeanScanner(basePackage), new ConfigurationBeanScanner(basePackage));
+        return new BeanFactory(applicationContext);
     }
 
 }
