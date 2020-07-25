@@ -7,12 +7,12 @@ import org.reflections.Reflections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AnnotationConfigurationMapping {
+public class ConfigurationBeanScanner {
 
     private Set<Class<?>> typesAnnotatedWith;
     private BeanFactory beanFactory;
 
-    public AnnotationConfigurationMapping() {
+    public ConfigurationBeanScanner() {
         initiate();
     }
 
@@ -23,7 +23,6 @@ public class AnnotationConfigurationMapping {
 
     public void scan() {
         beanFactory = new BeanFactory(typesAnnotatedWith);
-        beanFactory.initialize();
         beanFactory.initializeByConfig();
     }
 

@@ -11,19 +11,19 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AnnotationConfigurationMappingTest {
-    private static final Logger logger = LoggerFactory.getLogger(AnnotationConfigurationMappingTest.class);
+class ConfigurationBeanScannerTest {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationBeanScannerTest.class);
 
-    private AnnotationConfigurationMapping annotationConfigurationMapping;
+    private ConfigurationBeanScanner configurationBeanScanner;
 
     @BeforeEach
     void setUp() {
-        annotationConfigurationMapping = new AnnotationConfigurationMapping();
+        configurationBeanScanner = new ConfigurationBeanScanner();
     }
 
     @Test
     void configurationObjectCountTest() {
-        int size = annotationConfigurationMapping.getTypesAnnotatedWith().size();
+        int size = configurationBeanScanner.getTypesAnnotatedWith().size();
         /**
          * core.di.config.MyConfiguration
          * core.di.factory.example.IntegrationConfig
@@ -34,7 +34,7 @@ class AnnotationConfigurationMappingTest {
 
     @Test
     void getComponentScan() {
-        Set<Class<?>> typesAnnotatedWith = annotationConfigurationMapping.getTypesAnnotatedWith();
+        Set<Class<?>> typesAnnotatedWith = configurationBeanScanner.getTypesAnnotatedWith();
         typesAnnotatedWith.forEach(clazz -> {
             logger.info(clazz.getName() + " : " + clazz.isAnnotationPresent(ComponentScan.class));
         });
@@ -42,8 +42,8 @@ class AnnotationConfigurationMappingTest {
 
     @Test
     void getBeanByFactory() {
-        annotationConfigurationMapping.scan();
-        final Object bean = annotationConfigurationMapping.getBean(DataSource.class);
+        configurationBeanScanner.scan();
+        final Object bean = configurationBeanScanner.getBean(DataSource.class);
         assertThat(bean).isNotNull();
     }
 }
