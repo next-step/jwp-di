@@ -24,6 +24,15 @@ public class BeanFactory {
         this.preInstanticateBeans = preInstanticateBeans;
     }
 
+    public BeanFactory() {
+        this.preInstanticateBeans = new HashSet<>();
+    }
+
+    public void applyConfiguration(Set<Class<?>> configurationBeans) {
+        this.preInstanticateBeans.addAll(configurationBeans);
+        initializeByConfig();
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
@@ -147,9 +156,7 @@ public class BeanFactory {
                     configurationBean.put(clazz, beans.get(clazz));
                     Arrays.stream(clazz.getMethods())
                             .filter(method -> method.isAnnotationPresent(Bean.class))
-                            .forEach(method -> {
-                                configurationBean.put(method.getReturnType(), beans.get(method.getReturnType()));
-                            });
+                            .forEach(method -> configurationBean.put(method.getReturnType(), beans.get(method.getReturnType())));
                 });
         return configurationBean;
     }

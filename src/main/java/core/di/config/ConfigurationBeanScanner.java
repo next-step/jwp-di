@@ -13,8 +13,8 @@ public class ConfigurationBeanScanner {
     public Map<Class<?>, Object> scan() {
         Reflections reflections = new Reflections("");
         Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Configuration.class);
-        BeanFactory beanFactory = new BeanFactory(typesAnnotatedWith);
-        beanFactory.initializeByConfig();
+        BeanFactory beanFactory = new BeanFactory();
+        beanFactory.applyConfiguration(typesAnnotatedWith);
 
         return beanFactory.getConfigurationBeans();
     }
