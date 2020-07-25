@@ -2,6 +2,8 @@ package core.di.factory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import core.annotation.Bean;
+import core.annotation.Configuration;
 import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,10 +11,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -138,6 +137,21 @@ public class BeanFactory {
             }
         }
         return controllers;
+    }
+
+    public Map<Class<?>, Object> getConfigurationBeans() {
+        Map<Class<?>, Object> configurationBean = Maps.newHashMap();
+        preInstanticateBeans.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Configuration.class))
+                .forEach(clazz -> {
+                    configurationBean.put(clazz, beans.get(clazz));
+                    Arrays.stream(clazz.getMethods())
+                            .filter(method -> method.isAnnotationPresent(Bean.class))
+                            .forEach(method -> {
+                                configurationBean.put(method.getReturnType(), beans.get(method.getReturnType()));
+                            });
+                });
+        return configurationBean;
     }
 
 }
