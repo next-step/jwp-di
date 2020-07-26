@@ -1,5 +1,6 @@
 package core.di;
 
+import core.di.factory.BeanFactory;
 import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
@@ -17,10 +18,10 @@ class BeanScannerTest {
     @Test
     void scan() {
         /* given */
-        BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
+        BeanScanner beanScanner = new BeanScanner(new BeanFactory());
 
         /* when */
-        Set<Class<?>> preInstantiateClasses = beanScanner.scan();
+        Set<Class<?>> preInstantiateClasses = beanScanner.scan("core.di.factory.example");
 
         /* then */
         assertThat(preInstantiateClasses).hasSize(4);

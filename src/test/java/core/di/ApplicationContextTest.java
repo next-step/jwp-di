@@ -1,21 +1,48 @@
 package core.di;
 
-import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyJdbcTemplate;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import core.di.factory.exception.CircularReferenceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
-import java.util.Set;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ApplicationContextTest {
+
+    @DisplayName("BasePackage 를 기준으로 BeanFactory 정상 동작")
+    @Test
+    public void di() {
+        /* given */
+        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.example");
+
+        QnaController qnaController = applicationContext.getBean(QnaController.class);
+
+        assertNotNull(qnaController);
+        assertNotNull(qnaController.getQnaService());
+
+        MyQnaService qnaService = qnaController.getQnaService();
+        assertNotNull(qnaService.getUserRepository());
+        assertNotNull(qnaService.getQuestionRepository());
+    }
+
+    @DisplayName("Bean 들이 순환참조를 하면 Exception")
+    @Test
+    public void circularReferenceException() {
+        /* given */
+        String basePackage = "core.di.factory.illegal.circular";
+
+        /* when */ /* then */
+        assertThrows(CircularReferenceException.class, () -> new ApplicationContext(basePackage));
+    }
 
     @DisplayName("BeanScanner 와 ConfigurationBeanScanner 를 통해 기준 package 하위에 있는 모든 Bean들을 스캔한다.")
     @Test
@@ -24,11 +51,11 @@ class ApplicationContextTest {
         ApplicationContext applicationContext = new ApplicationContext("core.di.factory.example");
 
         /* when */
-        Set<Class<?>> preInstantiateBeans = applicationContext.scan();
+        List<Class<?>> beanClasses = applicationContext.getBeanClasses();
 
         /* then */
-        assertThat(preInstantiateBeans).hasSize(6);
-        assertThat(preInstantiateBeans).containsExactlyInAnyOrder(JdbcQuestionRepository.class, MyJdbcTemplate.class,
+        assertThat(beanClasses).hasSize(6);
+        assertThat(beanClasses).containsExactlyInAnyOrder(JdbcQuestionRepository.class, MyJdbcTemplate.class,
                 QnaController.class, JdbcUserRepository.class, MyQnaService.class, DataSource.class);
     }
 
@@ -36,41 +63,10 @@ class ApplicationContextTest {
     @Test
     void scan_exception() {
         /* given */
-        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.illegal.configuration");
+        String basePackage = "core.di.factory.illegal.configuration";
 
         /* when */ /* then */
-        assertThrows(IllegalStateException.class, applicationContext::scan);
-    }
-
-    @DisplayName("특정 Bean 후보의 파라미터 타입 가져오기")
-    @Test
-    void getParameterTypesForInstantiation() {
-        /* given */
-        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.example");
-        applicationContext.scan();
-
-        /* when */
-        Class<?>[] parameterTypes = applicationContext.getParameterTypesForInstantiation(MyJdbcTemplate.class);
-
-        /* then */
-        assertThat(parameterTypes).hasSize(1);
-        assertThat(parameterTypes).containsExactly(DataSource.class);
-    }
-
-    @DisplayName("인스턴스 생성하기")
-    @Test
-    void instantiate() {
-        /* given */
-        ApplicationContext applicationContext = new ApplicationContext("core.di.factory.example");
-        applicationContext.scan();
-
-        DataSource dataSource = new IntegrationConfig().dataSource();
-
-        /* when */
-        Object instance = applicationContext.instantiate(MyJdbcTemplate.class, dataSource);
-
-        /* then */
-        assertThat(instance).isNotNull();
+        assertThrows(IllegalStateException.class, () -> new ApplicationContext(basePackage));
     }
 
 }
