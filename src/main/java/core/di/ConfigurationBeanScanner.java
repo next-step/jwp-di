@@ -3,8 +3,8 @@ package core.di;
 import com.google.common.collect.Sets;
 import core.annotation.Bean;
 import core.annotation.Configuration;
-import core.di.factory.BeanDefinition;
 import core.di.factory.BeanFactory;
+import core.di.factory.DefaultBeanDefinition;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Method;
@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ConfigurationBeanScanner implements Scanner<Class<?>> {
+public class ConfigurationBeanScanner implements BeanScanner<Class<?>> {
 
     private static final Class<Configuration> CONFIGURATION_ANNOTATION = Configuration.class;
     private static final Class<Bean> BEAN_ANNOTATION = Bean.class;
@@ -42,7 +42,7 @@ public class ConfigurationBeanScanner implements Scanner<Class<?>> {
     private void registerBeanDefinitions(Set<Method> beanMethods) {
         for (Method beanMethod : beanMethods) {
             Class<?> beanType = beanMethod.getReturnType();
-            this.beanFactory.registerBeanDefinition(beanType, new BeanDefinition(beanType, beanMethod));
+            this.beanFactory.registerBeanDefinition(beanType, new DefaultBeanDefinition(beanType, beanMethod));
         }
     }
 

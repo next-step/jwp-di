@@ -1,119 +1,16 @@
 package core.di.factory;
 
-import com.google.common.collect.Maps;
-import core.di.factory.exception.CircularReferenceException;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-@Slf4j
-@NoArgsConstructor
-public class BeanFactory {
+public interface BeanFactory {
 
-    private Deque<Class<?>> beanInstantiateHistory = new ArrayDeque<>();
-    private Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
+    void initialize();
 
-    public void initialize() {
-        for (Class<?> clazz : beanDefinitions.keySet()) {
-            registerBean(clazz);
-        }
-    }
+    void registerBeanDefinition(Class<?> clazz, BeanDefinition beanDefinition);
 
-    public void registerBeanDefinition(Class<?> clazz, BeanDefinition beanDefinition) {
-        if (beanDefinitions.containsKey(clazz)) {
-            throw new IllegalStateException("Bean Definition is duplicate.");
-        }
+    <T> T getBean(Class<T> requiredType);
 
-        this.beanDefinitions.put(clazz, beanDefinition);
-    }
+    List<Class<?>> getBeanClasses();
 
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
-    }
-
-    public List<Class<?>> getBeanClasses() {
-        return new ArrayList<>(beans.keySet());
-    }
-
-    public List<Object> getBeans() {
-        return new ArrayList<>(beans.values());
-    }
-
-    public Set<Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {
-        return this.beans.values().stream()
-                .filter(bean -> bean.getClass().isAnnotationPresent(annotation))
-                .collect(Collectors.toSet());
-    }
-
-    private Object registerBean(Class<?> preInstantiateBean) {
-        if (this.beanInstantiateHistory.contains(preInstantiateBean)) {
-            throw new CircularReferenceException("Illegal Bean Creation Exception : Circular Reference");
-        }
-
-        if (beans.containsKey(preInstantiateBean)) {
-            return beans.get(preInstantiateBean);
-        }
-
-        this.beanInstantiateHistory.push(preInstantiateBean);
-        Object instance = registerBeanWithInstantiating(preInstantiateBean);
-        this.beanInstantiateHistory.pop();
-
-        return instance;
-    }
-
-    private Object registerBeanWithInstantiating(Class<?> preInstantiateBean) {
-        Class<?> concreteBeanClass = BeanInstantiationUtils.findConcreteClass(preInstantiateBean, beanDefinitions.keySet());
-        Object instance = instantiate(concreteBeanClass);
-
-        this.beans.put(concreteBeanClass, instance);
-        return instance;
-    }
-
-    private Object instantiate(Class<?> concreteBeanClass) {
-        BeanDefinition beanDefinition = this.beanDefinitions.get(concreteBeanClass);
-        if (beanDefinition.doesNotExistSpecificWayToInstantiate()) {
-            return BeanUtils.instantiateClass(concreteBeanClass);
-        }
-
-        Constructor<?> injectedConstructor = beanDefinition.getInjectedConstructor();
-        if (injectedConstructor != null) {
-            Object[] parameterInstances = getParameterInstances(injectedConstructor);
-            return BeanUtils.instantiateClass(injectedConstructor, parameterInstances);
-        }
-
-        Method beanCreationMethod = beanDefinition.getBeanCreationMethod();
-        Object[] parameterInstances = getParameterInstances(beanCreationMethod);
-        return BeanInstantiationUtils.invokeMethod(beanCreationMethod, parameterInstances);
-    }
-
-    private Object[] getParameterInstances(Executable executable) {
-        Class<?>[] parameterTypes = executable.getParameterTypes();
-
-        Object[] parameterInstances = new Object[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> concreteParameterType = findConcreteClass(parameterTypes[i]);
-            parameterInstances[i] = registerBean(concreteParameterType);
-        }
-
-        return parameterInstances;
-    }
-
-    private Class<?> findConcreteClass(Class<?> preInstantiateBean) {
-        return BeanInstantiationUtils.findConcreteClass(preInstantiateBean, beanDefinitions.keySet());
-    }
-
+    List<Object> getBeans();
 }

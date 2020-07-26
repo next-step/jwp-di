@@ -15,6 +15,7 @@ public class AnnotationScanner {
 
     private static final String ANNOTATION_BASE_PACKAGE = "core.annotation";
 
+    @SuppressWarnings("unchecked")
     public Set<Class<? extends Annotation>> scan(Class<? extends Annotation> targetAnnotation) {
         Reflections annotationReflections = new Reflections(ANNOTATION_BASE_PACKAGE);
 

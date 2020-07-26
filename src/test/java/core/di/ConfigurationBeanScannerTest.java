@@ -1,6 +1,6 @@
 package core.di;
 
-import core.di.factory.BeanFactory;
+import core.di.factory.DefaultBeanFactory;
 import core.di.factory.example.MyJdbcTemplate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ class ConfigurationBeanScannerTest {
     @Test
     void scan() {
         /* given */
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(new BeanFactory());
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(new DefaultBeanFactory());
 
         /* when */
         Set<Class<?>> preInstantiateClasses = configurationBeanScanner.scan("core.di.factory.example");

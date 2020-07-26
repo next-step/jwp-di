@@ -1,10 +1,12 @@
 package core.di;
 
 import core.di.factory.BeanFactory;
+import core.di.factory.DefaultBeanFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ApplicationContext {
 
@@ -16,10 +18,10 @@ public class ApplicationContext {
             basePackage = basePackageScanner.scan().toArray();
         }
 
-        beanFactory = new BeanFactory();
+        beanFactory = new DefaultBeanFactory();
 
-        BeanScanner beanScanner = new BeanScanner(beanFactory);
-        beanScanner.scan(basePackage);
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.scan(basePackage);
 
         ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
         configurationBeanScanner.scan(basePackage);
@@ -28,7 +30,9 @@ public class ApplicationContext {
     }
 
     public Set<Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {
-        return beanFactory.getBeansAnnotatedWith(annotation);
+        return this.beanFactory.getBeans().stream()
+                .filter(bean -> bean.getClass().isAnnotationPresent(annotation))
+                .collect(Collectors.toSet());
     }
 
     public <T> T getBean(Class<T> requiredType) {
