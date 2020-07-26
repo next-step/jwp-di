@@ -1,5 +1,6 @@
 package core.di.config;
 
+import core.di.factory.BeanFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,7 +24,8 @@ class ConfigurationBeanScannerTest {
 
     @Test
     void getBeanByFactory() {
-        final Map<Class<?>, Object> scan = configurationBeanScanner.scan();
+        BeanFactory beanFactory = new BeanFactory();
+        final Map<Class<?>, Object> scan = configurationBeanScanner.scan(beanFactory);
         final Object bean = scan.get(DataSource.class);
         assertThat(bean).isNotNull();
     }

@@ -55,13 +55,15 @@ public class BeanFactory {
 
     public void initializeByConfig() throws BeanInitException {
         for (final Class<?> preInstanticateBean : preInstanticateBeans) {
-            try {
-                final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
+            final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
+            if (Objects.nonNull(methods)) {
                 for (final Method method : methods) {
-                    instantiateBean(preInstanticateBean, method);
+                    try {
+                        instantiateBean(preInstanticateBean, method);
+                    } catch (Exception e) {
+                        throw new BeanInitException(e.getMessage());
+                    }
                 }
-            } catch (Exception e) {
-                throw new BeanInitException(e.getMessage());
             }
         }
 
@@ -83,7 +85,6 @@ public class BeanFactory {
             beans.put(method.getReturnType(), invoke);
             return invoke;
         }
-
         final Object invokeMethod = instantiateMethod(concreteClass, method);
         beans.put(method.getReturnType(), invokeMethod);
         return invokeMethod;

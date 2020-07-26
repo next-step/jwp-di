@@ -10,12 +10,10 @@ import java.util.Set;
 
 public class ConfigurationBeanScanner {
 
-    public Map<Class<?>, Object> scan() {
+    public static Map<Class<?>, Object> scan(BeanFactory beanFactory) {
         Reflections reflections = new Reflections("");
         Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Configuration.class);
-        BeanFactory beanFactory = new BeanFactory();
         beanFactory.applyConfiguration(typesAnnotatedWith);
-
         return beanFactory.getConfigurationBeans();
     }
 }
