@@ -15,17 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ConfigurationBeanScannerTest {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationBeanScannerTest.class);
 
-    private ConfigurationBeanScanner configurationBeanScanner;
-
-    @BeforeEach
-    void setUp() {
-        configurationBeanScanner = new ConfigurationBeanScanner();
-    }
-
     @Test
     void getBeanByFactory() {
         BeanFactory beanFactory = new BeanFactory();
-        final Map<Class<?>, Object> scan = configurationBeanScanner.scan(beanFactory);
+        final Map<Class<?>, Object> scan = ConfigurationBeanScanner.scan(beanFactory);
         final Object bean = scan.get(DataSource.class);
         assertThat(bean).isNotNull();
     }
