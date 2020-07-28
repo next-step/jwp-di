@@ -4,11 +4,7 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.BeanScanner;
-import core.di.BeanScanners;
-import core.di.ComponentBasePackageScanner;
-import core.di.ConfigurationBeanScanner;
-import core.di.factory.BeanFactory;
+import core.di.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -43,26 +39,16 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
     private static final Class<Controller> HANDLER_ANNOTATION = Controller.class;
 
-    private BeanFactory beanFactory;
+    private ApplicationContext applicationContext;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        if (isEmpty(basePackage)) {
-            ComponentBasePackageScanner basePackageScanner = new ComponentBasePackageScanner();
-            basePackage = basePackageScanner.scan().toArray();
-        }
-
-        BeanScanner beanScanner = new BeanScanner(basePackage);
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(basePackage);
-        BeanScanners beanScanners = new BeanScanners(beanScanner, configurationBeanScanner);
-
-        beanFactory = new BeanFactory(beanScanners);
-        beanFactory.initialize();
+    public AnnotationHandlerMapping(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public void initialize() {
         log.info("## Initialized Annotation Handler Mapping");
-        Set<Object> controllerInstances = beanFactory.getBeansAnnotatedWith(HANDLER_ANNOTATION);
+        Set<Object> controllerInstances = applicationContext.getBeansAnnotatedWith(HANDLER_ANNOTATION);
 
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
         for (Object controller : controllerInstances) {
@@ -77,10 +63,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         RequestMethod rm = RequestMethod.valueOf(request.getMethod().toUpperCase());
         log.debug("requestUri : {}, requestMethod : {}", requestUri, rm);
         return getHandlerInternal(new HandlerKey(requestUri, rm));
-    }
-
-    private boolean isEmpty(Object[] basePackage) {
-        return basePackage == null || basePackage.length == 0;
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {

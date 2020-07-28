@@ -1,52 +1,48 @@
 package core.di;
 
+import com.google.common.collect.Sets;
 import core.annotation.Bean;
 import core.annotation.Configuration;
-import lombok.NoArgsConstructor;
+import core.di.factory.BeanFactory;
+import core.di.factory.DefaultBeanDefinition;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor
-public class ConfigurationBeanScanner implements Scanner<Class<?>> {
+public class ConfigurationBeanScanner implements BeanScanner<Class<?>> {
 
     private static final Class<Configuration> CONFIGURATION_ANNOTATION = Configuration.class;
     private static final Class<Bean> BEAN_ANNOTATION = Bean.class;
 
-    private Reflections reflections = new Reflections("");
-    private final Map<Class<?>, Method> beanCreationMethods = new HashMap<>();
+    private final BeanFactory beanFactory;
 
-    public ConfigurationBeanScanner(Object... basePackage) {
-        this.reflections = new Reflections(basePackage);
+    public ConfigurationBeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
     @Override
-    public Set<Class<?>> scan() {
-        Set<Class<?>> configurationClasses = this.reflections.getTypesAnnotatedWith(CONFIGURATION_ANNOTATION, true);
+    public Set<Class<?>> scan(Object... basePackage) {
+        Reflections reflections = new Reflections(basePackage);
+        Set<Class<?>> preInstantiateBeans = Sets.newHashSet();
+
+        Set<Class<?>> configurationClasses = reflections.getTypesAnnotatedWith(CONFIGURATION_ANNOTATION, true);
         for (Class<?> configurationClass : configurationClasses) {
-            registerBeanCreationMethods(configurationClass);
+            Set<Method> beanMethods = findBeanCreationMethods(configurationClass);
+            registerBeanDefinitions(beanMethods);
+
+            preInstantiateBeans.addAll(getReturnTypeOf(beanMethods));
         }
 
-        return beanCreationMethods.keySet();
+        return preInstantiateBeans;
     }
 
-    public boolean contains(Class<?> preInstantiateBean) {
-        return beanCreationMethods.containsKey(preInstantiateBean);
-    }
-
-    public Method getBeanCreationMethod(Class<?> preInstantiateBean) {
-        return beanCreationMethods.get(preInstantiateBean);
-    }
-
-    private void registerBeanCreationMethods(Class<?> configurationClass) {
-        Set<Method> beanMethods = findBeanCreationMethods(configurationClass);
+    private void registerBeanDefinitions(Set<Method> beanMethods) {
         for (Method beanMethod : beanMethods) {
-            registerBeanCreationMethod(beanMethod);
+            Class<?> beanType = beanMethod.getReturnType();
+            this.beanFactory.registerBeanDefinition(beanType, new DefaultBeanDefinition(beanType, beanMethod));
         }
     }
 
@@ -56,13 +52,10 @@ public class ConfigurationBeanScanner implements Scanner<Class<?>> {
                 .collect(Collectors.toSet());
     }
 
-    private void registerBeanCreationMethod(Method beanMethod) {
-        Class<?> beanType = beanMethod.getReturnType();
-        if (beanCreationMethods.containsKey(beanType)) {
-            throw new IllegalStateException("Configuration bean return type is duplicate.");
-        }
-
-        this.beanCreationMethods.put(beanMethod.getReturnType(), beanMethod);
+    private Set<Class<?>> getReturnTypeOf(Set<Method> methods) {
+        return methods.stream()
+                .map(Method::getReturnType)
+                .collect(Collectors.toSet());
     }
 
 }

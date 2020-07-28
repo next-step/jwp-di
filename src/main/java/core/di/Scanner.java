@@ -4,6 +4,6 @@ import java.util.Set;
 
 public interface Scanner<T> {
 
-    Set<T> scan();
+    Set<T> scan(Object... basePackage);
 
 }
