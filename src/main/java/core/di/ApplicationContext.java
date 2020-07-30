@@ -20,11 +20,8 @@ public class ApplicationContext {
 
         beanFactory = new DefaultBeanFactory();
 
-        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
-        classpathBeanScanner.scan(basePackage);
-
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        configurationBeanScanner.scan(basePackage);
+        BeanScanners beanScanners = new BeanScanners(beanFactory);
+        beanScanners.scan(basePackage);
 
         beanFactory.initialize();
     }

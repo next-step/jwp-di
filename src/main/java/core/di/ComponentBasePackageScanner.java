@@ -20,6 +20,7 @@ public class ComponentBasePackageScanner implements Scanner<Object> {
     @Getter
     private Set<Object> basePackages = new HashSet<>();
     private Reflections wholeReflections = new Reflections("");
+    private AnnotationScanner annotationScanner = new AnnotationScanner();
 
     public ComponentBasePackageScanner(Object... basePackage) {
         this.wholeReflections = new Reflections(basePackage);
@@ -27,7 +28,6 @@ public class ComponentBasePackageScanner implements Scanner<Object> {
 
     @Override
     public Set<Object> scan(Object... basePackage) {
-        AnnotationScanner annotationScanner = new AnnotationScanner();
         Set<Class<? extends Annotation>> annotationsAnnotatedComponentScan = annotationScanner.scan(COMPONENT_SCAN_ANNOTATION);
 
         Set<Class<?>> classesAnnotatedComponentScan = wholeReflections.getTypesAnnotatedWith(COMPONENT_SCAN_ANNOTATION, true);
