@@ -1,4 +1,4 @@
-package core.mvc.tobe;
+package core.di.factory;
 
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
@@ -22,7 +22,7 @@ import static java.util.Arrays.asList;
 
 public class ControllerScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ControllerScanner.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
