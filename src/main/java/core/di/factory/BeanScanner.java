@@ -29,46 +29,16 @@ public class BeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
-    private static final List<ArgumentResolver> argumentResolvers = asList(
-                new HttpRequestArgumentResolver(),
-                new HttpResponseArgumentResolver(),
-                new RequestParamArgumentResolver(),
-                new PathVariableArgumentResolver(),
-                new ModelArgumentResolver()
-        );
+    private final Set<Class<? extends Annotation>> annotationsForBean = Sets.newHashSet();
 
-    private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
-
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
-        for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
-        }
-
-        return handlers;
+    public BeanScanner(Class<? extends Annotation>... beanTypes) {
+        this.annotationsForBean.addAll(Arrays.asList(beanTypes));
     }
 
-    private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
-        Arrays.stream(methods)
-                .filter(method -> method.isAnnotationPresent(RequestMapping.class))
-                .forEach(method -> {
-                    RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-                    HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
-                    HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
-                    handlers.put(handlerKey, handlerExecution);
-                    logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
-                });
-    }
-
-    public Set<Class<?>> scanBean(Object... basePackage) {
+    public Set<Class<?>> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Set<Class<? extends Annotation>> annotations = Sets.newHashSet(Controller.class, Service.class, Repository.class);
         Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
+        for (Class<? extends Annotation> annotation : annotationsForBean) {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;

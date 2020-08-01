@@ -18,7 +18,7 @@ class BeanScannerTest {
         // given
         BeanScanner beanScanner = new BeanScanner();
         // when
-        Set<Class<?>> preInstantiateBeans = beanScanner.scanBean("core.di.factory.example");
+        Set<Class<?>> preInstantiateBeans = beanScanner.scan("core.di.factory.example");
         // then
         assertThat(preInstantiateBeans)
                 .containsExactlyInAnyOrder(

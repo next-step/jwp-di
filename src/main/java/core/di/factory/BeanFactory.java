@@ -6,9 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -63,4 +65,11 @@ public class BeanFactory {
         return BeanUtils.instantiateClass(constructor, args);
     }
 
+    public Set<Object> getBeansWithAnnotation(Class<? extends Annotation> annotation) {
+        this.beans.values().forEach(e -> logger.debug(e.toString()));
+        return this.beans.values()
+                .stream()
+                .filter(bean -> bean.getClass().isAnnotationPresent(annotation))
+                .collect(Collectors.toSet());
+    }
 }
