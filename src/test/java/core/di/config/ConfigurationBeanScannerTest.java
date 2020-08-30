@@ -1,5 +1,6 @@
 package core.di.config;
 
+import core.annotation.Component;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
@@ -12,10 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,6 +44,48 @@ class ConfigurationBeanScannerTest {
                         classes.addAll(reflections1.getTypesAnnotatedWith(Configuration.class));
                     }
                 });
+
+        assertThat(classes.contains(MyConfiguration.class)).isTrue();
+        assertThat(classes.contains(ExampleConfig.class)).isTrue();
+    }
+
+    @Test
+    void getComponentScansPath() {
+        Reflections reflections = new Reflections("");
+        Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Configuration.class);
+        final Set<ComponentScan> componentScans = typesAnnotatedWith.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(ComponentScan.class))
+                .map(clazz -> clazz.getAnnotation(ComponentScan.class))
+                .collect(Collectors.toSet());
+
+        final Set<String> paths = componentScans.stream()
+                .flatMap(s -> Arrays.stream(s.value()))
+                .collect(Collectors.toSet());
+
+        assertThat(paths.contains("next")).isTrue();
+        assertThat(paths.contains("core")).isTrue();
+
+    }
+
+    @Test
+    void getScanningConfigurationClasses() {
+        Reflections reflections = new Reflections("");
+        Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Configuration.class);
+        final Set<ComponentScan> componentScans = typesAnnotatedWith.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(ComponentScan.class))
+                .map(clazz -> clazz.getAnnotation(ComponentScan.class))
+                .collect(Collectors.toSet());
+
+        final Set<String> paths = componentScans.stream()
+                .flatMap(s -> Arrays.stream(s.value()))
+                .collect(Collectors.toSet());
+
+        final Set<Class<?>> classes = paths.stream()
+                .flatMap(path -> {
+                    Reflections componentReflections = new Reflections(path);
+                    return componentReflections.getTypesAnnotatedWith(Configuration.class).stream();
+                })
+                .collect(Collectors.toSet());
 
         assertThat(classes.contains(MyConfiguration.class)).isTrue();
         assertThat(classes.contains(ExampleConfig.class)).isTrue();
