@@ -53,24 +53,32 @@ public class BeanFactory {
         }
     }
 
-    public void initializeByConfig() throws BeanInitException {
+    private void initializeByConfig() throws BeanInitException {
         for (final Class<?> preInstanticateBean : preInstanticateBeans) {
             final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
-            if (Objects.nonNull(methods)) {
-                for (final Method method : methods) {
-                    try {
-                        instantiateBean(preInstanticateBean, method);
-                    } catch (Exception e) {
-                        throw new BeanInitException(e.getMessage());
-                    }
-                }
-            }
+            initializeByMethod(preInstanticateBean, methods);
         }
 
         logger.info("bean register start");
         for (final Class<?> aClass : beans.keySet()) {
             logger.info("bean register : {}", aClass);
         }
+    }
+
+    private void initializeByMethod(Class<?> preInstanticateBean, Set<Method> methods) {
+        if (Objects.nonNull(methods)) {
+            initializeByBean(preInstanticateBean, methods);
+        }
+    }
+
+    private void initializeByBean(Class<?> preInstanticateBean, Set<Method> methods) {
+        methods.forEach(method -> {
+            try {
+                instantiateBean(preInstanticateBean, method);
+            } catch (Exception e) {
+                throw new BeanInitException(e.getMessage());
+            }
+        });
     }
 
 
