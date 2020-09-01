@@ -1,5 +1,6 @@
 package next.dao;
 
+import core.di.factory.BeanScanner;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
@@ -15,7 +16,6 @@ public class AnswerDao {
     private static final Logger logger = LoggerFactory.getLogger( AnswerDao.class );
 
     private static AnswerDao answerDao = new AnswerDao();
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
     private AnswerDao() {
     }
@@ -38,6 +38,7 @@ public class AnswerDao {
             }
         };
 
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         KeyHolder keyHolder = new KeyHolder();
         jdbcTemplate.update(psc, keyHolder);
         logger.debug("KeyHolder : {}", keyHolder);
@@ -56,6 +57,7 @@ public class AnswerDao {
             }
         };
 
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.queryForObject(sql, rm, answerId);
     }
 
@@ -71,11 +73,13 @@ public class AnswerDao {
             }
         };
 
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.query(sql, rm, questionId);
     }
 
     public void delete(Long answerId) {
         String sql = "DELETE FROM ANSWERS WHERE answerId = ?";
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, answerId);
     }
 }

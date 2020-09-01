@@ -3,6 +3,7 @@ package core.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +11,14 @@ import java.util.List;
 public class JdbcTemplate {
     private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
 
-    private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private DataSource dataSource;
 
-    private JdbcTemplate() {
+    public JdbcTemplate(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
-    public static JdbcTemplate getInstance() {
-        return jdbcTemplate;
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     public void update(String sql, PreparedStatementSetter pss) throws DataAccessException {

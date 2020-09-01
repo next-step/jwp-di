@@ -1,5 +1,6 @@
 package next.dao;
 
+import core.di.factory.BeanScanner;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,9 @@ public class UserDaoTest {
         DBInitializer.initialize();
 
         userDao = UserDao.getInstance();
+
+        BeanScanner beanScanner = new BeanScanner();
+        beanScanner.scan("");
     }
 
     @Test

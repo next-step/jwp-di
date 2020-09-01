@@ -1,5 +1,6 @@
 package next.dao;
 
+import core.di.factory.BeanScanner;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.RowMapper;
 import next.model.User;
@@ -10,7 +11,6 @@ import java.util.List;
 
 public class UserDao {
     private static UserDao userDao;
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
     private UserDao() {
     }
@@ -24,6 +24,7 @@ public class UserDao {
 
     public void insert(User user) {
         String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
     }
 
@@ -38,6 +39,7 @@ public class UserDao {
             }
         };
 
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.queryForObject(sql, rm, userId);
     }
 
@@ -52,11 +54,13 @@ public class UserDao {
             }
         };
 
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.query(sql, rm);
     }
 
     public void update(User user) {
         String sql = "UPDATE USERS set password = ?, name = ?, email = ? WHERE userId = ?";
+        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, user.getPassword(), user.getName(), user.getEmail(), user.getUserId());
     }
 }

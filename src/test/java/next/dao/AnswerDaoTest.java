@@ -1,5 +1,6 @@
 package next.dao;
 
+import core.di.factory.BeanScanner;
 import core.jdbc.ConnectionManager;
 import next.model.Answer;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,9 @@ public class AnswerDaoTest {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
+
+        BeanScanner beanScanner = new BeanScanner();
+        beanScanner.scan("");
     }
 
     @Test
