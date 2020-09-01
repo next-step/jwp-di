@@ -28,9 +28,8 @@ public class BeanFactory {
         this.preInstanticateBeans = new HashSet<>();
     }
 
-    public void applyConfiguration(Set<Class<?>> configurationBeans) {
+    public void apply(Set<Class<?>> configurationBeans) {
         this.preInstanticateBeans.addAll(configurationBeans);
-        initializeByConfig();
     }
 
     @SuppressWarnings("unchecked")
@@ -53,13 +52,14 @@ public class BeanFactory {
         }
     }
 
-    private void initializeByConfig() throws BeanInitException {
+    public void initializeByConfig() throws BeanInitException {
         for (final Class<?> preInstanticateBean : preInstanticateBeans) {
             final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
             initializeByMethod(preInstanticateBean, methods);
+            initialize();
         }
 
-        logger.info("bean register start");
+        logger.info("configuration bean register start");
         for (final Class<?> aClass : beans.keySet()) {
             logger.info("bean register : {}", aClass);
         }

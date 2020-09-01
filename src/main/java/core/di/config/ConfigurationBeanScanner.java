@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
 public class ConfigurationBeanScanner {
 
     public static Map<Class<?>, Object> scan(BeanFactory beanFactory) {
-        beanFactory.applyConfiguration(getClassesByConfigurationType());
+        beanFactory.apply(getClassesByConfigurationType());
+        beanFactory.initializeByConfig();
         return beanFactory.getConfigurationBeans();
     }
 

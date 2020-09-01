@@ -40,12 +40,18 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
+    private static final BeanFactory beanFactory = new BeanFactory();
+
+    public static <T> T getBean(Class<T> requiredType) {
+        return beanFactory.getBean(requiredType);
+    }
+
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
-        BeanFactory beanFactory = new BeanFactory(preInstanticateClazz);
+        beanFactory.apply(preInstanticateClazz);
         beanFactory.initialize();
 
         ConfigurationBeanScanner.scan(beanFactory);
