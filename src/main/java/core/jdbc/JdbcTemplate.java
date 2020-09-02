@@ -4,12 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class JdbcTemplate {
-    private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
+    private static final Logger logger = LoggerFactory.getLogger(JdbcTemplate.class);
 
     private DataSource dataSource;
 
@@ -75,7 +78,7 @@ public class JdbcTemplate {
     }
 
     private <T> List<T> mapResultSetToObject(RowMapper<T> rm, PreparedStatement pstmt) {
-        try(ResultSet rs = pstmt.executeQuery()) {
+        try (ResultSet rs = pstmt.executeQuery()) {
             List<T> list = new ArrayList<T>();
             while (rs.next()) {
                 list.add(rm.mapRow(rs));

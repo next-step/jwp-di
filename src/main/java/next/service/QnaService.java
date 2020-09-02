@@ -1,5 +1,7 @@
 package next.service;
 
+import core.di.factory.BeanScanner;
+import core.jdbc.JdbcTemplate;
 import next.CannotDeleteException;
 import next.dao.AnswerDao;
 import next.dao.QuestionDao;
@@ -12,8 +14,8 @@ import java.util.List;
 public class QnaService {
     private static QnaService qnaService = new QnaService();
 
-    private QuestionDao questionDao = QuestionDao.getInstance();
-    private AnswerDao answerDao = AnswerDao.getInstance();
+    private QuestionDao questionDao = new QuestionDao();
+    private AnswerDao answerDao = new AnswerDao(BeanScanner.getBean(JdbcTemplate.class));
 
     private QnaService() {
     }

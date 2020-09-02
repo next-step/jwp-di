@@ -4,6 +4,7 @@ import core.annotation.Component;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
+import core.di.factory.BeanScanner;
 import core.di.factory.example.ExampleConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,10 @@ class ConfigurationBeanScannerTest {
 
     @Test
     void getBeanByFactory() {
-        BeanFactory beanFactory = new BeanFactory();
-        final Map<Class<?>, Object> scan = ConfigurationBeanScanner.scan(beanFactory);
-        final Object bean = scan.get(DataSource.class);
+        BeanScanner beanScanner = new BeanScanner();
+        beanScanner.scan("");
+
+        final Object bean = BeanScanner.getBean(DataSource.class);
         assertThat(bean).isNotNull();
     }
 

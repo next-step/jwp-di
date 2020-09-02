@@ -1,5 +1,7 @@
 package core.mvc.tobe;
 
+import core.di.factory.BeanScanner;
+import core.jdbc.JdbcTemplate;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +18,12 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+        handlerMapping = new AnnotationHandlerMapping("");
         handlerMapping.initialize();
 
+        userDao = BeanScanner.getBean(UserDao.class);
         DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+
     }
 
     @Test
@@ -29,7 +32,7 @@ public class AnnotationHandlerMappingTest {
         createUser(user);
         assertThat(userDao.findByUserId(user.getUserId())).isEqualTo(user);
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/user");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
@@ -39,7 +42,7 @@ public class AnnotationHandlerMappingTest {
     }
 
     private void createUser(User user) throws Exception {
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/user");
         request.setParameter("userId", user.getUserId());
         request.setParameter("password", user.getPassword());
         request.setParameter("name", user.getName());

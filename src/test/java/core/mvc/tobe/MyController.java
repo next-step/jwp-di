@@ -1,8 +1,11 @@
 package core.mvc.tobe;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.factory.BeanScanner;
+import core.jdbc.JdbcTemplate;
 import core.mvc.ModelAndView;
 import next.dao.UserDao;
 import next.model.User;
@@ -16,9 +19,14 @@ import javax.servlet.http.HttpServletResponse;
 public class MyController {
     private static final Logger logger = LoggerFactory.getLogger(MyController.class);
 
-    private UserDao userDao = UserDao.getInstance();
+    private UserDao userDao;
 
-    @RequestMapping(value = "/users", method = RequestMethod.GET)
+    @Inject
+    public MyController(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    @RequestMapping(value = "/user", method = RequestMethod.GET)
     public ModelAndView findUserId(HttpServletRequest request, HttpServletResponse response) {
         String userId = request.getParameter("userId");
         logger.debug("Find UserId : {}", userId);
@@ -27,7 +35,7 @@ public class MyController {
         return null;
     }
 
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
+    @RequestMapping(value = "/user", method = RequestMethod.POST)
     public ModelAndView save(HttpServletRequest request, HttpServletResponse response) {
         User user = new User(
                 request.getParameter("userId"),
@@ -35,6 +43,8 @@ public class MyController {
                 request.getParameter("name"),
                 request.getParameter("email"));
         logger.debug("User : {}", user);
+        System.out.println("09090290902");
+        System.out.println(userDao);
         userDao.insert(user);
         return null;
     }
