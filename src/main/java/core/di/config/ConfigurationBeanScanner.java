@@ -14,7 +14,6 @@ public class ConfigurationBeanScanner {
 
     public static Map<Class<?>, Object> scan(BeanFactory beanFactory) {
         beanFactory.apply(getClassesByConfigurationType());
-        beanFactory.initializeByConfig();
         return beanFactory.getConfigurationBeans();
     }
 

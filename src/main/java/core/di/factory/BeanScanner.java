@@ -52,15 +52,18 @@ public class BeanScanner {
 
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
         beanFactory.apply(preInstanticateClazz);
+        scanConfiguration();
         beanFactory.initialize();
-
-        ConfigurationBeanScanner.scan(beanFactory);
 
         Map<Class<?>, Object> controllers = beanFactory.getControllers();
         for (final Map.Entry<Class<?>, Object> clazz : controllers.entrySet()) {
             addHandlerExecution(handlers, clazz.getValue(), clazz.getKey().getMethods());
         }
         return handlers;
+    }
+
+    private void scanConfiguration() {
+        ConfigurationBeanScanner.scan(beanFactory);
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {

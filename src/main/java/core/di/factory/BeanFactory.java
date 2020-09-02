@@ -41,6 +41,7 @@ public class BeanFactory {
         for (final Class<?> preInstanticateBean : preInstanticateBeans) {
             try {
                 instantiateClass(preInstanticateBean);
+                initializeByConfig(preInstanticateBean);
             } catch (Exception e) {
                 throw new BeanInitException(e.getMessage());
             }
@@ -52,17 +53,9 @@ public class BeanFactory {
         }
     }
 
-    public void initializeByConfig() throws BeanInitException {
-        for (final Class<?> preInstanticateBean : preInstanticateBeans) {
-            final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
-            initializeByMethod(preInstanticateBean, methods);
-            initialize();
-        }
-
-        logger.info("configuration bean register start");
-        for (final Class<?> aClass : beans.keySet()) {
-            logger.info("bean register : {}", aClass);
-        }
+    private void initializeByConfig(Class<?> preInstanticateBean) {
+        final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
+        initializeByMethod(preInstanticateBean, methods);
     }
 
     private void initializeByMethod(Class<?> preInstanticateBean, Set<Method> methods) {

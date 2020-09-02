@@ -18,11 +18,10 @@ public class UserDaoTest {
     @BeforeEach
     public void setup() {
         DBInitializer.initialize();
-
-        userDao = UserDao.getInstance();
-
         BeanScanner beanScanner = new BeanScanner();
         beanScanner.scan("");
+
+        userDao = UserDao.getInstance();
     }
 
     @Test
