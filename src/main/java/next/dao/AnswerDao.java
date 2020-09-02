@@ -1,6 +1,7 @@
 package next.dao;
 
-import core.di.factory.BeanScanner;
+import core.annotation.Inject;
+import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
@@ -12,16 +13,15 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.List;
 
+@Repository
 public class AnswerDao {
-    private static final Logger logger = LoggerFactory.getLogger( AnswerDao.class );
+    private static final Logger logger = LoggerFactory.getLogger(AnswerDao.class);
 
-    private static AnswerDao answerDao = new AnswerDao();
+    private JdbcTemplate jdbcTemplate;
 
-    private AnswerDao() {
-    }
-
-    public static AnswerDao getInstance() {
-        return answerDao;
+    @Inject
+    public AnswerDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Answer insert(Answer answer) {
@@ -38,7 +38,6 @@ public class AnswerDao {
             }
         };
 
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         KeyHolder keyHolder = new KeyHolder();
         jdbcTemplate.update(psc, keyHolder);
         logger.debug("KeyHolder : {}", keyHolder);
@@ -57,7 +56,6 @@ public class AnswerDao {
             }
         };
 
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.queryForObject(sql, rm, answerId);
     }
 
@@ -73,13 +71,11 @@ public class AnswerDao {
             }
         };
 
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.query(sql, rm, questionId);
     }
 
     public void delete(Long answerId) {
         String sql = "DELETE FROM ANSWERS WHERE answerId = ?";
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, answerId);
     }
 }

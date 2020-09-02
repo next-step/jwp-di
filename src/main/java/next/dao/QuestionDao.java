@@ -1,5 +1,7 @@
 package next.dao;
 
+import core.annotation.Inject;
+import core.annotation.Repository;
 import core.di.factory.BeanScanner;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
@@ -10,14 +12,14 @@ import next.model.Question;
 import java.sql.*;
 import java.util.List;
 
+@Repository
 public class QuestionDao {
-    private static QuestionDao questionDao = new QuestionDao();
 
-    private QuestionDao() {
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    public static QuestionDao getInstance() {
-        return questionDao;
+    @Inject
+    public QuestionDao() {
+        this.jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
     }
 
     public Question insert(Question question) {
@@ -35,7 +37,6 @@ public class QuestionDao {
         };
 
         KeyHolder keyHolder = new KeyHolder();
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(psc, keyHolder);
         return findById(keyHolder.getId());
     }
@@ -53,7 +54,6 @@ public class QuestionDao {
 
         };
 
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.query(sql, rm);
     }
 
@@ -69,25 +69,21 @@ public class QuestionDao {
             }
         };
 
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.queryForObject(sql, rm, questionId);
     }
 
     public void update(Question question) {
         String sql = "UPDATE QUESTIONS set title = ?, contents = ? WHERE questionId = ?";
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, question.getTitle(), question.getContents(), question.getQuestionId());
     }
 
     public void delete(long questionId) {
         String sql = "DELETE FROM QUESTIONS WHERE questionId = ?";
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, questionId);
     }
 
     public void updateCountOfAnswer(long questionId) {
         String sql = "UPDATE QUESTIONS set countOfAnswer = countOfAnswer + 1 WHERE questionId = ?";
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, questionId);
     }
 }

@@ -1,6 +1,7 @@
 package next.dao;
 
-import core.di.factory.BeanScanner;
+import core.annotation.Inject;
+import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.RowMapper;
 import next.model.User;
@@ -9,27 +10,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Repository
 public class UserDao {
-    private static UserDao userDao;
 
-    private UserDao() {
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    public static UserDao getInstance() {
-        if (userDao == null) {
-            userDao = new UserDao();
-        }
-        return userDao;
+    @Inject
+    public UserDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public void insert(User user) {
         String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
+        System.out.println(user.toString());
         jdbcTemplate.update(sql, user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
     }
 
     public User findByUserId(String userId) {
-        String sql = "SELECT userId, password, name, email FROM USERS WHERE userid=?";
+        String sql = "SELECT userId, password, name, email FROM USERS WHERE userId=?";
 
         RowMapper<User> rm = new RowMapper<User>() {
             @Override
@@ -39,7 +37,6 @@ public class UserDao {
             }
         };
 
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.queryForObject(sql, rm, userId);
     }
 
@@ -54,13 +51,11 @@ public class UserDao {
             }
         };
 
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         return jdbcTemplate.query(sql, rm);
     }
 
     public void update(User user) {
         String sql = "UPDATE USERS set password = ?, name = ?, email = ? WHERE userId = ?";
-        JdbcTemplate jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
         jdbcTemplate.update(sql, user.getPassword(), user.getName(), user.getEmail(), user.getUserId());
     }
 }
