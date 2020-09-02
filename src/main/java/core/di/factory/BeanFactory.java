@@ -38,13 +38,12 @@ public class BeanFactory {
     }
 
     public void initialize() throws BeanInitException {
-        for (final Class<?> preInstanticateBean : preInstanticateBeans) {
-            try {
-                instantiateClass(preInstanticateBean);
-                initializeByConfig(preInstanticateBean);
-            } catch (Exception e) {
-                throw new BeanInitException(e.getMessage());
-            }
+        try {
+            initializeByConfig();
+            initializeByApplicationClass();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BeanInitException(e.getMessage());
         }
 
         logger.info("bean register start");
@@ -53,9 +52,18 @@ public class BeanFactory {
         }
     }
 
-    private void initializeByConfig(Class<?> preInstanticateBean) {
-        final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(preInstanticateBean);
-        initializeByMethod(preInstanticateBean, methods);
+    private void initializeByApplicationClass() throws Exception {
+        for (final Class<?> preInstanticateBean : preInstanticateBeans) {
+            instantiateClass(preInstanticateBean);
+        }
+    }
+
+    private void initializeByConfig() {
+        for (final Class<?> instanticateBean : preInstanticateBeans) {
+            final Set<Method> methods = BeanFactoryUtils.getBeanConstructor(instanticateBean);
+            initializeByMethod(instanticateBean, methods);
+        }
+
     }
 
     private void initializeByMethod(Class<?> preInstanticateBean, Set<Method> methods) {
@@ -65,13 +73,22 @@ public class BeanFactory {
     }
 
     private void initializeByBean(Class<?> preInstanticateBean, Set<Method> methods) {
-        methods.forEach(method -> {
-            try {
-                instantiateBean(preInstanticateBean, method);
-            } catch (Exception e) {
-                throw new BeanInitException(e.getMessage());
-            }
-        });
+        methods.stream()
+                .sorted((o1, o2) -> {
+                    if (o1.getParameterCount() < o2.getParameterCount()) {
+                        return -1;
+                    } else if (o1.getParameterCount() > o2.getParameterCount()){
+                        return 1;
+                    }
+                    return 0;
+                })
+                .forEach(method -> {
+                    try {
+                        instantiateBean(preInstanticateBean, method);
+                    } catch (Exception e) {
+                        throw new BeanInitException(e.getMessage());
+                    }
+                });
     }
 
 
@@ -94,7 +111,7 @@ public class BeanFactory {
     private Object instantiateMethod(Class clazz, Method method) throws Exception {
         List<Object> objects = Lists.newArrayList();
         for (final Class<?> parameterType : method.getParameterTypes()) {
-            final Object bean = getBean(parameterType);
+            final Object bean = beans.get(parameterType);
             if (Objects.nonNull(bean)) {
                 objects.add(bean);
             } else {
