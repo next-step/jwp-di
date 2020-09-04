@@ -3,20 +3,25 @@ package core.jdbc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class JdbcTemplate {
-    private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
+    private static final Logger logger = LoggerFactory.getLogger(JdbcTemplate.class);
 
-    private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private DataSource dataSource;
 
-    private JdbcTemplate() {
+    public JdbcTemplate(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
-    public static JdbcTemplate getInstance() {
-        return jdbcTemplate;
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     public void update(String sql, PreparedStatementSetter pss) throws DataAccessException {
@@ -73,7 +78,7 @@ public class JdbcTemplate {
     }
 
     private <T> List<T> mapResultSetToObject(RowMapper<T> rm, PreparedStatement pstmt) {
-        try(ResultSet rs = pstmt.executeQuery()) {
+        try (ResultSet rs = pstmt.executeQuery()) {
             List<T> list = new ArrayList<T>();
             while (rs.next()) {
                 list.add(rm.mapRow(rs));

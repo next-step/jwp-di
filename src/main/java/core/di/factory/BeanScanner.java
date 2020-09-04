@@ -1,10 +1,12 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
+import core.di.config.ConfigurationBeanScanner;
 import core.mvc.tobe.HandlerExecution;
 import core.mvc.tobe.HandlerKey;
 import core.mvc.tobe.support.*;
@@ -38,18 +40,30 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
+    private static final BeanFactory beanFactory = new BeanFactory();
+
+    public static <T> T getBean(Class<T> requiredType) {
+        return beanFactory.getBean(requiredType);
+    }
+
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
-        BeanFactory beanFactory = new BeanFactory(preInstanticateClazz);
+        beanFactory.apply(preInstanticateClazz);
+        scanConfiguration();
         beanFactory.initialize();
+
         Map<Class<?>, Object> controllers = beanFactory.getControllers();
         for (final Map.Entry<Class<?>, Object> clazz : controllers.entrySet()) {
             addHandlerExecution(handlers, clazz.getValue(), clazz.getKey().getMethods());
         }
         return handlers;
+    }
+
+    private void scanConfiguration() {
+        ConfigurationBeanScanner.scan(beanFactory);
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {

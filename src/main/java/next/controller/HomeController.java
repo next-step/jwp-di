@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class HomeController extends AbstractNewController {
-    private QuestionDao questionDao = QuestionDao.getInstance();
+    private QuestionDao questionDao = new QuestionDao();
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ModelAndView execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
