@@ -1,5 +1,6 @@
 package next.controller;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
@@ -23,8 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 public class ApiQnaController extends AbstractNewController {
     private static final Logger logger = LoggerFactory.getLogger( ApiQnaController.class );
 
-    private QuestionDao questionDao = new QuestionDao();
-    private AnswerDao answerDao = new AnswerDao(BeanScanner.getBean(JdbcTemplate.class));
+    private QuestionDao questionDao;
+    private AnswerDao answerDao;
+
+    @Inject
+    public ApiQnaController(QuestionDao questionDao, AnswerDao answerDao) {
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
+    }
 
     @RequestMapping(value = "/api/qna/list", method = RequestMethod.GET)
     public ModelAndView questions(HttpServletRequest req, HttpServletResponse resp) throws Exception {

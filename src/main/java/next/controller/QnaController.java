@@ -1,5 +1,6 @@
 package next.controller;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
@@ -21,9 +22,18 @@ import java.util.List;
 
 @Controller
 public class QnaController extends AbstractNewController {
-    private QuestionDao questionDao = new QuestionDao();
-    private AnswerDao answerDao = new AnswerDao(BeanScanner.getBean(JdbcTemplate.class));
-    private QnaService qnaService = QnaService.getInstance();
+    private QuestionDao questionDao;
+    private AnswerDao answerDao;
+    private QnaService qnaService;
+
+    @Inject
+    public QnaController(QuestionDao questionDao,
+                         AnswerDao answerDao,
+                         QnaService qnaService) {
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
+        this.qnaService = qnaService;
+    }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
     public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
