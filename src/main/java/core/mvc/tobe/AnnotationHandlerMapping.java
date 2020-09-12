@@ -42,13 +42,16 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         return getHandlerInternal(new HandlerKey(requestUri, rm));
     }
 
+    public <T> T getBean(Class<T> requiredType) {
+        return beanFactory.getBean(requiredType);
+    }
+
     private HandlerExecution getHandlerInternal(HandlerKey requestHandlerKey) {
         for (HandlerKey handlerKey : handlerExecutions.keySet()) {
             if (handlerKey.isMatch(requestHandlerKey)) {
                 return handlerExecutions.get(handlerKey);
             }
         }
-
         return null;
     }
 }

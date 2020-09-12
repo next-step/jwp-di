@@ -1,8 +1,5 @@
 package core.mvc.tobe;
 
-import core.di.config.ConfigurationBeanScanner;
-import core.di.factory.BeanFactory;
-import core.di.factory.ClasspathBeanScanner;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,12 +18,8 @@ public class AnnotationHandlerMappingTest {
     public void setup() {
         handlerMapping = new AnnotationHandlerMapping("");
         handlerMapping.initialize();
-        BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        configurationBeanScanner.scan("");
 
-        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
-        userDao = classpathBeanScanner.getBean(UserDao.class);
+        userDao = handlerMapping.getBean(UserDao.class);
         DBInitializer.initialize();
 
     }
@@ -40,7 +33,7 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/user");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
 
         assertThat(request.getAttribute("user")).isEqualTo(user);
@@ -53,7 +46,7 @@ public class AnnotationHandlerMappingTest {
         request.setParameter("name", user.getName());
         request.setParameter("email", user.getEmail());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
     }
 }
