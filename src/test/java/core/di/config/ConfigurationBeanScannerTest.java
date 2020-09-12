@@ -1,20 +1,19 @@
 package core.di.config;
 
-import core.annotation.Component;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import core.di.factory.example.ExampleConfig;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,5 +90,15 @@ class ConfigurationBeanScannerTest {
 
         assertThat(classes.contains(MyConfiguration.class)).isTrue();
         assertThat(classes.contains(ExampleConfig.class)).isTrue();
+    }
+
+    @Test
+    void registerSimple() {
+        BeanFactory beanFactory = new BeanFactory();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.register(ExampleConfig.class);
+        beanFactory.initialize();
+
+        assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
     }
 }

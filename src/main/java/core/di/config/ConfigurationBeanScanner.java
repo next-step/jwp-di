@@ -12,6 +12,16 @@ import java.util.stream.Collectors;
 
 public class ConfigurationBeanScanner {
 
+    private BeanFactory beanFactory;
+
+    public ConfigurationBeanScanner(final BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public void register(Class<?> clazz) {
+        beanFactory.register(clazz);
+    }
+
     public static Map<Class<?>, Object> scan(BeanFactory beanFactory) {
         beanFactory.apply(getClassesByConfigurationType());
         return beanFactory.getConfigurationBeans();
