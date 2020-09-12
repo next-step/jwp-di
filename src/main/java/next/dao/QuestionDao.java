@@ -2,7 +2,7 @@ package next.dao;
 
 import core.annotation.Inject;
 import core.annotation.Repository;
-import core.di.factory.BeanScanner;
+import core.di.factory.ClasspathBeanScanner;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
@@ -18,8 +18,8 @@ public class QuestionDao {
     private JdbcTemplate jdbcTemplate;
 
     @Inject
-    public QuestionDao() {
-        this.jdbcTemplate = BeanScanner.getBean(JdbcTemplate.class);
+    public QuestionDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Question insert(Question question) {

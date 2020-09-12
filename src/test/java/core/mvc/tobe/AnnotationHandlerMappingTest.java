@@ -1,7 +1,8 @@
 package core.mvc.tobe;
 
-import core.di.factory.BeanScanner;
-import core.jdbc.JdbcTemplate;
+import core.di.config.ConfigurationBeanScanner;
+import core.di.factory.BeanFactory;
+import core.di.factory.ClasspathBeanScanner;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,8 +21,12 @@ public class AnnotationHandlerMappingTest {
     public void setup() {
         handlerMapping = new AnnotationHandlerMapping("");
         handlerMapping.initialize();
+        BeanFactory beanFactory = new BeanFactory();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.scan("");
 
-        userDao = BeanScanner.getBean(UserDao.class);
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        userDao = classpathBeanScanner.getBean(UserDao.class);
         DBInitializer.initialize();
 
     }

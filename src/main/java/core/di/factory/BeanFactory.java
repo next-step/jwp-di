@@ -44,21 +44,24 @@ public class BeanFactory {
     public void initialize() throws BeanInitException {
         try {
             initializeByConfig();
-            initializeByApplicationClass();
         } catch (Exception e) {
             e.printStackTrace();
             throw new BeanInitException(e.getMessage());
+        }
+    }
+
+    public void initializeByApplicationClass() {
+        try {
+            for (final Class<?> preInstanticateBean : preInstanticateBeans) {
+                instantiateClass(preInstanticateBean);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         logger.info("bean register start");
         for (final Class<?> aClass : beans.keySet()) {
             logger.info("bean register : {}", aClass);
-        }
-    }
-
-    private void initializeByApplicationClass() throws Exception {
-        for (final Class<?> preInstanticateBean : preInstanticateBeans) {
-            instantiateClass(preInstanticateBean);
         }
     }
 

@@ -2,8 +2,6 @@ package next.service;
 
 import core.annotation.Inject;
 import core.annotation.Service;
-import core.di.factory.BeanScanner;
-import core.jdbc.JdbcTemplate;
 import next.CannotDeleteException;
 import next.dao.AnswerDao;
 import next.dao.QuestionDao;

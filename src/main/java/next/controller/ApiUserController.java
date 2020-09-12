@@ -5,8 +5,6 @@ import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.factory.BeanScanner;
-import core.jdbc.JdbcTemplate;
 import core.mvc.JsonView;
 import core.mvc.ModelAndView;
 import next.dao.UserDao;

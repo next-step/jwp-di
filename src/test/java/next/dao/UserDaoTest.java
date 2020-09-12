@@ -1,7 +1,8 @@
 package next.dao;
 
-import core.di.factory.BeanScanner;
-import core.jdbc.JdbcTemplate;
+import core.di.config.ConfigurationBeanScanner;
+import core.di.factory.BeanFactory;
+import core.di.factory.ClasspathBeanScanner;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,10 +20,13 @@ public class UserDaoTest {
     @BeforeEach
     public void setup() {
         DBInitializer.initialize();
-        BeanScanner beanScanner = new BeanScanner();
-        beanScanner.scan("");
+        BeanFactory beanFactory = new BeanFactory();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.scan("");
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.scan("");
 
-        userDao = BeanScanner.getBean(UserDao.class);
+        userDao = classpathBeanScanner.getBean(UserDao.class);
     }
 
     @Test

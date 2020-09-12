@@ -1,7 +1,6 @@
 package core.di.factory;
 
 import com.google.common.collect.Sets;
-import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -23,12 +22,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
-public class BeanScanner {
+public class ClasspathBeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClasspathBeanScanner.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
             new HttpRequestArgumentResolver(),
@@ -40,9 +38,13 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    private static final BeanFactory beanFactory = new BeanFactory();
+    private BeanFactory beanFactory;
 
-    public static <T> T getBean(Class<T> requiredType) {
+    public ClasspathBeanScanner(final BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public <T> T getBean(Class<T> requiredType) {
         return beanFactory.getBean(requiredType);
     }
 
@@ -52,18 +54,13 @@ public class BeanScanner {
 
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
         beanFactory.apply(preInstanticateClazz);
-        scanConfiguration();
-        beanFactory.initialize();
+        beanFactory.initializeByApplicationClass();
 
         Map<Class<?>, Object> controllers = beanFactory.getControllers();
         for (final Map.Entry<Class<?>, Object> clazz : controllers.entrySet()) {
             addHandlerExecution(handlers, clazz.getValue(), clazz.getKey().getMethods());
         }
         return handlers;
-    }
-
-    private void scanConfiguration() {
-        ConfigurationBeanScanner.scan(beanFactory);
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {

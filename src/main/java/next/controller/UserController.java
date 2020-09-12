@@ -5,7 +5,6 @@ import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.annotation.web.RequestParam;
-import core.di.factory.BeanScanner;
 import core.mvc.ModelAndView;
 import core.mvc.tobe.AbstractNewController;
 import next.dao.UserDao;
