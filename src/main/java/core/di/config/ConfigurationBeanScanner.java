@@ -4,9 +4,11 @@ import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
 import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,13 +24,22 @@ public class ConfigurationBeanScanner {
         beanFactory.register(clazz);
     }
 
-    public static Map<Class<?>, Object> scan(BeanFactory beanFactory) {
-        beanFactory.apply(getClassesByConfigurationType());
-        return beanFactory.getConfigurationBeans();
+    public void scan(Object... basePackage) {
+        this.beanFactory.apply(getClassesByConfigurationType(basePackage));
+        this.beanFactory.apply(getClasses(basePackage));
+        this.beanFactory.initialize();
     }
 
-    private static Set<Class<?>> getClassesByConfigurationType() {
-        final Set<String> paths = getPathToScan();
+    private Set<Class<?>> getClasses(Object... basePackage) {
+        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+        Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Configuration.class);
+        return typesAnnotatedWith.stream()
+                .filter(clazz -> !clazz.isAnnotationPresent(ComponentScan.class))
+                .collect(Collectors.toSet());
+    }
+
+    private Set<Class<?>> getClassesByConfigurationType(Object... basePackage) {
+        final Set<String> paths = getPathToScan(basePackage);
         return paths.stream()
                 .flatMap(path -> {
                     Reflections componentReflections = new Reflections(path);
@@ -37,15 +48,15 @@ public class ConfigurationBeanScanner {
                 .collect(Collectors.toSet());
     }
 
-    private static Set<String> getPathToScan() {
-        final Set<ComponentScan> componentScans = getClassesByComponentScanType();
+    private Set<String> getPathToScan(Object... basePackage) {
+        final Set<ComponentScan> componentScans = getClassesByComponentScanType(basePackage);
         return componentScans.stream()
                 .flatMap(s -> Arrays.stream(s.value()))
                 .collect(Collectors.toSet());
     }
 
-    private static Set<ComponentScan> getClassesByComponentScanType() {
-        Reflections reflections = new Reflections("");
+    private Set<ComponentScan> getClassesByComponentScanType(Object... basePackage) {
+        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Configuration.class);
         return typesAnnotatedWith.stream()
                 .filter(clazz -> clazz.isAnnotationPresent(ComponentScan.class))
