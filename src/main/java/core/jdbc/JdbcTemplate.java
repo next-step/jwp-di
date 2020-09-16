@@ -1,5 +1,6 @@
 package core.jdbc;
 
+import core.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ public class JdbcTemplate {
 
     private DataSource dataSource;
 
+    @Inject
     public JdbcTemplate(DataSource dataSource) {
         this.dataSource = dataSource;
     }

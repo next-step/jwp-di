@@ -1,8 +1,9 @@
 package next.dao;
 
-import core.di.factory.BeanScanner;
+import core.di.config.ConfigurationBeanScanner;
+import core.di.factory.BeanFactory;
+import core.di.factory.ClasspathBeanScanner;
 import core.jdbc.ConnectionManager;
-import core.jdbc.JdbcTemplate;
 import next.model.Answer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,22 +17,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnswerDaoTest {
     private static final Logger log = LoggerFactory.getLogger(AnswerDaoTest.class);
+    private BeanFactory beanFactory;
 
     @BeforeEach
     public void setup() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(new ClassPathResource("jwp.sql"));
         DatabasePopulatorUtils.execute(populator, ConnectionManager.getDataSource());
-
-        BeanScanner beanScanner = new BeanScanner();
-        beanScanner.scan("");
+        this.beanFactory = new BeanFactory();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.scan("");
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.scan("");
     }
 
     @Test
     public void addAnswer() throws Exception {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
-        AnswerDao dut = BeanScanner.getBean(AnswerDao.class);
+        AnswerDao dut = beanFactory.getBean(AnswerDao.class);
         Answer answer = dut.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();

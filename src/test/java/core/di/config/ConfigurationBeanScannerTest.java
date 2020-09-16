@@ -1,20 +1,22 @@
 package core.di.config;
 
-import core.annotation.Component;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.ClasspathBeanScanner;
 import core.di.factory.example.ExampleConfig;
-import org.junit.jupiter.api.BeforeEach;
+import core.di.factory.example.IntegrationConfig;
+import core.di.factory.example.JdbcUserRepository;
+import core.di.factory.example.MyJdbcTemplate;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,10 +26,13 @@ class ConfigurationBeanScannerTest {
 
     @Test
     void getBeanByFactory() {
-        BeanScanner beanScanner = new BeanScanner();
-        beanScanner.scan("");
+        BeanFactory beanFactory = new BeanFactory();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.scan("");
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.scan("");
 
-        final Object bean = BeanScanner.getBean(DataSource.class);
+        final Object bean = classpathBeanScanner.getBean(DataSource.class);
         assertThat(bean).isNotNull();
     }
 
@@ -91,5 +96,36 @@ class ConfigurationBeanScannerTest {
 
         assertThat(classes.contains(MyConfiguration.class)).isTrue();
         assertThat(classes.contains(ExampleConfig.class)).isTrue();
+    }
+
+    @Test
+    void registerSimple() {
+        BeanFactory beanFactory = new BeanFactory();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.register(ExampleConfig.class);
+        beanFactory.initialize();
+
+        assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
+    }
+
+    @Test
+    void registerClassPathBeanScannerByIntegration() {
+        BeanFactory beanFactory = new BeanFactory();
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.register(IntegrationConfig.class);
+        beanFactory.initialize();
+
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.scan("core.di.factory.example");
+
+        assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
+
+        JdbcUserRepository userRepository = beanFactory.getBean(JdbcUserRepository.class);
+        assertThat(userRepository).isNotNull();
+        assertThat(userRepository.getDataSource()).isNotNull();
+
+        MyJdbcTemplate jdbcTemplate = beanFactory.getBean(MyJdbcTemplate.class);
+        assertThat(jdbcTemplate).isNotNull();
+        assertThat(jdbcTemplate.getDataSource()).isNotNull();
     }
 }
