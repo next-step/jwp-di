@@ -23,8 +23,11 @@ public class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
+        beanFactory = new BeanFactory();
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
+        preInstanticateClazz.forEach(it -> {
+            beanFactory.registerBeanDefinition(it, new ClasspathBeanDefinition(it));
+        });
         beanFactory.initialize();
     }
 
