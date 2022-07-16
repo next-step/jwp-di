@@ -14,8 +14,8 @@ import java.util.List;
 @Service
 public class QnaService {
 
-    private QuestionDao questionDao;
-    private AnswerDao answerDao;
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
 
     @Inject
     public QnaService(QuestionDao questionDao, AnswerDao answerDao) {

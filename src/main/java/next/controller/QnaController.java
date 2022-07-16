@@ -20,9 +20,9 @@ import java.util.List;
 
 @Controller
 public class QnaController extends AbstractNewController {
-    private QuestionDao questionDao;
-    private AnswerDao answerDao;
-    private QnaService qnaService;
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
+    private final QnaService qnaService;
 
     @Inject
     public QnaController(QuestionDao questionDao, AnswerDao answerDao, QnaService qnaService) {

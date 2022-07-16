@@ -22,8 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 public class ApiUserController {
     private static final Logger logger = LoggerFactory.getLogger( ApiUserController.class );
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private UserDao userDao;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final UserDao userDao;
 
     @Inject
     public ApiUserController(UserDao userDao) {
