@@ -33,16 +33,9 @@ public class BeanFactory {
     public void initialize() {
         initIndependentBeans();
 
-        int initializedBeanCount = beans.size();
-        while (!beans.keySet().containsAll(preInstanticateBeans)) {
-            preInstanticateBeans.stream()
-                                .filter(bean -> !beans.containsKey(bean))
-                                .forEach(bean -> initDependentBeans(bean));
-            if (initializedBeanCount == beans.size()) {
-                throw new IllegalArgumentException("생성 불가능한 빈이 존재합니다.");
-            }
-            initializedBeanCount = beans.size();
-        }
+        preInstanticateBeans.stream()
+                            .filter(bean -> !beans.containsKey(bean))
+                            .forEach(bean -> initDependentBeans(bean));
     }
 
     private void initIndependentBeans() {
@@ -51,7 +44,7 @@ public class BeanFactory {
 
     private void createIndependentBean(Class<?> bean) {
         Arrays.stream(bean.getDeclaredConstructors())
-              .filter(constructor -> !beans.containsKey(bean) && !constructor.isAnnotationPresent(Inject.class))
+              .filter(constructor -> !constructor.isAnnotationPresent(Inject.class))
               .forEach(__ -> {
                   Object obj = BeanUtils.instantiateClass(bean);
                   Arrays.stream(bean.getInterfaces()).forEach(aClass -> beans.put(aClass, obj));
@@ -61,21 +54,21 @@ public class BeanFactory {
 
     private void initDependentBeans(Class<?> bean) {
         Arrays.stream(bean.getDeclaredConstructors())
-              .filter(constructor -> !beans.containsKey(bean) && constructor.isAnnotationPresent(Inject.class))
+              .filter(constructor -> constructor.isAnnotationPresent(Inject.class))
               .forEach(constructor -> createDependentBean(bean, constructor));
     }
 
     private void createDependentBean(Class<?> bean, Constructor<?> constructor) {
         Class<?>[] parameterTypes = constructor.getParameterTypes();
-        Set<Class<?>> classes = beans.keySet();
-        if (!classes.containsAll(Set.of(parameterTypes))) {
-            return;
-        }
+        Arrays.stream(parameterTypes)
+              .filter(parameterType -> !beans.containsKey(parameterType))
+              .forEach(parameterType -> initDependentBeans(parameterType));
 
         List<Object> parameters = Arrays.stream(parameterTypes)
                                      .map(parameterType -> beans.get(parameterType))
                                      .collect(Collectors.toList());
         Object obj = BeanUtils.instantiateClass(constructor, parameters.toArray());
+
         Arrays.stream(bean.getInterfaces()).forEach(aClass -> beans.put(aClass, obj));
         beans.put(bean, obj);
     }
