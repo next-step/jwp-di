@@ -32,14 +32,15 @@ public class BeanFactory {
 
     public void initialize() {
         initIndependentBeans();
-
-        preInstanticateBeans.stream()
-                            .filter(bean -> !beans.containsKey(bean))
-                            .forEach(bean -> initDependentBeans(bean));
+        initDependentBeans();
     }
 
     private void initIndependentBeans() {
         preInstanticateBeans.forEach(bean -> createIndependentBean(bean));
+    }
+
+    private void initDependentBeans() {
+        preInstanticateBeans.forEach(bean -> initDependentBean(bean));
     }
 
     private void createIndependentBean(Class<?> bean) {
@@ -52,7 +53,7 @@ public class BeanFactory {
               });
     }
 
-    private void initDependentBeans(Class<?> bean) {
+    private void initDependentBean(Class<?> bean) {
         Arrays.stream(bean.getDeclaredConstructors())
               .filter(constructor -> constructor.isAnnotationPresent(Inject.class))
               .forEach(constructor -> createDependentBean(bean, constructor));
@@ -62,13 +63,12 @@ public class BeanFactory {
         Class<?>[] parameterTypes = constructor.getParameterTypes();
         Arrays.stream(parameterTypes)
               .filter(parameterType -> !beans.containsKey(parameterType))
-              .forEach(parameterType -> initDependentBeans(parameterType));
+              .forEach(parameterType -> initDependentBean(parameterType));
 
         List<Object> parameters = Arrays.stream(parameterTypes)
                                      .map(parameterType -> beans.get(parameterType))
                                      .collect(Collectors.toList());
         Object obj = BeanUtils.instantiateClass(constructor, parameters.toArray());
-
         Arrays.stream(bean.getInterfaces()).forEach(aClass -> beans.put(aClass, obj));
         beans.put(bean, obj);
     }
