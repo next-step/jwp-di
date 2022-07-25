@@ -1,23 +1,23 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import core.annotation.web.Controller;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class BeanFactory {
-    private Set<Class<?>> preInstanticateBeans;
+public class BeanFactory implements BeanDefinitionRegistry {
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
+    private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    @Override
+    public void registerBeanDefinition(Class<?> clazz, BeanDefinition beanDefinition) {
+        beanDefinitions.put(clazz, beanDefinition);
     }
 
     @SuppressWarnings("unchecked")
@@ -26,41 +26,59 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        preInstanticateBeans.forEach(clazz -> beans.put(clazz, beans.computeIfAbsent(clazz, this::getObject)));
+        getBeanClasses().forEach(clazz -> beans.put(clazz, getObject(clazz)));
     }
 
-    public Map<Class<?>, Object> getControllerTypes() {
+    public Map<Class<?>, Object> getByAnnotation(Class<? extends Annotation> clazz) {
         return beans.entrySet()
                 .stream()
-                .filter(it -> it.getKey().isAnnotationPresent(Controller.class))
+                .filter(it -> it.getKey().isAnnotationPresent(clazz))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    private Set<Class<?>> getBeanClasses() {
+        return beanDefinitions.keySet();
+    }
+
     private Object getObject(Class<?> clazz) {
-        Constructor<?> constructor = getConstructor(clazz);
+        BeanDefinition beanDefinition = beanDefinitions.get(clazz);
+
+        if (beanDefinition instanceof AnnotatedBeanDefinition) {
+            Method method = ((AnnotatedBeanDefinition) beanDefinition).getMethod();
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            Object[] beanParameters = getBeanParameters(parameterTypes);
+
+            try {
+                return method.invoke(((AnnotatedBeanDefinition) beanDefinition).getConfigurationClass().newInstance(), beanParameters);
+            } catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Constructor<?> constructor = beanDefinition.getInjectedConstructor();
         Class<?>[] parameterTypes = constructor.getParameterTypes();
-        Object[] objects = Arrays.stream(parameterTypes)
-                .map(it -> getObject(BeanFactoryUtils.findConcreteClass(it, preInstanticateBeans)))
-                .toArray();
+        Object[] beanParameters = getBeanParameters(parameterTypes);
 
         try {
-            return constructor.newInstance(objects);
+            return constructor.newInstance(beanParameters);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static Constructor<?> getConstructor(Class<?> clazz) {
-        Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+    private Object[] getBeanParameters(Class<?>[] parameterTypes) {
+        return Arrays.stream(parameterTypes)
+                .map(this::createOrGetBean)
+                .toArray();
+    }
 
-        if (Objects.nonNull(injectedConstructor)) {
-            return injectedConstructor;
-        }
-
+    private Object createOrGetBean(Class<?> constructorParameterClass) {
         try {
-            return clazz.getConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            return getObject(BeanFactoryUtils.findConcreteClass(constructorParameterClass, getBeanClasses()));
+        } catch (IllegalStateException e) {
+            Object bean = getObject(constructorParameterClass);
+            beans.put(beanDefinitions.get(constructorParameterClass).getBeanClass(), bean);
+            return bean;
         }
     }
 }

@@ -21,7 +21,7 @@ import javax.servlet.http.HttpSession;
 public class UserController extends AbstractNewController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    private UserDao userDao;
+    private final UserDao userDao;
 
     @Inject
     public UserController(UserDao userDao) {

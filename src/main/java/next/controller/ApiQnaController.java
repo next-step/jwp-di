@@ -22,8 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 public class ApiQnaController extends AbstractNewController {
     private static final Logger logger = LoggerFactory.getLogger( ApiQnaController.class );
 
-    private QuestionDao questionDao;
-    private AnswerDao answerDao;
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
 
     @Inject
     public ApiQnaController(QuestionDao questionDao, AnswerDao answerDao) {

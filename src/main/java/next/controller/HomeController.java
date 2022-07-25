@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class HomeController extends AbstractNewController {
 
-    private QuestionDao questionDao;
+    private final QuestionDao questionDao;
 
     @Inject
     public HomeController(QuestionDao questionDao) {
