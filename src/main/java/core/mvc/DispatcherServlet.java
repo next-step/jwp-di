@@ -32,7 +32,8 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        beanScanner = new BeanScanner("next");
+        ComponentScanAnnotationParser componentScanAnnotationParser = new ComponentScanAnnotationParser();
+        beanScanner = new BeanScanner(componentScanAnnotationParser.getBasePackages());
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
