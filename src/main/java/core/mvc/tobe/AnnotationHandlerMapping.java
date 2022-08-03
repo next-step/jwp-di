@@ -12,17 +12,17 @@ import java.util.Map;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private BeanScanner beanScanner;
+    private ComponentBeanScanner componentBeanScanner;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(BeanScanner beanScanner) {
-        this.beanScanner = beanScanner;
+    public AnnotationHandlerMapping(ComponentBeanScanner componentBeanScanner) {
+        this.componentBeanScanner = componentBeanScanner;
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(beanScanner.scanController());
+        handlerExecutions.putAll(componentBeanScanner.scanController());
     }
 
     public Object getHandler(HttpServletRequest request) {

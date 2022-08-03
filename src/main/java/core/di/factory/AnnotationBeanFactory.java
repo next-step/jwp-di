@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ComponentBeanFactory extends AbstractBeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(ComponentBeanFactory.class);
+public class AnnotationBeanFactory extends AbstractBeanFactory {
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationBeanFactory.class);
 
-    public ComponentBeanFactory() {
+    public AnnotationBeanFactory() {
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ComponentBeanFactory extends AbstractBeanFactory {
         beans.put(bean, obj);
     }
 
-    public Set<Object> getControllers() {
+    public Set<Object> getControllerBeans() {
         return beans.keySet()
                      .stream()
                      .filter(beanClass -> beanClass.isAnnotationPresent(Controller.class))

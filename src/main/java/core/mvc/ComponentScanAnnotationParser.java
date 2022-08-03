@@ -18,10 +18,10 @@ public class ComponentScanAnnotationParser {
     }
 
 
-    public List<String> getBasePackages() {
+    public Object[] getBasePackages() {
         return typesAnnotatedWith.stream()
                                   .map(aClass -> aClass.getAnnotation(ComponentScan.class).value())
                                   .flatMap(Stream::of)
-                                  .collect(Collectors.toList());
+                                  .collect(Collectors.toList()).toArray();
     }
 }
