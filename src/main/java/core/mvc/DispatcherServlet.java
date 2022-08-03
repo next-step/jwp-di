@@ -37,11 +37,11 @@ public class DispatcherServlet extends HttpServlet {
         ComponentScanAnnotationParser componentScanAnnotationParser = new ComponentScanAnnotationParser();
         Object[] basePackages = componentScanAnnotationParser.getBasePackages();
 
-        ComponentBeanScanner componentBeanScanner = new ComponentBeanScanner(new AnnotationBeanFactory());
-        componentBeanScanner.scan(basePackages);
-
         ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(new ConfigurationBeanFactory());
         configurationBeanScanner.scan(basePackages);
+
+        ComponentBeanScanner componentBeanScanner = new ComponentBeanScanner(new AnnotationBeanFactory());
+        componentBeanScanner.scan(basePackages);
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
