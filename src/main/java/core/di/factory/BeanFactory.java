@@ -5,11 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -18,8 +20,7 @@ public class BeanFactory {
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstantiateBeanClazzs) {
-        this.preInstantiateBeanClazzs = preInstantiateBeanClazzs;
+    public BeanFactory() {
     }
 
     @SuppressWarnings("unchecked")
@@ -27,7 +28,10 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
+    public void initialize(Set<Class<?>> preInstantiateBeanClazzs) {
+        this.preInstantiateBeanClazzs = preInstantiateBeanClazzs;
+        this.preInstantiateBeanClazzs.add(getClass());
+
         for (Class<?> clazz : preInstantiateBeanClazzs) {
             Object bean = instantiateBean(clazz);
             beans.put(clazz, bean);
@@ -49,5 +53,11 @@ public class BeanFactory {
         } catch (Exception e) {
             throw new RuntimeException("fail to initiate clazz for bean: " + clazz, e);
         }
+    }
+
+    public Set<Object> getBeansWithAnnotation(Class<? extends Annotation> annotation) {
+        return beans.values().stream()
+                .filter(bean -> bean.getClass().isAnnotationPresent(annotation))
+                .collect(Collectors.toSet());
     }
 }
