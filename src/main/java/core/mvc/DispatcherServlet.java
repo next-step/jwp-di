@@ -1,9 +1,12 @@
 package core.mvc;
 
+import core.di.factory.AnnotationBeanFactory;
+import core.di.factory.ConfigurationBeanFactory;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.BeanScanner;
+import core.mvc.tobe.ComponentBeanScanner;
+import core.mvc.tobe.ConfigurationBeanScanner;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
@@ -28,15 +32,20 @@ public class DispatcherServlet extends HttpServlet {
 
     private HandlerExecutor handlerExecutor;
 
-    private BeanScanner beanScanner;
-
     @Override
     public void init() {
-        beanScanner = new BeanScanner("next");
+        ComponentScanAnnotationParser componentScanAnnotationParser = new ComponentScanAnnotationParser();
+        Object[] basePackages = componentScanAnnotationParser.getBasePackages();
+
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(new ConfigurationBeanFactory());
+        configurationBeanScanner.scan(basePackages);
+
+        ComponentBeanScanner componentBeanScanner = new ComponentBeanScanner(new AnnotationBeanFactory());
+        componentBeanScanner.scan(basePackages);
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanScanner));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(componentBeanScanner));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

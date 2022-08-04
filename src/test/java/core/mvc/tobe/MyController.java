@@ -1,8 +1,10 @@
 package core.mvc.tobe;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.jdbc.JdbcTemplate;
 import core.mvc.ModelAndView;
 import next.dao.UserDao;
 import next.model.User;
@@ -16,9 +18,12 @@ import javax.servlet.http.HttpServletResponse;
 public class MyController {
     private static final Logger logger = LoggerFactory.getLogger(MyController.class);
 
-    private UserDao userDao = new UserDao();
+    private UserDao userDao;
 
-
+    @Inject
+    public MyController(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public ModelAndView findUserId(HttpServletRequest request, HttpServletResponse response) {
