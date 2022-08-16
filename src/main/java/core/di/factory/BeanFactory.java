@@ -12,6 +12,8 @@ import org.springframework.beans.BeanUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import core.annotation.web.Controller;
+
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
@@ -57,5 +59,13 @@ public class BeanFactory {
             arguments.add(instantiate(concreteClass));
         }
         return BeanUtils.instantiateClass(constructor, arguments.toArray());
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        preInstantiateBeans.stream()
+            .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+            .forEach(clazz -> controllers.put(clazz, beans.get(clazz)));
+        return controllers;
     }
 }
