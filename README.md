@@ -7,3 +7,10 @@
 
 ## 온라인 코드 리뷰 과정
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
+
+
+## Step 1 - DI 구현 요구사항
+- [x] BeanFactory 비어있는 로직(초기화 로직) 구현
+  - [x] BeanFactoryTest 테스트 케이스 통과 
+- [x] ControllerScanner 범용적으로 리팩토링
+  - [x] BeanFactory로 포함 후 ControllerScanner 제거
