@@ -10,6 +10,22 @@ import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
 
 public class BeanFactoryUtils {
+    private static final Class<?>[] EMPTY_CLASSES = new Class[]{};
+
+    /**
+     * 인자로 전달하는 클래스가 @Inject 애노테이션을 통해 의존하는 클래스 배열을 반환
+     * 단, @Inject 애노테이션이 없는 경우 빈 배열을 반환
+     */
+    public static Class<?>[] getInjectedClasses(Class<?> clazz) {
+        Constructor<?> injectedConstructor = getInjectedConstructor(clazz);
+
+        if (injectedConstructor == null) {
+            return EMPTY_CLASSES;
+        }
+
+        return injectedConstructor.getParameterTypes();
+    }
+
     /**
      * 인자로 전달하는 클래스의 생성자 중 @Inject 애노테이션이 설정되어 있는 생성자를 반환
      *

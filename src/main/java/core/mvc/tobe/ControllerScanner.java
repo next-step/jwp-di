@@ -2,8 +2,7 @@ package core.mvc.tobe;
 
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
-import core.mvc.tobe.HandlerExecution;
-import core.mvc.tobe.HandlerKey;
+import core.di.factory.BeanScanner;
 import core.mvc.tobe.support.*;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -17,7 +16,6 @@ import org.springframework.core.ParameterNameDiscoverer;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
 public class ControllerScanner {
@@ -25,22 +23,25 @@ public class ControllerScanner {
     private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
-                new HttpRequestArgumentResolver(),
-                new HttpResponseArgumentResolver(),
-                new RequestParamArgumentResolver(),
-                new PathVariableArgumentResolver(),
-                new ModelArgumentResolver()
-        );
+            new HttpRequestArgumentResolver(),
+            new HttpResponseArgumentResolver(),
+            new RequestParamArgumentResolver(),
+            new PathVariableArgumentResolver(),
+            new ModelArgumentResolver()
+    );
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
+        BeanScanner beanScanner = new BeanScanner();
+        beanScanner.scan(basePackage);
+
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
         Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
         for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
+            Object target = beanScanner.getBean(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
         }
 
