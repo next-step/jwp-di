@@ -29,14 +29,14 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public void initialize() {
         for (Class<?> clazz : preInstanticateBeans) {
             Object instance = createInstance(clazz);
             beans.put(clazz, instance);
         }
     }
 
-    private Object createInstance(Class<?> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private Object createInstance(Class<?> clazz) {
         Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
         Constructor<?> constructor = findConstructor(concreteClass);
         List<Object> parameters = new ArrayList<>();
@@ -45,7 +45,12 @@ public class BeanFactory {
             parameters.add(getParameterByClass(typeClass));
         }
 
-        return constructor.newInstance(parameters.toArray());
+        try {
+            return constructor.newInstance(parameters.toArray());
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            logger.error("Bean 생성에 실패했습니다. [target:{}, cause:{}]", concreteClass.getName(), e.getCause());
+            throw new RuntimeException(e);
+        }
     }
 
     private Constructor<?> findConstructor(Class<?> concreteClass) {
@@ -64,7 +69,7 @@ public class BeanFactory {
         throw new NoSuchBeanConstructorException(concreteClass);
     }
 
-    private Object getParameterByClass(Class<?> typeClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private Object getParameterByClass(Class<?> typeClass){
         Object bean = getBean(typeClass);
 
         if (Objects.nonNull(bean)) {
