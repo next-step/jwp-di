@@ -69,7 +69,7 @@ public class BeanFactory {
         throw new NoSuchBeanConstructorException(concreteClass);
     }
 
-    private Object getParameterByClass(Class<?> typeClass){
+    private Object getParameterByClass(Class<?> typeClass) {
         Object bean = getBean(typeClass);
 
         if (Objects.nonNull(bean)) {

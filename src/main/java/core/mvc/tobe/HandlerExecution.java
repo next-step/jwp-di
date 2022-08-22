@@ -61,10 +61,9 @@ public class HandlerExecution {
     private Object getArguments(MethodParameter methodParameter, HttpServletRequest request, HttpServletResponse response) {
         Optional<ArgumentResolver> resolverOptional = argumentResolvers.findByMethodParameter(methodParameter);
 
-        ArgumentResolver resolver = resolverOptional
-                .orElseThrow(() -> new IllegalStateException("No suitable resolver for argument: " + methodParameter.getType()));
-
-        return resolver.resolveArgument(methodParameter, request, response);
+        return resolverOptional
+                .orElseThrow(() -> new IllegalStateException("No suitable resolver for argument: " + methodParameter.getType()))
+                .resolveArgument(methodParameter, request, response);
     }
 
 
