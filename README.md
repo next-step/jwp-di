@@ -14,3 +14,8 @@
   - [x] BeanFactoryTest 테스트 케이스 통과 
 - [x] ControllerScanner 범용적으로 리팩토링
   - [x] BeanFactory로 포함 후 ControllerScanner 제거
+
+## Step 3 - @Configuration 설정
+- [ ] MyConfiguration 클래스 만들기
+  - [ ] MyConfiguration 클래스 테스트 케이스 작성하기
+  - [ ] jdbcTemplate를 의존성 주입받을 수있도록 로직 수정하기 
