@@ -15,7 +15,10 @@ import java.util.Set;
 
 public class BeanScanner {
 
-    public Set<Class<?>> scan(Object... basePackage) {
+    private BeanScanner() {
+    }
+
+    public static Set<Class<?>> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         List<Class<? extends Annotation>> annotationClasses = List.of(Controller.class, Service.class, Repository.class);
         Set<Class<?>> preInstantiateBeans = Sets.newHashSet();
