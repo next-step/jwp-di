@@ -27,7 +27,7 @@
   - BeanFactoryUtils 클래스 활용
   - 인스턴스 생성은 스프링의 BeanUtils의 instantiateClass() 메서드 사용가능
 - [ ] BeanFactoryUtils 테스트 코드 작성
-  - [ ] getInjectedConstructor 
+  - [x] getInjectedConstructor 
   - [ ] findConcreteClass 
 - [ ] BeanFactory 의 initialize 구현
   - [ ] 생성자로 주입 받은 클래스의 인스턴스를 생성한다.
