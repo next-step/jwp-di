@@ -1,13 +1,16 @@
 package core.di.factory.example;
 
 import core.annotation.Bean;
+import core.annotation.ComponentScan;
 import core.annotation.Configuration;
+import core.config.WebMvcConfiguration;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.sql.DataSource;
 
 @Configuration
-public class IntegrationConfig {
+@ComponentScan(basePackages = {"core.di.factory"})
+public class IntegrationConfig implements WebMvcConfiguration {
     @Bean
     public DataSource dataSource() {
         BasicDataSource ds = new BasicDataSource();

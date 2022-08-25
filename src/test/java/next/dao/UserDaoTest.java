@@ -1,5 +1,7 @@
 package next.dao;
 
+import next.ApplicationContext;
+import next.config.MyConfiguration;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +15,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UserDaoTest {
 
     private UserDao userDao;
+    private ApplicationContext applicationContext;
 
     @BeforeEach
     public void setup() {
         DBInitializer.initialize();
 
-        userDao = UserDao.getInstance();
+        applicationContext = new ApplicationContext(MyConfiguration.class);
+        applicationContext.initialize();
+
+        userDao = applicationContext.getBean(UserDao.class);
     }
 
     @Test
