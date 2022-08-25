@@ -1,5 +1,6 @@
 package core.mvc.tobe;
 
+import next.config.MyConfiguration;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +17,11 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+        handlerMapping = new AnnotationHandlerMapping(MyConfiguration.class);
         handlerMapping.initialize();
 
         DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+        userDao = handlerMapping.applicationContext().getBean(UserDao.class);
     }
 
     @Test
