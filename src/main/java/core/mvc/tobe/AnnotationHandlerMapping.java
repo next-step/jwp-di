@@ -2,6 +2,7 @@ package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
 import core.annotation.web.RequestMethod;
+import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,19 +13,16 @@ import java.util.Map;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Object[] basePackage;
-    private ControllerScanner controllerScanner;
-
+    private final ControllerScanner controllerScanner;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
-        controllerScanner = new ControllerScanner();
+    public AnnotationHandlerMapping(BeanFactory beanFactory) {
+        this.controllerScanner = new ControllerScanner(beanFactory);
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(controllerScanner.scan(basePackage));
+        handlerExecutions.putAll(controllerScanner.scan());
     }
 
     public Object getHandler(HttpServletRequest request) {
@@ -40,7 +38,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
                 return handlerExecutions.get(handlerKey);
             }
         }
-
         return null;
     }
 }
