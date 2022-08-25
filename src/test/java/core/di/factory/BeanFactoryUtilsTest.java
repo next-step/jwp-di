@@ -3,12 +3,18 @@ package core.di.factory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import core.annotation.Repository;
+import core.annotation.web.Controller;
+import core.annotation.web.RequestParam;
 import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.QnaController;
+import core.di.factory.example.QuestionRepository;
 import java.lang.reflect.Constructor;
-import org.assertj.core.api.Assertions;
+import java.util.Set;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.reflections.Reflections;
 
 class BeanFactoryUtilsTest {
 
@@ -33,4 +39,38 @@ class BeanFactoryUtilsTest {
         assertThat(actual).isNull();
     }
 
+    @DisplayName("인터페이스를 구현하지 않은 클래스를 찾아 반환한다")
+    @Test
+    void concrete_class() {
+        Reflections reflections = new Reflections("core.di.factory.example");
+        final Set<Class<?>> controllerClasses = reflections.getTypesAnnotatedWith(Controller.class);
+
+        final Class<?> actual = BeanFactoryUtils.findConcreteClass(QnaController.class, controllerClasses);
+
+        assertThat(actual).isEqualTo(QnaController.class);
+    }
+
+    @DisplayName("인터페이스를 구현한 구현체 클래스를 찾아 반환한다")
+    @Test
+    void implements_concrete_class() {
+        Reflections reflections = new Reflections("core.di.factory.example");
+        final Set<Class<?>> repositoryClasses = reflections.getTypesAnnotatedWith(Repository.class);
+
+        final Class<?> actual = BeanFactoryUtils.findConcreteClass(QuestionRepository.class, repositoryClasses);
+
+        assertThat(actual).isEqualTo(JdbcQuestionRepository.class);
+    }
+
+    @DisplayName("인터페이스를 구현한 구현체가 없으면 예외를 발생시킨다")
+    @Test
+    void concrete_class_is_not_exist() {
+        Reflections reflections = new Reflections("core.di.factory.example");
+        final Set<Class<?>> repositoryClasses = reflections.getTypesAnnotatedWith(Repository.class);
+
+        final ThrowingCallable actual = () -> BeanFactoryUtils.findConcreteClass(RequestParam.class, repositoryClasses);
+
+        assertThatThrownBy(actual)
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageEndingWith(RequestParam.class.getName() + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
 }
