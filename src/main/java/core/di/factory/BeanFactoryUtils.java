@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import core.annotation.Inject;
 
 import java.lang.reflect.Constructor;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
@@ -36,7 +37,7 @@ public class BeanFactoryUtils {
      * 인터페이스인 경우 BeanFactory가 관리하는 모든 클래스 중에 인터페이스를 구현하는 클래스를 찾아 반환
      *
      * @param injectedClazz 생성자의 인자로 전달되는 클래스
-     * @param preInstanticateBeans 인스턴스 목록
+     * @param preInstanticateBeans BeanFactory 에 등록된 인스턴스 목록
      * @return 생성자의 인자로 전달되는 타입의 구현체 또는 콘크리트 클래스
      */
     public static Class<?> findConcreteClass(Class<?> injectedClazz, Set<Class<?>> preInstanticateBeans) {
@@ -44,13 +45,18 @@ public class BeanFactoryUtils {
             return injectedClazz;
         }
 
-        for (Class<?> clazz : preInstanticateBeans) {
-            Set<Class<?>> interfaces = Sets.newHashSet(clazz.getInterfaces());
-            if (interfaces.contains(injectedClazz)) {
-                return clazz;
-            }
-        }
-
-        throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+        return findImplementedConcreteClass(injectedClazz, preInstanticateBeans);
     }
+
+    private static Class<?> findImplementedConcreteClass(final Class<?> injectedClazz, final Set<Class<?>> preInstanticateBeans) {
+        return preInstanticateBeans.stream()
+            .filter(bean -> interfacesOf(bean).contains(injectedClazz))
+            .findAny()
+            .orElseThrow(() -> new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다."));
+    }
+
+    private static HashSet<Class<?>> interfacesOf(final Class<?> beans) {
+        return Sets.newHashSet(beans.getInterfaces());
+    }
+
 }
