@@ -1,22 +1,16 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
+import org.springframework.beans.BeanUtils;
+
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import core.annotation.web.Controller;
-
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
-
     private final Set<Class<?>> preInstantiateBeans;
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
