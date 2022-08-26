@@ -18,7 +18,7 @@ public class UserDaoTest {
     public void setup() {
         DBInitializer.initialize();
 
-        userDao = UserDao.getInstance();
+        userDao = new UserDao();
     }
 
     @Test

@@ -39,5 +39,5 @@
 - [x] ControllerScan 에서 Service, Repository 애너테이션을 지원하도록 개선
   - [x] 스캔 대상 애노테이션 추가 
 - [x] 클래스 이름 및 패키지 변경 core.mvc.tobe.ControllerScan -> core.di.factory.BeanScanner
-- [ ] AnnotationHandlerMapping 에서 BeanFactory와 BeanScanner를 활용하여 리팩토링
+- [x] BeanFactory와 BeanScanner를 활용하여 리팩토링
 
