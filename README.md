@@ -20,7 +20,7 @@
 ### 추가 요구사항
 > ControllerScan을 추가된 애너테이션을 지원하도록 개선한다.  
 > 역할이 변경되었으니 클래스 이름도 BeanScanner로 변경한다.  
-> ANnotationHandlerMapping이 BeanFactory와 BeanScanner를 활용해 동작하도록 리팩토링 한다.  
+> AnnotationHandlerMapping이 BeanFactory와 BeanScanner를 활용해 동작하도록 리팩토링 한다.  
 
 ### 기능 목록
 - [x] BeanFactoryTest 의 di() 테스트가 성공하면 DI 프레임워크 구현 완료.
@@ -34,5 +34,8 @@
   - [x] 생성된 인스턴스는 타입을 키로 하는 Map 에 저장한다.
   - [x] 생성에 필요한 빈이 Map 에 없으면 해당 빈도 인스턴스를 생성한다.
   - [x] 생성에 필요한 빈이 Map 에 있으면 인스턴스 생성에 활용한다.
- 
+- [ ] ControllerScan 에서 Service, Repository 애너테이션을 지원하도록 개선
+  - [ ] 스캔 대상 애노테이션 추가 
+- [ ] 클래스 이름 변경 ControllerScan -> BeanScanner
+- [ ] AnnotationHandlerMapping 에서 BeanFactory와 BeanScanner를 활용하여 리팩토링
 
