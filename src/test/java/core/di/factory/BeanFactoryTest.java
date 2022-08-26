@@ -1,21 +1,21 @@
 package core.di.factory;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import java.lang.annotation.Annotation;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
+class BeanFactoryTest {
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-public class BeanFactoryTest {
     private Reflections reflections;
     private BeanFactory beanFactory;
 
@@ -29,7 +29,7 @@ public class BeanFactoryTest {
     }
 
     @Test
-    public void di() throws Exception {
+    void di() {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);

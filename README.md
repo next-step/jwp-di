@@ -23,16 +23,16 @@
 > ANnotationHandlerMapping이 BeanFactory와 BeanScanner를 활용해 동작하도록 리팩토링 한다.  
 
 ### 기능 목록
-- [ ] BeanFactoryTest 의 di() 테스트가 성공하면 DI 프레임워크 구현 완료.
+- [x] BeanFactoryTest 의 di() 테스트가 성공하면 DI 프레임워크 구현 완료.
   - BeanFactoryUtils 클래스 활용
   - 인스턴스 생성은 스프링의 BeanUtils의 instantiateClass() 메서드 사용가능
 - [x] BeanFactoryUtils 테스트 코드 작성
   - [x] getInjectedConstructor 
   - [x] findConcreteClass 
-- [ ] BeanFactory 의 initialize 구현
-  - [ ] 생성자로 주입 받은 클래스의 인스턴스를 생성한다.
-  - [ ] 생성된 인스턴스는 타입을 키로 하는 Map 에 저장한다.
-  - [ ] 생성에 필요한 빈이 Map 에 없으면 해당 빈도 인스턴스를 생성한다.
-  - [ ] 생성에 필요한 빈이 Map 에 있으면 인스턴스 생성에 활용한다.
+- [x] BeanFactory 의 initialize 구현
+  - [x] 생성자로 주입 받은 클래스의 인스턴스를 생성한다.
+  - [x] 생성된 인스턴스는 타입을 키로 하는 Map 에 저장한다.
+  - [x] 생성에 필요한 빈이 Map 에 없으면 해당 빈도 인스턴스를 생성한다.
+  - [x] 생성에 필요한 빈이 Map 에 있으면 인스턴스 생성에 활용한다.
  
 

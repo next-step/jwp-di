@@ -13,23 +13,27 @@ public class ReflectionUtils {
 
     public static <T> T newInstance(Class<T> clazz, Object... args) {
 
-        Constructor constructor = getConstructorByArgs(clazz, args);
+        Constructor<T> constructor = getConstructorByArgs(clazz, args);
 
         if (constructor == null) {
             throw new IllegalArgumentException(clazz.getSimpleName() + " doesn't have args size constructor");
         }
 
+        return newInstance(constructor, args);
+    }
+
+    public static <T> T newInstance(final Constructor<T> constructor, final Object... arguments) {
         try {
-            return clazz.cast(constructor.newInstance(args));
+            return constructor.newInstance(arguments);
         } catch (IllegalAccessException e) {
             logger.warn("{} constructor access failed", constructor.getName());
         } catch(InvocationTargetException e) {
-            logger.warn("{} target invalid", clazz.getSimpleName());
+            logger.warn("{} target invalid", constructor.getName());
         } catch (InstantiationException e) {
-            logger.warn("{} instantiation failed", clazz.getSimpleName());
+            logger.warn("{} instantiation failed", constructor.getName());
         }
 
-        throw new RuntimeException(clazz.getSimpleName() + " instantiation failed");
+        throw new RuntimeException(constructor.getName() + " instantiation failed");
     }
 
     public static Constructor getConstructorByArgs(Class clazz, Object... args) {
