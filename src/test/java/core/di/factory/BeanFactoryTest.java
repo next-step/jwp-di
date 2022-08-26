@@ -10,7 +10,9 @@ import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
@@ -47,5 +49,14 @@ class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    @DisplayName("Controller 애니테이션이 적용된 클래스만 반환한다")
+    @Test
+    void controller_types() {
+        final Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
+
+        Assertions.assertThat(controllerTypes).containsExactly(QnaController.class);
+
     }
 }

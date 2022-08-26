@@ -36,8 +36,8 @@
   - [x] 생성에 필요한 빈이 Map 에 있으면 인스턴스 생성에 활용한다.
 - [x] 특정 애너테이션이 적용된 클래스들을 찾는다.
   - [x] 여러개의 애너테이션을 가변인자로 전달할 수 있다. 
-- [ ] ControllerScan 에서 Service, Repository 애너테이션을 지원하도록 개선
-  - [ ] 스캔 대상 애노테이션 추가 
+- [x] ControllerScan 에서 Service, Repository 애너테이션을 지원하도록 개선
+  - [x] 스캔 대상 애노테이션 추가 
 - [x] 클래스 이름 및 패키지 변경 core.mvc.tobe.ControllerScan -> core.di.factory.BeanScanner
 - [ ] AnnotationHandlerMapping 에서 BeanFactory와 BeanScanner를 활용하여 리팩토링
 

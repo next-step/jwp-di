@@ -1,11 +1,13 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import core.util.ReflectionUtils;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +31,6 @@ public class BeanFactory {
     public void initialize() {
         for (final Class<?> bean : preInstanticateBeans) {
             final Object instance = beans.computeIfAbsent(bean, this::getInstance);
-            beans.put(bean, instance);
-
             logger.debug("added bean in factory: {}", instance.getClass().getName());
         }
     }
@@ -61,5 +61,11 @@ public class BeanFactory {
         }
 
         return ReflectionUtils.getConstructorByArgs(clazz);
+    }
+
+    public Set<Class<?>> getControllerTypes() {
+        return beans.keySet().stream()
+            .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+            .collect(Collectors.toUnmodifiableSet());
     }
 }
