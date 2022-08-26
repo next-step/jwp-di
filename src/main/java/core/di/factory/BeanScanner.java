@@ -1,10 +1,13 @@
-package core.mvc.tobe;
+package core.di.factory;
 
+import core.annotation.Repository;
+import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.mvc.tobe.HandlerExecution;
 import core.mvc.tobe.HandlerKey;
 import core.mvc.tobe.support.*;
+import core.util.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -17,12 +20,11 @@ import org.springframework.core.ParameterNameDiscoverer;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
-public class ControllerScanner {
+public class BeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
@@ -36,11 +38,20 @@ public class ControllerScanner {
 
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
+        final Set<Class<?>> preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+        final BeanFactory beanFactory = new BeanFactory(preInstanticateBeans);
+        beanFactory.initialize();
+
+        Set<Class<?>> controllers = beanFactory.getControllerTypes();
+
+        return addHandlerExecution(beanFactory, controllers);
+    }
+
+    private Map<HandlerKey, HandlerExecution> addHandlerExecution(final BeanFactory beanFactory, final Set<Class<?>> controllers) {
+        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
         for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
+            Object target = beanFactory.getBean(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
         }
 

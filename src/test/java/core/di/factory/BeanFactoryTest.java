@@ -1,21 +1,23 @@
 package core.di.factory;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
+class BeanFactoryTest {
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-public class BeanFactoryTest {
     private Reflections reflections;
     private BeanFactory beanFactory;
 
@@ -29,7 +31,7 @@ public class BeanFactoryTest {
     }
 
     @Test
-    public void di() throws Exception {
+    void di() {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
@@ -47,5 +49,14 @@ public class BeanFactoryTest {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    @DisplayName("Controller 애니테이션이 적용된 클래스만 반환한다")
+    @Test
+    void controller_types() {
+        final Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
+
+        Assertions.assertThat(controllerTypes).containsExactly(QnaController.class);
+
     }
 }

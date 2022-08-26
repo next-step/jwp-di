@@ -1,11 +1,15 @@
 package core.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReflectionUtils {
 
@@ -13,23 +17,27 @@ public class ReflectionUtils {
 
     public static <T> T newInstance(Class<T> clazz, Object... args) {
 
-        Constructor constructor = getConstructorByArgs(clazz, args);
+        Constructor<T> constructor = getConstructorByArgs(clazz, args);
 
         if (constructor == null) {
             throw new IllegalArgumentException(clazz.getSimpleName() + " doesn't have args size constructor");
         }
 
+        return newInstance(constructor, args);
+    }
+
+    public static <T> T newInstance(final Constructor<T> constructor, final Object... arguments) {
         try {
-            return clazz.cast(constructor.newInstance(args));
+            return constructor.newInstance(arguments);
         } catch (IllegalAccessException e) {
             logger.warn("{} constructor access failed", constructor.getName());
-        } catch(InvocationTargetException e) {
-            logger.warn("{} target invalid", clazz.getSimpleName());
+        } catch (InvocationTargetException e) {
+            logger.warn("{} target invalid", constructor.getName());
         } catch (InstantiationException e) {
-            logger.warn("{} instantiation failed", clazz.getSimpleName());
+            logger.warn("{} instantiation failed", constructor.getName());
         }
 
-        throw new RuntimeException(clazz.getSimpleName() + " instantiation failed");
+        throw new RuntimeException(constructor.getName() + " instantiation failed");
     }
 
     public static Constructor getConstructorByArgs(Class clazz, Object... args) {
@@ -60,7 +68,7 @@ public class ReflectionUtils {
 
     public static Object convertStringValue(String value, Class<?> clazz) {
         if (clazz == String.class) {
-          return clazz.cast(value);
+            return clazz.cast(value);
         } else if (clazz == int.class || clazz == Integer.class) {
             return Integer.valueOf(value);
         } else if (clazz == long.class || clazz == Long.class) {
@@ -83,4 +91,9 @@ public class ReflectionUtils {
         return false;
     }
 
+    public static Set<Class<?>> getTypesAnnotatedWith(final Reflections reflections, final Class<? extends Annotation>... annotations) {
+        return Arrays.stream(annotations)
+            .flatMap(it -> reflections.getTypesAnnotatedWith(it).stream())
+            .collect(Collectors.toSet());
+    }
 }
