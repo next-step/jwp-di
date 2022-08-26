@@ -31,9 +31,6 @@ public class ApiQnaController extends AbstractNewController {
         this.answerDao = answerDao;
     }
 
-    //    private QuestionDao questionDao = QuestionDao.getInstance();
-//    private AnswerDao answerDao = AnswerDao.getInstance();
-
     @RequestMapping(value = "/api/qna/list", method = RequestMethod.GET)
     public ModelAndView questions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         return jsonView().addObject("questions", questionDao.findAll());
