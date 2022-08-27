@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-public class RequestHandlerScanner {
+public class RequestHandlerConverter {
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
             new HttpRequestArgumentResolver(),
@@ -34,12 +34,12 @@ public class RequestHandlerScanner {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
     private final BeanFactory beanFactory;
 
-    public RequestHandlerScanner(BeanFactory beanFactory) {
+    public RequestHandlerConverter(BeanFactory beanFactory) {
         Assert.notNull(beanFactory, "'beanFactory' must not be null");
         this.beanFactory = beanFactory;
     }
 
-    public Map<HandlerKey, HandlerExecution> scan() {
+    public Map<HandlerKey, HandlerExecution> handlers() {
         return beanFactory.annotatedWith(Controller.class)
                 .entrySet()
                 .stream()
