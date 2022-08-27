@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-public class ControllerScanner {
+public class RequestHandlerScanner {
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
             new HttpRequestArgumentResolver(),
@@ -34,7 +34,7 @@ public class ControllerScanner {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
     private final BeanFactory beanFactory;
 
-    public ControllerScanner(BeanFactory beanFactory) {
+    public RequestHandlerScanner(BeanFactory beanFactory) {
         Assert.notNull(beanFactory, "'beanFactory' must not be null");
         this.beanFactory = beanFactory;
     }

@@ -13,16 +13,16 @@ import java.util.Map;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private final ControllerScanner controllerScanner;
+    private final RequestHandlerScanner requestHandlerScanner;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
     public AnnotationHandlerMapping(BeanFactory beanFactory) {
-        this.controllerScanner = new ControllerScanner(beanFactory);
+        this.requestHandlerScanner = new RequestHandlerScanner(beanFactory);
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(controllerScanner.scan());
+        handlerExecutions.putAll(requestHandlerScanner.scan());
     }
 
     public Object getHandler(HttpServletRequest request) {
