@@ -57,6 +57,5 @@
   - 위 피드백 반영으로 해당사항 없음
 - [x] BeanScanner: 변수명 변경 (controllers -> controllerTypes)
   - 일관성 이름을 사용해야 코드를 읽을 때 혼란을 줄일 수 있다
-- [ ] BeanFactoryUtils#getInjectedConstructor `@Inject` 애너테이션이 2개 이상 감지되면 예외 발생
+- [x] BeanFactoryUtils#getInjectedConstructor `@Inject` 애너테이션이 2개 이상 감지되면 예외 발생
   - API 사용자가 주석을 읽지 않고 사용하는 경우를 대비해서 예외를 던진다면 개발 중에 빠르게 인지할 수 있을 것 같다.
-- 

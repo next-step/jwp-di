@@ -23,12 +23,22 @@ public class BeanFactoryUtils {
      * @return @Inject 애너테이션이 적용된 첫 번째 생성자
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Constructor<?> getInjectedConstructor(Class<?> clazz) {
+    public static Constructor getInjectedConstructor(Class<?> clazz) {
         Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
             return null;
         }
+        validateConstructorsCount(injectedConstructors);
+
         return injectedConstructors.iterator().next();
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static void validateConstructorsCount(final Set<Constructor> injectedConstructors) {
+        final int constructorsCount = injectedConstructors.size();
+        if (constructorsCount > 1) {
+            throw new IllegalStateException("'@Inject' 애너테이션이 적용된 생성자는 반드시 1개만 존재해야 합니다. 생성자 수 : " + constructorsCount);
+        }
     }
 
     /**
