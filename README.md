@@ -49,8 +49,8 @@
   > **코드는 신문 기사를 읽듯이, 위에서 아래로 읽어 내려가며 이해할 수 있어야 한다.**   
   > 기능은 위에서부터 아래 순서로 읽어내릴 수 있게 서술되어야 하며,   
   > 비슷한 기능은 서로 가까운 행에 배치하면 읽는 사람이 이해하기 쉽다.   
-- [ ] BeanFactory: 불필요한 static 키워드 제거
-  - IDE 자동 완성으로 인한 static 추가..
+- [x] BeanFactory: 불필요한 static 키워드 제거
+  - IDE 자동 완성으로 인한 static 추가.. 항상 확인하기!
 - [ ] BeanFactoryUtils#findImplementedConcreteClass
   - contains 로직까지 모두 메서드로 분리하여 가독성을 높일 수 있을 것 같다.
 - [ ] BeanFactoryUtils: 파라미터명 변경 (beans -> bean) 

@@ -48,7 +48,7 @@ public class BeanFactory {
         return ReflectionUtils.newInstance(constructor, arguments);
     }
 
-    private static Constructor<?> getInjectedConstructor(final Class<?> clazz) {
+    private Constructor<?> getInjectedConstructor(final Class<?> clazz) {
         final Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
         if (injectedConstructor != null) {
             return injectedConstructor;
