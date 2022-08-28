@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import core.annotation.Inject;
 
 import java.lang.reflect.Constructor;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
@@ -50,13 +49,12 @@ public class BeanFactoryUtils {
 
     private static Class<?> findImplementedConcreteClass(final Class<?> injectedClazz, final Set<Class<?>> preInstanticateBeans) {
         return preInstanticateBeans.stream()
-            .filter(bean -> interfacesOf(bean).contains(injectedClazz))
+            .filter(bean -> contains(bean.getInterfaces(), injectedClazz))
             .findAny()
             .orElseThrow(() -> new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다."));
     }
 
-    private static HashSet<Class<?>> interfacesOf(final Class<?> beans) {
-        return Sets.newHashSet(beans.getInterfaces());
+    private static boolean contains(final Class<?>[] interfaces, final Class<?> injectedClazz) {
+        return Sets.newHashSet(interfaces).contains(injectedClazz);
     }
-
 }

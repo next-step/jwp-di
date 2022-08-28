@@ -51,8 +51,8 @@
   > 비슷한 기능은 서로 가까운 행에 배치하면 읽는 사람이 이해하기 쉽다.   
 - [x] BeanFactory: 불필요한 static 키워드 제거
   - IDE 자동 완성으로 인한 static 추가.. 항상 확인하기!
-- [ ] BeanFactoryUtils#findImplementedConcreteClass
-  - contains 로직까지 모두 메서드로 분리하여 가독성을 높일 수 있을 것 같다.
+- [x] BeanFactoryUtils#findImplementedConcreteClass
+  - contains 로직까지 모두 메서드로 분리하여 직접 비교하지 않고 메시지를 보내기.
 - [ ] BeanFactoryUtils: 파라미터명 변경 (beans -> bean) 
   - 의미있는 이름을 사용하자!
 - [ ] BeanScanner: 변수명 변경 (controllers -> controllerTypes)
