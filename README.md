@@ -20,3 +20,23 @@
     - 인스턴스 생성은 `org.springframework.beans.BeanUtils`의 `instantiateClass()` 메소드 사용 가능
 - `ControllerScanner` 을 `BeanScanner`으로 변경
     - `AnnotationHandlerMapping` 이 `BeanScanner` 으로 동작하도록 변경
+
+
+## 2단계 - DI 구현(힌트)
+
+### 1단계 힌트
+
+- 재귀함수를 사용해 구현할 수 있다
+  - 다른 빈과 의존관계를 가지지 않는 빈을 찾아 인스턴스를 생성할 때까지 재귀를 실행하는 방식으로 구현
+- 재귀를 통해 새로 생성한 빈은 `BeanFactory`의 `Map<Class<?>, Object>`에 추가해 관리
+
+### 2단계 힌트
+
+- `Class`에 대한 빈 인스턴스를 생성하는 메소드
+- `Constructor`에 대한 빈 인스턴스를 생성하는 메소드
+- `@Inject` 애노테이션이 설정되어 있는 생성자가 존재하면 인스턴스 생성
+  - 없으면 기본 생성자로 인스턴스 생성
+- `Map<Class<?>, Object>`에 이미 존재하면 해당 빈 활용
+  - 존재하지 않을 경우 `instantiateClass()` 으로 생성
+- `ControllerScanner`를 `@Controller`, `@Service`, `@Repository` 도 지원하도록 `BeanScanner` 로 리팩토링
+  - `@Controller`가 설정되어 있는 빈 목록을 Map<Class<?>, Object>으로 제공
