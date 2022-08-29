@@ -10,6 +10,8 @@ import org.springframework.beans.BeanUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import core.annotation.web.Controller;
+
 public class BeanFactory {
     private Set<Class<?>> preInstanticateBeans;
 
@@ -59,5 +61,15 @@ public class BeanFactory {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("Not Found Constructor");
         }
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        for (Class<?> clazz : preInstanticateBeans) {
+            if (clazz.isAnnotationPresent(Controller.class)) {
+                controllers.put(clazz, beans.get(clazz));
+            }
+        }
+        return controllers;
     }
 }

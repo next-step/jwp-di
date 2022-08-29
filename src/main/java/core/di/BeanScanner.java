@@ -63,9 +63,9 @@ public class BeanScanner {
 
     public Map<HandlerKey, HandlerExecution> getHandlerExecutions() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
-        for (Class<?> controller : controllers) {
-            Object target = beanFactory.getBean(controller);
+        Map<Class<?>, Object> controllers = beanFactory.getControllers();
+        for (Class<?> controller : controllers.keySet()) {
+            Object target = controllers.get(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
         }
 
