@@ -40,3 +40,10 @@
   - 존재하지 않을 경우 `instantiateClass()` 으로 생성
 - `ControllerScanner`를 `@Controller`, `@Service`, `@Repository` 도 지원하도록 `BeanScanner` 로 리팩토링
   - `@Controller`가 설정되어 있는 빈 목록을 Map<Class<?>, Object>으로 제공
+
+
+## 3단계 - @Configuration 설정
+
+- 설정 파일 표시는 `@Configuration`, `BeanFactory` 에 빈으로 등록하는 설정은 `@Bean`
+- `BeanScanner` 에서 기본 패키지 설정을 설정 파일의 `@ComponentScan` 으로 설정
+- `@Configuration` 설정 파일을 통해 등록한 빈과 `BeanScanner` 를 통해 등록한 빈 간에 DI 가능
