@@ -41,3 +41,21 @@
 - [x] 클래스 이름 및 패키지 변경 core.mvc.tobe.ControllerScan -> core.di.factory.BeanScanner
 - [x] BeanFactory와 BeanScanner를 활용하여 리팩토링
 
+# 🚀 2단계 - DI 구현(힌트)
+
+### 1단계 피드백
+- [x] BeanFactory: private 메서드를 호출 순서로 정렬
+  > 클린코드   
+  > **코드는 신문 기사를 읽듯이, 위에서 아래로 읽어 내려가며 이해할 수 있어야 한다.**   
+  > 기능은 위에서부터 아래 순서로 읽어내릴 수 있게 서술되어야 하며,   
+  > 비슷한 기능은 서로 가까운 행에 배치하면 읽는 사람이 이해하기 쉽다.   
+- [x] BeanFactory: 불필요한 static 키워드 제거
+  - IDE 자동 완성으로 인한 static 추가.. 항상 확인하기!
+- [x] BeanFactoryUtils#findImplementedConcreteClass
+  - contains 로직까지 모두 메서드로 분리하여 직접 비교하지 않고 메시지를 보내기.
+- [x] BeanFactoryUtils: 파라미터명 변경 (beans -> bean) 
+  - 위 피드백 반영으로 해당사항 없음
+- [x] BeanScanner: 변수명 변경 (controllers -> controllerTypes)
+  - 일관성 이름을 사용해야 코드를 읽을 때 혼란을 줄일 수 있다
+- [x] BeanFactoryUtils#getInjectedConstructor `@Inject` 애너테이션이 2개 이상 감지되면 예외 발생
+  - API 사용자가 주석을 읽지 않고 사용하는 경우를 대비해서 예외를 던진다면 개발 중에 빠르게 인지할 수 있을 것 같다.

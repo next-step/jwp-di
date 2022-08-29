@@ -48,19 +48,19 @@ public class BeanFactory {
         return ReflectionUtils.newInstance(constructor, arguments);
     }
 
-    private Object[] createArguments(final Class<?>[] parameterTypes) {
-        return Arrays.stream(parameterTypes)
-            .map(parameterType -> getInstance(BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans)))
-            .toArray();
-    }
-
-    private static Constructor<?> getInjectedConstructor(final Class<?> clazz) {
+    private Constructor<?> getInjectedConstructor(final Class<?> clazz) {
         final Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
         if (injectedConstructor != null) {
             return injectedConstructor;
         }
 
         return ReflectionUtils.getConstructorByArgs(clazz);
+    }
+
+    private Object[] createArguments(final Class<?>[] parameterTypes) {
+        return Arrays.stream(parameterTypes)
+            .map(parameterType -> getInstance(BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans)))
+            .toArray();
     }
 
     public Set<Class<?>> getControllerTypes() {

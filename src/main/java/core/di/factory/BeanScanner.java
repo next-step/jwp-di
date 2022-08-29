@@ -43,16 +43,16 @@ public class BeanScanner {
         final BeanFactory beanFactory = new BeanFactory(preInstanticateBeans);
         beanFactory.initialize();
 
-        Set<Class<?>> controllers = beanFactory.getControllerTypes();
+        Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
 
-        return addHandlerExecution(beanFactory, controllers);
+        return addHandlerExecution(beanFactory, controllerTypes);
     }
 
-    private Map<HandlerKey, HandlerExecution> addHandlerExecution(final BeanFactory beanFactory, final Set<Class<?>> controllers) {
+    private Map<HandlerKey, HandlerExecution> addHandlerExecution(final BeanFactory beanFactory, final Set<Class<?>> controllerTypes) {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        for (Class<?> controller : controllers) {
-            Object target = beanFactory.getBean(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
+        for (Class<?> controllerType : controllerTypes) {
+            Object target = beanFactory.getBean(controllerType);
+            addHandlerExecution(handlers, target, controllerType.getMethods());
         }
 
         return handlers;

@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import core.annotation.Inject;
 
 import java.lang.reflect.Constructor;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
@@ -24,12 +23,22 @@ public class BeanFactoryUtils {
      * @return @Inject 애너테이션이 적용된 첫 번째 생성자
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Constructor<?> getInjectedConstructor(Class<?> clazz) {
+    public static Constructor getInjectedConstructor(Class<?> clazz) {
         Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
             return null;
         }
+        validateConstructorsCount(injectedConstructors);
+
         return injectedConstructors.iterator().next();
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static void validateConstructorsCount(final Set<Constructor> injectedConstructors) {
+        final int constructorsCount = injectedConstructors.size();
+        if (constructorsCount > 1) {
+            throw new IllegalStateException("'@Inject' 애너테이션이 적용된 생성자는 반드시 1개만 존재해야 합니다. 생성자 수 : " + constructorsCount);
+        }
     }
 
     /**
@@ -50,13 +59,12 @@ public class BeanFactoryUtils {
 
     private static Class<?> findImplementedConcreteClass(final Class<?> injectedClazz, final Set<Class<?>> preInstanticateBeans) {
         return preInstanticateBeans.stream()
-            .filter(bean -> interfacesOf(bean).contains(injectedClazz))
+            .filter(bean -> contains(bean.getInterfaces(), injectedClazz))
             .findAny()
             .orElseThrow(() -> new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다."));
     }
 
-    private static HashSet<Class<?>> interfacesOf(final Class<?> beans) {
-        return Sets.newHashSet(beans.getInterfaces());
+    private static boolean contains(final Class<?>[] interfaces, final Class<?> injectedClazz) {
+        return Sets.newHashSet(interfaces).contains(injectedClazz);
     }
-
 }

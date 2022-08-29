@@ -7,6 +7,7 @@ import core.annotation.Repository;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestParam;
 import core.di.factory.example.JdbcQuestionRepository;
+import core.di.factory.example.MockInjectedController;
 import core.di.factory.example.QnaController;
 import core.di.factory.example.QuestionRepository;
 import java.lang.reflect.Constructor;
@@ -37,6 +38,16 @@ class BeanFactoryUtilsTest {
         final Constructor<?> actual = BeanFactoryUtils.getInjectedConstructor(jdbcQuestionRepositoryClass);
 
         assertThat(actual).isNull();
+    }
+
+    @DisplayName("@Inject 애너테이션이 적용된 생성자가 2개 이상이면 예외가 발생한다")
+    @Test
+    void exception_more_than_2_inject_constructors() {
+        final Class<MockInjectedController> mockInjectedControllerClass = MockInjectedController.class;
+
+        assertThatThrownBy(() -> BeanFactoryUtils.getInjectedConstructor(mockInjectedControllerClass))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("'@Inject' 애너테이션이 적용된 생성자는 반드시 1개만 존재해야 합니다. 생성자 수 : 2");
     }
 
     @DisplayName("인터페이스를 구현하지 않은 클래스를 찾아 반환한다")
