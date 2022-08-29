@@ -1,30 +1,33 @@
 package core.di.factory;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.BeanCreationException;
+import core.di.factory.constructor.BeanConstructor;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.util.Assert;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.Objects.requireNonNullElseGet;
 
 public class BeanFactory {
 
-    private final BeanScanner scanner;
+    private final Map<Class<?>, BeanConstructor> beanConstructors;
     private final Map<Class<?>, Object> beans = new HashMap<>();
 
-    private BeanFactory(BeanScanner scanner) {
-        Assert.notNull(scanner, "scanner must not be null");
-        this.scanner = scanner;
+    private BeanFactory(Collection<BeanConstructor> beanConstructors) {
+        Assert.notNull(beanConstructors, "beanConstructors must not be null");
+        this.beanConstructors = beanConstructors.stream()
+                .collect(Collectors.toUnmodifiableMap(BeanConstructor::type, constructor -> constructor));
     }
 
-    public static BeanFactory from(BeanScanner scanner) {
-        return new BeanFactory(scanner);
+    public static BeanFactory from(Collection<BeanConstructor> beanConstructors) {
+        return new BeanFactory(beanConstructors);
+    }
+
+    public void initialize() {
+        beanConstructors.values().forEach(this::bean);
     }
 
     @SuppressWarnings("unchecked")
@@ -32,46 +35,43 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
-        scanner.scan()
-                .forEach(this::bean);
-    }
-
-    public Map<Class<?>, Object> annotatedWith(Class<? extends Annotation> annotation) {
+    public Collection<Object> beansAnnotatedWith(Class<? extends Annotation> annotation) {
         return beans.entrySet()
                 .stream()
                 .filter(entry -> entry.getKey().isAnnotationPresent(annotation))
-                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
     }
 
-    private Object bean(Class<?> clazz) {
-        if (beans.containsKey(clazz)) {
-            return beans.get(clazz);
+    private Object bean(BeanConstructor constructor) {
+        if (beans.containsKey(constructor.type())) {
+            return beans.get(constructor.type());
         }
-        Object instance = instantiateClass(clazz);
-        beans.put(clazz, instance);
+        Object instance = instantiateClass(constructor);
+        beans.put(constructor.type(), instance);
         return instance;
     }
 
-    private Object instantiateClass(Class<?> clazz) {
-        if (clazz.isInterface()) {
-            return bean(scanner.subTypeOf(clazz));
+    private Object instantiateClass(BeanConstructor beanConstructor) {
+        if (beanConstructor.isNotInstanced()) {
+            return bean(beanConstructors.get(subType(beanConstructor.type())));
         }
-        Constructor<?> constructor = requireNonNullElseGet(BeanFactoryUtils.getInjectedConstructor(clazz), () -> defaultConstructor(clazz));
-        return BeanUtils.instantiateClass(constructor, arguments(constructor));
+        return beanConstructor.instantiate(arguments(beanConstructor));
     }
 
-    private Object[] arguments(Constructor<?> constructor) {
-        return Stream.of(constructor.getParameterTypes())
+    private Class<?> subType(Class<?> clazz) {
+        return beanConstructors.keySet()
+                .stream()
+                .filter(type -> !type.equals(clazz) && clazz.isAssignableFrom(type))
+                .findAny()
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(clazz));
+    }
+
+    private List<Object> arguments(BeanConstructor constructor) {
+        return constructor.parameterTypes()
+                .stream()
+                .map(beanConstructors::get)
                 .map(this::bean)
-                .toArray();
-    }
-
-    private Constructor<?> defaultConstructor(Class<?> clazz) {
-        try {
-            return clazz.getConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new BeanCreationException(clazz.getName(), e);
-        }
+                .collect(Collectors.toList());
     }
 }
