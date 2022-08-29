@@ -1,20 +1,16 @@
 package core.di.factory;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
-
     private Set<Class<?>> preInstanticateBeans;
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
@@ -25,10 +21,7 @@ public class BeanFactory {
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        if (beans.containsKey(requiredType)) {
-            return (T) beans.get(requiredType);
-        }
-        return (T) instantiateClass(requiredType);
+        return (T) beans.get(requiredType);
     }
 
     public void initialize() {
@@ -38,21 +31,22 @@ public class BeanFactory {
     }
 
     private Object instantiateClass(Class<?> clazz) {
-        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
-        Constructor<?> constructor = getConstructor(concreteClass);
-        Object[] parameters = getParameters(constructor);
-        Object instance = BeanUtils.instantiateClass(constructor, parameters);
+        if (beans.containsKey(clazz)) {
+            return beans.get(clazz);
+        }
 
+        Constructor<?> constructor = getConstructor(clazz);
+        Object instance = instantiateConstructor(constructor);
         beans.put(clazz, instance);
         return instance;
     }
 
-    private Object[] getParameters(Constructor<?> constructor) {
-        List<Object> constructorValues = new ArrayList<>();
-        for (Class<?> findClass : constructor.getParameterTypes()) {
-            constructorValues.add(getBean(BeanFactoryUtils.findConcreteClass(findClass, preInstanticateBeans)));
+    private Object instantiateConstructor(Constructor<?> constructor) {
+        List<Object> args = Lists.newArrayList();
+        for (Class<?> clazz : constructor.getParameterTypes()) {
+            args.add(instantiateClass(BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans)));
         }
-        return constructorValues.toArray();
+        return BeanUtils.instantiateClass(constructor, args.toArray());
     }
 
     private Constructor<?> getConstructor(Class<?> clazz) {
