@@ -17,7 +17,7 @@ class AnnotationHandlerMappingTest {
 
     @BeforeEach
     void setup() {
-        handlerMapping = new AnnotationHandlerMapping(ApplicationContext.from("core.mvc.tobe"));
+        handlerMapping = new AnnotationHandlerMapping(ApplicationContext.of("next"));
         handlerMapping.initialize();
 
         DBInitializer.initialize();

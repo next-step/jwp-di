@@ -30,7 +30,7 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        ApplicationContext applicationContext = ApplicationContext.from("next.controller");
+        ApplicationContext applicationContext = ApplicationContext.of("next");
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());

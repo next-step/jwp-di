@@ -6,7 +6,6 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 public final class ApplicationContext {
 
@@ -18,7 +17,7 @@ public final class ApplicationContext {
         this.basePackages = basePackages;
     }
 
-    public static ApplicationContext from(Object... basePackages) {
+    public static ApplicationContext of(Object... basePackages) {
         return new ApplicationContext(basePackages);
     }
 
