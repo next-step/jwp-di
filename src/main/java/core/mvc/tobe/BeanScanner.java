@@ -8,6 +8,7 @@ import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
+import core.di.factory.BeanFactory;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
 import core.mvc.tobe.support.HttpResponseArgumentResolver;
@@ -34,6 +35,7 @@ public class BeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
+    private BeanFactory beanFactory;
     private Reflections reflections;
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
@@ -52,9 +54,11 @@ public class BeanScanner {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
         Set<Class<?>> controllers = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        this.beanFactory = new BeanFactory(controllers);
+        this.beanFactory.initialize();
 
         for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
+            Object target = this.beanFactory.getBean(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
         }
 

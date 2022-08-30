@@ -26,17 +26,17 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() throws Exception {
+    public void initialize() {
         createDependencies();
     }
 
-    private void createDependencies() throws Exception {
+    private void createDependencies() {
         for (Class<?> clazz : preInstanticateBeans) {
             beans.put(clazz, recursive(clazz));
         }
     }
 
-    private Object recursive(Class<?> clazz) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private Object recursive(Class<?> clazz) {
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
 
         if (injectedConstructor == null) {
@@ -51,7 +51,12 @@ public class BeanFactory {
             classes[i] = recursive(concreteClass);
         }
 
-        return injectedConstructor.newInstance(classes);
+        try {
+            return injectedConstructor.newInstance(classes);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
 }
