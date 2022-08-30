@@ -7,6 +7,8 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -54,13 +56,14 @@ public class BeanFactory {
         }
 
         Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
-        Object[] parameters = new Object[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> concreteType = BeanFactoryUtils.findConcreteClass(parameterTypes[i], preInstanticateBeans);
-            parameters[i] = instantiateBean(concreteType);
+        List<Object> parameters = new ArrayList<>();
+
+        for (Class<?> parameterType : parameterTypes) {
+            Class<?> concreteType = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
+            parameters.add(instantiateBean(concreteType));
         }
 
-        Object object = BeanUtils.instantiateClass(injectedConstructor, parameters);
+        Object object = BeanUtils.instantiateClass(injectedConstructor, parameters.toArray());
         beans.put(preInstanticateBean, object);
         return object;
     }
