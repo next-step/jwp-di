@@ -10,7 +10,7 @@ import support.test.DBInitializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AnnotationHandlerMappingTest {
+class AnnotationHandlerMappingTest {
     private AnnotationHandlerMapping handlerMapping;
     private UserDao userDao;
 
@@ -24,7 +24,7 @@ public class AnnotationHandlerMappingTest {
     }
 
     @Test
-    public void create_find() throws Exception {
+    void create_find() throws Exception {
         User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
         assertThat(userDao.findByUserId(user.getUserId())).isEqualTo(user);
