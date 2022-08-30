@@ -1,11 +1,14 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.BeanUtils;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -23,7 +26,32 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
-
+    public void initialize() throws Exception {
+        createDependencies();
     }
+
+    private void createDependencies() throws Exception {
+        for (Class<?> clazz : preInstanticateBeans) {
+            beans.put(clazz, recursive(clazz));
+        }
+    }
+
+    private Object recursive(Class<?> clazz) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+
+        if (injectedConstructor == null) {
+            return BeanUtils.instantiateClass(clazz);
+        }
+
+        Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
+
+        Object[] classes = new Object[parameterTypes.length];
+        for (int i = 0; i < classes.length; ++i) {
+            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterTypes[i], this.preInstanticateBeans);
+            classes[i] = recursive(concreteClass);
+        }
+
+        return injectedConstructor.newInstance(classes);
+    }
+
 }
