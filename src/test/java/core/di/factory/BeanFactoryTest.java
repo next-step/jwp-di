@@ -15,7 +15,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class BeanFactoryTest {
+class BeanFactoryTest {
     private Reflections reflections;
     private BeanFactory beanFactory;
 
@@ -29,7 +29,7 @@ public class BeanFactoryTest {
     }
 
     @Test
-    public void di() throws Exception {
+    void di() {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
