@@ -9,7 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class BeanFactoryTest {
@@ -34,4 +36,11 @@ class BeanFactoryTest {
         assertNotNull(qnaService.getQuestionRepository());
     }
 
+    @Test
+    void getBeanWithAnnotation() {
+        Set<Object> actual = beanFactory.getBeansWithAnnotation(Controller.class);
+
+        QnaController concludedBean = beanFactory.getBean(QnaController.class);
+        assertThat(actual).containsExactly(concludedBean);
+    }
 }

@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -24,6 +26,12 @@ public class BeanFactory {
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
+    }
+
+    public Set<Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) {
+        return beans.values().stream()
+                .filter(bean -> bean.getClass().isAnnotationPresent(annotationType))
+                .collect(Collectors.toSet());
     }
 
     public void initialize() {
