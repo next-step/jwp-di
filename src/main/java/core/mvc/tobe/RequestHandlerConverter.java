@@ -1,8 +1,7 @@
 package core.mvc.tobe;
 
-import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
-import core.di.factory.BeanFactory;
+import core.di.factory.ApplicationContext;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
 import core.mvc.tobe.support.HttpResponseArgumentResolver;
@@ -32,18 +31,17 @@ public class RequestHandlerConverter {
     );
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
-    private final BeanFactory beanFactory;
+    private final ApplicationContext context;
 
-    public RequestHandlerConverter(BeanFactory beanFactory) {
-        Assert.notNull(beanFactory, "'beanFactory' must not be null");
-        this.beanFactory = beanFactory;
+    public RequestHandlerConverter(ApplicationContext context) {
+        Assert.notNull(context, "'context' must not be null");
+        this.context = context;
     }
 
     public Map<HandlerKey, HandlerExecution> handlers() {
-        return beanFactory.annotatedWith(Controller.class)
-                .entrySet()
+        return context.controllers()
                 .stream()
-                .flatMap(entry -> handlerKeyExecutions(entry.getValue(), entry.getKey().getMethods()).entrySet().stream())
+                .flatMap(controller -> handlerKeyExecutions(controller, controller.getClass().getMethods()).entrySet().stream())
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

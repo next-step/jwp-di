@@ -1,13 +1,15 @@
 package core.di.factory;
 
 import core.annotation.web.Controller;
+import core.di.factory.constructor.BeanConstructor;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,7 +20,13 @@ class BeanFactoryTest {
 
     @BeforeEach
     void setup() {
-        beanFactory = BeanFactory.from(BeanScanner.packages("core.di.factory.example"));
+        ConfigurationBeanScanner configurationBeanScanner = ConfigurationBeanScanner.packages("core.di.factory.example");
+        ClasspathBeanScanner classpathBeanScanner = ClasspathBeanScanner.from(configurationBeanScanner.configurations());
+
+        Collection<BeanConstructor> beanConstructors = new ArrayList<>();
+        beanConstructors.addAll(configurationBeanScanner.scan());
+        beanConstructors.addAll(classpathBeanScanner.scan());
+        beanFactory = BeanFactory.from(beanConstructors);
         beanFactory.initialize();
     }
 
@@ -36,11 +44,10 @@ class BeanFactoryTest {
 
     @Test
     @DisplayName("Controller 애노테이션 있는 빈들 조회")
-    void annotatedWith() {
+    void beansAnnotatedWith() {
         //when
-        Map<Class<?>, Object> controllers = beanFactory.annotatedWith(Controller.class);
+        Collection<Object> controllers = beanFactory.beansAnnotatedWith(Controller.class);
         //then
-        assertThat(controllers).hasEntrySatisfying(
-                QnaController.class, value -> assertThat(value).isInstanceOf(QnaController.class));
+        assertThat(controllers).hasExactlyElementsOfTypes(QnaController.class);
     }
 }

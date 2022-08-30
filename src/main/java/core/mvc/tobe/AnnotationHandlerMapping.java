@@ -2,7 +2,7 @@ package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
 import core.annotation.web.RequestMethod;
-import core.di.factory.BeanFactory;
+import core.di.factory.ApplicationContext;
 import core.mvc.HandlerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,16 +13,17 @@ import java.util.Map;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private final RequestHandlerConverter requestHandlerConverter;
-    private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final ApplicationContext context;
+    private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(BeanFactory beanFactory) {
-        this.requestHandlerConverter = new RequestHandlerConverter(beanFactory);
+    public AnnotationHandlerMapping(ApplicationContext context) {
+        this.context = context;
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(requestHandlerConverter.handlers());
+        context.initialize();
+        handlerExecutions.putAll(new RequestHandlerConverter(context).handlers());
     }
 
     public Object getHandler(HttpServletRequest request) {
