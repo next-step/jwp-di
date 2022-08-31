@@ -1,6 +1,5 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -8,28 +7,25 @@ import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class BeanFactoryTest {
-    private Reflections reflections;
+class BeanFactoryTest {
     private BeanFactory beanFactory;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     public void setup() {
-        reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
+        BeanScanner beanScanner = new BeanScanner(List.of(Controller.class, Service.class, Repository.class));
+        beanFactory = new BeanFactory(beanScanner.scan("core.di.factory.example"));
         beanFactory.initialize();
     }
 
     @Test
-    public void di() throws Exception {
+    void di() {
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);
@@ -40,12 +36,11 @@ public class BeanFactoryTest {
         assertNotNull(qnaService.getQuestionRepository());
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
+    @Test
+    void getBeanWithAnnotation() {
+        Set<Object> actual = beanFactory.getBeansWithAnnotation(Controller.class);
+
+        QnaController concludedBean = beanFactory.getBean(QnaController.class);
+        assertThat(actual).containsExactly(concludedBean);
     }
 }
