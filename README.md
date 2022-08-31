@@ -73,7 +73,7 @@
 ### 기능목록
 - [ ] BeanFactory 객체를 미리 생성해둔다.
   - 기존의 BeanScanner 와 ConfigurationBeanScanner 로 찾은 빈을 하나의 BeanFactory 에서 관리하기 위함.
-- [ ] 패키지 전체에서 `@Configuration` 애너테이션이 적용된 클래스를 찾는다.
+- [x] 특정 패키지내에서 `@Configuration` 애너테이션이 적용된 클래스를 찾는다.
   - [ ] `@Configuration` 애너테이션이 적용된 클래스에서 `@Bean` 애너테이션이 적용된 메서드를 찾는다.
     - [ ] scan 메서드를 호출할 때 BeanFactory 를 주입하여 BeanFactory 에 생성된 빈을 등록한다.
       - [ ] 파라미터의 수가 적은 순으로 빈을 생성한다.
