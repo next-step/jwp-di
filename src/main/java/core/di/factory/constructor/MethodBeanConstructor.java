@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class MethodBeanConstructor implements BeanConstructor {
+public final class MethodBeanConstructor implements BeanConstructor {
 
     private final Method method;
 

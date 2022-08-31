@@ -9,7 +9,7 @@ import java.util.Collection;
 
 public final class ApplicationContext {
 
-    private Object[] basePackages;
+    private final Object[] basePackages;
     private BeanFactory beanFactory;
 
     private ApplicationContext(Object... basePackages) {
