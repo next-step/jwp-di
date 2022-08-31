@@ -52,13 +52,12 @@ public class BeanScanner {
 
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Class<?>> clazzez = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        this.beanFactory = new BeanFactory(clazzez);
+        this.beanFactory = new BeanFactory(getTypesAnnotatedWith(Controller.class, Service.class, Repository.class));
         this.beanFactory.initialize();
 
-        for (Class<?> clazz : clazzez) {
-            Object target = this.beanFactory.getBean(clazz);
-            addHandlerExecution(handlers, target, clazz.getMethods());
+        List<Object> controllers = this.beanFactory.getControllers();
+        for (Object target : controllers) {
+            addHandlerExecution(handlers, target, target.getClass().getMethods());
         }
 
         return handlers;
