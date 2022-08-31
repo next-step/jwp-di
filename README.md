@@ -47,3 +47,14 @@
 - BeanScanner는 @Controller, @Service, @Repository이 설정되어 있는 모든 클래스를 찾아 Set 에 저장
 
 <hr />
+
+## 3단계 - @Configuration 설정
+### 요구 사항
+- 데이터베이스 설정 정보 하드 코딩으로 관리 되고 있는 부분 종속되지 않도록 구현
+- Connection Pooling 을 지원하기 위해 Connection 대신 javax.sql.DataSource 인터페이스에 의존관계를 가지도록 지원
+- 개발자가 직접 빈을 생성해 관리할 수 있는 별도의 설정 파일 생성
+- @Configuration, @Bean 애노테이션 활용
+- 설정 파일에서 @ComponentScan 애노테이션으로 설정할 수 있도록 지원
+- @Configuration 설정 파일을 통해 등록한 빈과 BeanScanner를 통해 등록한 빈 간에도 DI가 가능하도록 지원
+
+<hr />
