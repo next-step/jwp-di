@@ -1,6 +1,5 @@
 package core.mvc.tobe;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
 import com.google.common.collect.Sets;
@@ -53,13 +52,13 @@ public class BeanScanner {
 
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Class<?>> controllers = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        this.beanFactory = new BeanFactory(controllers);
+        Set<Class<?>> clazzez = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
+        this.beanFactory = new BeanFactory(clazzez);
         this.beanFactory.initialize();
 
-        for (Class<?> controller : controllers) {
-            Object target = this.beanFactory.getBean(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
+        for (Class<?> clazz : clazzez) {
+            Object target = this.beanFactory.getBean(clazz);
+            addHandlerExecution(handlers, target, clazz.getMethods());
         }
 
         return handlers;
