@@ -1,16 +1,19 @@
 package core.di.factory;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.factory.example.AnswerRepository;
+import core.di.factory.example.JdbcAnswerRepository;
+import core.di.factory.example.MyAnswerService;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import java.lang.annotation.Annotation;
 import java.util.Set;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,7 +59,20 @@ class BeanFactoryTest {
     void controller_types() {
         final Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
 
-        Assertions.assertThat(controllerTypes).containsExactly(QnaController.class);
+        assertThat(controllerTypes).containsExactly(QnaController.class);
+    }
 
+    @DisplayName("인스턴스 대상 클래스를 추가할 수 있다")
+    @Test
+    void add_pre_instantiate_classes() {
+        beanFactory.addPreInstanticateBeans(MyAnswerService.class);
+        beanFactory.addPreInstanticateBeans(JdbcAnswerRepository.class);
+        beanFactory.initialize();
+
+        final MyAnswerService bean = beanFactory.getBean(MyAnswerService.class);
+
+        final AnswerRepository actual = bean.getAnswerRepository();
+
+        assertThat(actual).isInstanceOf(JdbcAnswerRepository.class);
     }
 }
