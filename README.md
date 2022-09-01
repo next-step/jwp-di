@@ -71,15 +71,17 @@
 - `@Configuration` 설정 파일을 통해 등록한 빈과 BeanScanner 를 통해 등록 빈 상호 간에도 DI가 가능해야 한다.
 
 ### 기능목록
+- [x] ReflectionUtils invokeMethod 메서드 추가
+  - 메서드를 실행할 인스턴스, 메서드, 메서드 실행에 필요한 파라미터를 전달하여 메서드를 실행한 결과를 반환한다.
 - [ ] BeanFactory 객체를 미리 생성해둔다.
   - 기존의 BeanScanner 와 ConfigurationBeanScanner 로 찾은 빈을 하나의 BeanFactory 에서 관리하기 위함.
 - [x] 특정 패키지내에서 `@Configuration` 애너테이션이 적용된 클래스를 찾는다.
-  - [ ] `@Configuration` 애너테이션이 적용된 클래스에서 `@Bean` 애너테이션이 적용된 메서드를 찾는다.
-    - [ ] scan 메서드를 호출할 때 BeanFactory 를 주입하여 BeanFactory 에 생성된 빈을 등록한다.
-      - [ ] 파라미터의 수가 적은 순으로 빈을 생성한다.
+  - [x] `@Configuration` 애너테이션이 적용된 클래스에서 `@Bean` 애너테이션이 적용된 메서드를 찾는다.
+    - [x] scan 메서드를 호출할 때 BeanFactory 를 주입하여 BeanFactory 에 생성된 빈을 등록한다.
+      - [x] 파라미터의 수가 적은 순으로 빈을 생성한다.
         - 순환 참조로 인해 빈을 생성할 수 없는 경우가 생기기 때문에 의존성이 가장 낮은 빈부터 생성한다.
-      - [ ] 메서드의 파라미터가 없으면 메서드를 실행 시키고 메서드명을 key, 리턴된 인스턴스를 value 로 BeanFactory 에 등록한다.
-      - [ ] 메서드의 파라미터가 있으면 메서드를 실행 시키기 전에 파라미터를 BeanFactory 에서 찾아서 주입한다.
+      - [x] 메서드의 파라미터가 없으면 메서드를 실행 시키고 메서드명을 key, 리턴된 인스턴스를 value 로 BeanFactory 에 등록한다.
+      - [x] 메서드의 파라미터가 있으면 메서드를 실행 시키기 전에 파라미터를 BeanFactory 에서 찾아서 주입한다.
 - [ ] 패키지 전체에서 `@ComponentScan` 애너테이션이 적용된 클래스를 찾는다.
 - [ ] `@ComponentScan` 의 값(패키지 경로들)을 BeanScanner 를 통해 빈을 생성한다.
   - [ ] scan 메서드를 호출할 때 BeanFactory 를 주입하여 BeanFactory 에 생성된 빈을 등록한다.

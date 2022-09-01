@@ -40,6 +40,18 @@ public class ReflectionUtils {
         throw new RuntimeException(constructor.getName() + " instantiation failed");
     }
 
+    public static Object invokeMethod(final Object instance, final Method method, final Object... arguments) {
+        try {
+            return method.invoke(instance, arguments);
+        } catch (IllegalAccessException e) {
+            logger.warn("{} method access failed", method.getName());
+        } catch (InvocationTargetException e) {
+            logger.warn("{} target invalid", method.getName());
+        }
+
+        throw new RuntimeException(method.getName() + " invoke failed");
+    }
+
     public static Constructor getConstructorByArgs(Class clazz, Object... args) {
         for (Constructor candidate : clazz.getConstructors()) {
             if (isMatched(candidate, args)) {
@@ -94,6 +106,13 @@ public class ReflectionUtils {
     public static Set<Class<?>> getTypesAnnotatedWith(final Reflections reflections, final Class<? extends Annotation>... annotations) {
         return Arrays.stream(annotations)
             .flatMap(it -> reflections.getTypesAnnotatedWith(it).stream())
+            .collect(Collectors.toSet());
+    }
+
+    public static Set<Method> getMethodsAnnotatedWith(final Set<Class<?>> configurationClasses, final Class<? extends Annotation>... annotations) {
+        return configurationClasses.stream()
+            .flatMap(it -> Arrays.stream(it.getDeclaredMethods()))
+            .filter(it -> Arrays.stream(annotations).anyMatch(it::isAnnotationPresent))
             .collect(Collectors.toSet());
     }
 }

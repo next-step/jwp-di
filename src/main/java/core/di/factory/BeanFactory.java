@@ -32,6 +32,10 @@ public class BeanFactory {
         preInstanticateBeans.addAll(Arrays.asList(classes));
     }
 
+    public void addBean(Class<?> clazz, Object bean) {
+        beans.put(clazz, bean);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
