@@ -47,3 +47,42 @@
 - 설정 파일 표시는 `@Configuration`, `BeanFactory` 에 빈으로 등록하는 설정은 `@Bean`
 - `BeanScanner` 에서 기본 패키지 설정을 설정 파일의 `@ComponentScan` 으로 설정
 - `@Configuration` 설정 파일을 통해 등록한 빈과 `BeanScanner` 를 통해 등록한 빈 간에 DI 가능
+
+
+## 4단계 - @Configuration 설정(힌트)
+
+- 단위 테스트 코드 만들어 pass 하도록 구현
+
+```java
+
+public class ConfigurationBeanScannerTest {
+  @Test
+  public void register_classpathBeanScanner_통합() {
+    BeanFactory beanFactory = new BeanFactory();
+    ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+    cbs.register(IntegrationConfig.class);
+    beanFactory.initialize();
+
+    ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
+    cbds.doScan("di.examples");
+
+    assertNotNull(beanFactory.getBean(DataSource.class));
+
+    JdbcUserRepository userRepository = beanFactory.getBean(JdbcUserRepository.class);
+    assertNotNull(userRepository);
+    assertNotNull(userRepository.getDataSource());
+
+    MyJdbcTemplate jdbcTemplate = beanFactory.getBean(MyJdbcTemplate.class);
+    assertNotNull(jdbcTemplate);
+    assertNotNull(jdbcTemplate.getDataSource());
+  }
+}
+```
+
+- `ConfigurationBeanScanner`와 `ClasspathBeanScanner`을 통합하는 클래스(`ApplicationContext`) 추가
+
+```java
+ApplicationContext ac = new ApplicationContext(MyConfiguration.class);
+AnnotationHandlerMapping ahm = new AnnotationHandlerMapping(ac);
+ahm.initialize();
+```

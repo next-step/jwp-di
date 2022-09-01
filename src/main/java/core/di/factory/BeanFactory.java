@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class BeanFactory {
+public final class BeanFactory {
 
     private final Map<Class<?>, BeanConstructor> beanConstructors;
     private final Map<Class<?>, Object> beans = new HashMap<>();
@@ -27,7 +27,7 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        beanConstructors.values().forEach(this::bean);
+        beanConstructors.values().forEach(this::instancedSingleton);
     }
 
     @SuppressWarnings("unchecked")
@@ -43,7 +43,7 @@ public class BeanFactory {
                 .collect(Collectors.toList());
     }
 
-    private Object bean(BeanConstructor constructor) {
+    private Object instancedSingleton(BeanConstructor constructor) {
         if (beans.containsKey(constructor.type())) {
             return beans.get(constructor.type());
         }
@@ -54,7 +54,7 @@ public class BeanFactory {
 
     private Object instantiateClass(BeanConstructor beanConstructor) {
         if (beanConstructor.isNotInstanced()) {
-            return bean(beanConstructors.get(subType(beanConstructor.type())));
+            return instancedSingleton(beanConstructors.get(subType(beanConstructor.type())));
         }
         return beanConstructor.instantiate(arguments(beanConstructor));
     }
@@ -71,7 +71,7 @@ public class BeanFactory {
         return constructor.parameterTypes()
                 .stream()
                 .map(beanConstructors::get)
-                .map(this::bean)
+                .map(this::instancedSingleton)
                 .collect(Collectors.toList());
     }
 }
