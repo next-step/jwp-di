@@ -4,11 +4,18 @@ import com.google.common.collect.Maps;
 import core.annotation.web.RequestMethod;
 import core.di.factory.ApplicationContext;
 import core.mvc.HandlerMapping;
+import core.mvc.tobe.support.HttpRequestArgumentResolver;
+import core.mvc.tobe.support.HttpResponseArgumentResolver;
+import core.mvc.tobe.support.ModelArgumentResolver;
+import core.mvc.tobe.support.PathVariableArgumentResolver;
+import core.mvc.tobe.support.RequestParamArgumentResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+
+import static java.util.Arrays.asList;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
@@ -23,7 +30,13 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
         context.initialize();
-        handlerExecutions.putAll(new RequestHandlerConverter(context.controllers()).handlers());
+        handlerExecutions.putAll(new RequestHandlerConverter(asList(
+                new HttpRequestArgumentResolver(),
+                new HttpResponseArgumentResolver(),
+                new RequestParamArgumentResolver(),
+                new PathVariableArgumentResolver(),
+                new ModelArgumentResolver()
+        )).handlers(context.controllers()));
     }
 
     public Object getHandler(HttpServletRequest request) {
