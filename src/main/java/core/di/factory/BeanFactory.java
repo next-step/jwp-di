@@ -1,8 +1,11 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +35,7 @@ public class BeanFactory {
 
     private void createDependencies() {
         for (Class<?> clazz : preInstanticateBeans) {
-            beans.put(clazz, recursive(clazz));
+            beans.putIfAbsent(clazz, recursive(clazz));
         }
     }
 
@@ -45,18 +48,27 @@ public class BeanFactory {
 
         Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
 
-        Object[] classes = new Object[parameterTypes.length];
-        for (int i = 0; i < classes.length; ++i) {
+        Object[] params = new Object[parameterTypes.length];
+        for (int i = 0; i < params.length; ++i) {
             Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterTypes[i], this.preInstanticateBeans);
-            classes[i] = recursive(concreteClass);
+            params[i] = recursive(concreteClass);
         }
 
         try {
-            return injectedConstructor.newInstance(classes);
+            return injectedConstructor.newInstance(params);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return null;
+    }
+
+    public List<Object> getControllers() {
+        return this.beans.entrySet()
+            .stream()
+            .filter(classObjectEntry -> classObjectEntry.getKey()
+                .isAnnotationPresent(Controller.class))
+            .map(Entry::getValue)
+            .collect(Collectors.toList());
     }
 
 }
