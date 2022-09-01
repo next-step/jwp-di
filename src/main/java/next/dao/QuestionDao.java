@@ -1,5 +1,6 @@
 package next.dao;
 
+import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
@@ -9,6 +10,7 @@ import next.model.Question;
 import java.sql.*;
 import java.util.List;
 
+@Repository
 public class QuestionDao {
     private static QuestionDao questionDao = new QuestionDao();
 

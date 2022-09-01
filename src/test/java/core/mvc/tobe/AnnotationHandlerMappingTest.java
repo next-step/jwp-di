@@ -10,7 +10,7 @@ import support.test.DBInitializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AnnotationHandlerMappingTest {
+class AnnotationHandlerMappingTest {
     private AnnotationHandlerMapping handlerMapping;
     private UserDao userDao;
 
