@@ -7,3 +7,9 @@
 
 ## 온라인 코드 리뷰 과정
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
+
+## 🚀 1단계 - DI 구현
+1. [ ] 요구사항 1 - @Service, @Repository 애노테이션을 가지고있는 클래스의 인스턴스를 생성한다. 
+2. [ ] 요구사항 2 - 생성된 인스턴스의 의존관계는 @Inject 애노테이션을 사용하여 주입한다.
+3. [ ] 요구사항 3 - 기존 ControllerScanner를 BeanFactory를 사용하도록 수정.
+
