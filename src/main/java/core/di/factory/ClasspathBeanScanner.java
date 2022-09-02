@@ -10,31 +10,33 @@ import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class ClasspathBeanScanner {
-    private final BeanFactory beanFactory;
+public class ClasspathBeanScanner implements BeanScanner {
     private Reflections reflections;
 
-    public ClasspathBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-    }
-
-    public void scan(Class<? extends WebMvcConfiguration> configurationClazz) {
+    @Override
+    public Set<BeanRegister> scan(Class<? extends WebMvcConfiguration> configurationClazz) {
+        Set<BeanRegister> scanResults = Sets.newHashSet();
         if (!configurationClazz.isAnnotationPresent(ComponentScan.class)) {
-            return;
+            return scanResults;
         }
 
         ComponentScan annotation = configurationClazz.getAnnotation(ComponentScan.class);
         for (String path : annotation.basePackages()) {
-            scan(path);
+            scanResults.addAll(scan(path));
         }
+
+        return scanResults;
     }
 
     @SuppressWarnings("unchecked")
-    public void scan(String path) {
+    public Set<BeanRegister> scan(String path) {
         reflections = new Reflections(path);
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory.register(preInstanticateClazz);
+
+        return getTypesAnnotatedWith(Controller.class, Service.class, Repository.class).stream()
+                .map(ClassBeanRegister::new)
+                .collect(Collectors.toSet());
     }
 
     @SuppressWarnings("unchecked")

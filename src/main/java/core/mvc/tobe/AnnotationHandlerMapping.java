@@ -5,6 +5,8 @@ import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
 import core.config.WebMvcConfiguration;
+import core.di.factory.ClasspathBeanScanner;
+import core.di.factory.ConfigurationBeanScanner;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolvers;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -58,6 +60,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         logger.info("## Initialized Annotation Handler Mapping");
 
         applicationContext = new ApplicationContext(this.baseConfiguration);
+        applicationContext.addScanner(new ConfigurationBeanScanner());
+        applicationContext.addScanner(new ClasspathBeanScanner());
         applicationContext.initialize();
 
         Set<Class<?>> controllerTypes = applicationContext.getControllers();

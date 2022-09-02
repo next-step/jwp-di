@@ -4,20 +4,20 @@ import core.annotation.Bean;
 import core.config.WebMvcConfiguration;
 
 import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class ConfigurationBeanScanner {
-    private final BeanFactory beanFactory;
+public class ConfigurationBeanScanner implements BeanScanner {
 
-    public ConfigurationBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-    }
-
-    public void register(Class<? extends WebMvcConfiguration> clazz) {
-        beanFactory.register(clazz);
-        beanFactory.addBean(clazz);
-
-        Arrays.stream(clazz.getMethods())
+    @Override
+    public Set<BeanRegister> scan(Class<? extends WebMvcConfiguration> clazz) {
+        Set<BeanRegister> beanRegisters = Arrays.stream(clazz.getMethods())
                 .filter(method -> method.isAnnotationPresent(Bean.class))
-                .forEach(method -> beanFactory.register(clazz, method));
+                .map(MethodBeanRegister::new)
+                .collect(Collectors.toSet());
+
+        beanRegisters.add(new ClassBeanRegister(clazz));
+
+        return beanRegisters;
     }
 }
