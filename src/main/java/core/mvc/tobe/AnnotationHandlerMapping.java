@@ -4,7 +4,9 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.factory.BeanFactory;
+import core.config.WebMvcConfiguration;
+import core.di.factory.ClasspathBeanScanner;
+import core.di.factory.ConfigurationBeanScanner;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolvers;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -12,7 +14,7 @@ import core.mvc.tobe.support.HttpResponseArgumentResolver;
 import core.mvc.tobe.support.ModelArgumentResolver;
 import core.mvc.tobe.support.PathVariableArgumentResolver;
 import core.mvc.tobe.support.RequestParamArgumentResolver;
-import org.reflections.Reflections;
+import next.ApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -32,9 +34,10 @@ import static org.reflections.util.ReflectionUtilsPredicates.withAnnotation;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private final Object[] basePackage;
-    private BeanFactory beanFactory;
+    private final Class<? extends WebMvcConfiguration> baseConfiguration;
+    private ApplicationContext applicationContext;
     private static final ArgumentResolvers argumentResolvers;
+
     static {
         argumentResolvers = new ArgumentResolvers();
         argumentResolvers.addResolver(new HttpRequestArgumentResolver())
@@ -49,20 +52,25 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
+    public AnnotationHandlerMapping(Class<? extends WebMvcConfiguration> configuration) {
+        this.baseConfiguration = configuration;
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
 
-        Reflections reflections = new Reflections(this.basePackage);
-        Set<Class<?>> controllerTypes = reflections.getTypesAnnotatedWith(Controller.class);
+        applicationContext = new ApplicationContext(this.baseConfiguration);
+        applicationContext.addScanner(new ConfigurationBeanScanner());
+        applicationContext.addScanner(new ClasspathBeanScanner());
+        applicationContext.initialize();
 
-        this.beanFactory = new BeanFactory(controllerTypes);
-        beanFactory.initialize();
+        Set<Class<?>> controllerTypes = applicationContext.getControllers();
 
         handlerExecutions.putAll(createHandlerExecution(controllerTypes));
+    }
+
+    public ApplicationContext applicationContext() {
+        return applicationContext;
     }
 
     private Map<HandlerKey, HandlerExecution> createHandlerExecution(Set<Class<?>> controllerTypes) {
@@ -77,7 +85,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         Set<Method> methods = getAllMethods(controllerType, withAnnotation(RequestMapping.class));
 
         return methods.stream()
-                .map(method-> createHandlerEntry(controllerType, method))
+                .map(method -> createHandlerEntry(controllerType, method))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
@@ -87,7 +95,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         RequestMapping rmAnno = method.getAnnotation(RequestMapping.class);
         HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer,
                 argumentResolvers,
-                beanFactory.getBean(controllerType),
+                applicationContext.getBean(controllerType),
                 method);
 
         RequestMethod[] requestMethods = rmAnno.method();

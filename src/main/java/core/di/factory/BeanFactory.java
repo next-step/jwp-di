@@ -1,27 +1,37 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import core.annotation.web.Controller;
 import core.exception.NoSuchBeanConstructorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-public class BeanFactory {
+public class BeanFactory implements Subject<BeanRegister> {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
+    private final Set<BeanRegister> beanRegisters = Sets.newHashSet();
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory() {
+    }
+
+    public BeanFactory(Set<Class<?>> preInstanticateClazz) {
+        for (Class<?> clazz : preInstanticateClazz) {
+            ClassBeanRegister beanRegister = new ClassBeanRegister(clazz);
+            register(beanRegister);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -30,43 +40,39 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        for (Class<?> clazz : preInstanticateBeans) {
-            Object instance = createInstance(clazz);
-            beans.put(clazz, instance);
+        publishing(br -> {
+            Object instance = createInstance(br);
+            addBean(br, instance);
+        });
+    }
+
+    private void addBean(BeanRegister register, Object instance) {
+        for (Class<?> type : register.interfaces()) {
+            beans.put(type, instance);
         }
     }
 
-    private Object createInstance(Class<?> clazz) {
-        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
-        Constructor<?> constructor = findConstructor(concreteClass);
+    public void register(BeanRegister... beanRegisters) {
+        for (BeanRegister beanRegister : beanRegisters) {
+            this.beanRegisters.add(beanRegister);
+            beanRegister.subscribe(this);
+            beanRegister.initialize();
+        }
+    }
+
+    private Object createInstance(BeanRegister beanRegister) {
         List<Object> parameters = new ArrayList<>();
 
-        for (Class<?> typeClass : constructor.getParameterTypes()) {
+        for (Class<?> typeClass : beanRegister.getParameterTypes()) {
             parameters.add(getParameterByClass(typeClass));
         }
 
         try {
-            return constructor.newInstance(parameters.toArray());
+            return beanRegister.newInstance(parameters.toArray());
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            logger.error("Bean 생성에 실패했습니다. [target:{}, cause:{}]", concreteClass.getName(), e.getCause());
+            logger.error("Bean 생성에 실패했습니다. [target:{}, cause:{}]", beanRegister.type().getName(), e.getCause());
             throw new RuntimeException(e);
         }
-    }
-
-    private Constructor<?> findConstructor(Class<?> concreteClass) {
-        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(concreteClass);
-
-        if (Objects.nonNull(constructor)) {
-            return constructor;
-        }
-
-        Constructor<?>[] constructors = concreteClass.getConstructors();
-
-        if (constructors.length > 0) {
-            return constructors[0];
-        }
-
-        throw new NoSuchBeanConstructorException(concreteClass);
     }
 
     private Object getParameterByClass(Class<?> typeClass) {
@@ -75,6 +81,31 @@ public class BeanFactory {
         if (Objects.nonNull(bean)) {
             return bean;
         }
-        return createInstance(typeClass);
+
+        BeanRegister beanRegister = beanRegisters.stream()
+                .filter(br -> br.type().equals(typeClass))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchBeanConstructorException(typeClass));
+
+        return createInstance(beanRegister);
+    }
+
+    public Set<Class<?>> getControllers() {
+        return beans.keySet().stream()
+                .filter(key -> key.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toSet());
+    }
+
+    public Set<Class<?>> getInstanticateBeans() {
+        return beanRegisters.stream()
+                .map(BeanRegister::type)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public void publishing(Consumer<BeanRegister> action) {
+        beanRegisters.stream()
+                .sorted(Comparator.comparing(BeanRegister::priority).thenComparing(BeanRegister::getParameterCount))
+                .forEach(action);
     }
 }
