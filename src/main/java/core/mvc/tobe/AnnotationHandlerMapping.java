@@ -19,12 +19,12 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;
-        beanScanner = new BeanScanner();
+        this.beanScanner = new BeanScanner(basePackage);
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(beanScanner.scan(basePackage));
+        handlerExecutions.putAll(beanScanner.scan());
     }
 
     public Object getHandler(HttpServletRequest request) {

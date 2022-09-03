@@ -38,13 +38,15 @@ public class BeanScanner {
     private Reflections reflections;
     private BeanFactory beanFactory;
 
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
+    public BeanScanner(Object... basePackage) {
         reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstanticateClazz);
         beanFactory.initialize();
+    }
+
+    public Map<HandlerKey, HandlerExecution> scan() {
+        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
         Set<Class<?>> controllers = getTypesAnnotatedWith(Controller.class);
         for (Class<?> controller : controllers) {
