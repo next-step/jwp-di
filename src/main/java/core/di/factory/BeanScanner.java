@@ -26,6 +26,15 @@ public class BeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
+    private Object[] basePackage;
+
+    public BeanScanner() {
+    }
+
+    public BeanScanner(final Object... basePackage) {
+        this.basePackage = basePackage;
+    }
+
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
                 new HttpResponseArgumentResolver(),
@@ -41,6 +50,18 @@ public class BeanScanner {
 
         final Set<Class<?>> preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
         final BeanFactory beanFactory = new BeanFactory(preInstanticateBeans);
+        beanFactory.initialize();
+
+        Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
+
+        return addHandlerExecution(beanFactory, controllerTypes);
+    }
+
+    public Map<HandlerKey, HandlerExecution> scan(final BeanFactory beanFactory) {
+        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+
+        final Set<Class<?>> preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+        beanFactory.addPreInstanticateBeans(preInstanticateBeans.toArray(Class<?>[]::new));
         beanFactory.initialize();
 
         Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
