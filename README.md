@@ -82,7 +82,8 @@
         - 순환 참조로 인해 빈을 생성할 수 없는 경우가 생기기 때문에 의존성이 가장 낮은 빈부터 생성한다.
       - [x] 메서드의 파라미터가 없으면 메서드를 실행 시키고 메서드명을 key, 리턴된 인스턴스를 value 로 BeanFactory 에 등록한다.
       - [x] 메서드의 파라미터가 있으면 메서드를 실행 시키기 전에 파라미터를 BeanFactory 에서 찾아서 주입한다.
-- [ ] 패키지 전체에서 `@ComponentScan` 애너테이션이 적용된 클래스를 찾는다.
+- [x] 특정 패키지의 하위 전체 패키지에서 `@ComponentScan` 애너테이션이 적용된 클래스를 찾는다.
+  - [x] `@ComponentScan` 애너테이션에 설정된 `basePackages` 값을 읽는다. 
 - [ ] `@ComponentScan` 의 값(패키지 경로들)을 BeanScanner 를 통해 빈을 생성한다.
   - [ ] scan 메서드를 호출할 때 BeanFactory 를 주입하여 BeanFactory 에 생성된 빈을 등록한다.
 - [ ] BeanScanner, ConfigurationBeanScanner 로 빈을 찾아 등록하는 일을 처리할 객체를 도출한다.
