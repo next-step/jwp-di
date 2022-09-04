@@ -58,7 +58,7 @@ public class BeanScanner {
     }
 
     public void scan(final BeanFactory beanFactory) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+        Reflections reflections = new Reflections(basePackage);
 
         final Set<Class<?>> preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
 
