@@ -57,13 +57,16 @@ public class BeanScanner {
         return addHandlerExecution(beanFactory, controllerTypes);
     }
 
-    public Map<HandlerKey, HandlerExecution> scan(final BeanFactory beanFactory) {
+    public void scan(final BeanFactory beanFactory) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
 
         final Set<Class<?>> preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+
         beanFactory.addPreInstanticateBeans(preInstanticateBeans.toArray(Class<?>[]::new));
         beanFactory.initialize();
+    }
 
+    public Map<HandlerKey, HandlerExecution> getHandlerExecutions(final BeanFactory beanFactory) {
         Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
 
         return addHandlerExecution(beanFactory, controllerTypes);

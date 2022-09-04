@@ -12,17 +12,27 @@ import org.junit.jupiter.api.Test;
 
 class BeanScannerTest {
 
-    @DisplayName("대상 패키지의 인스턴스를 BeanFactory 에 등록하고 HandlerExecution 을 찾을 수 있다")
+    @DisplayName("대상 패키지의 인스턴스를 BeanFactory 에 등록한다")
     @Test
     void bean_scan() {
         final BeanFactory beanFactory = new BeanFactory();
         final BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
 
-        final Map<HandlerKey, HandlerExecution> actual = beanScanner.scan(beanFactory);
+        beanScanner.scan(beanFactory);
 
         final QnaController beanActual = beanFactory.getBean(QnaController.class);
 
         assertThat(beanActual).isNotNull();
+    }
+
+    @DisplayName("HandlerExecution 을 찾을 수 있다")
+    @Test
+    void get_handler_executions() {
+        final BeanFactory beanFactory = new BeanFactory();
+        final BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
+
+        beanScanner.scan(beanFactory);
+        final Map<HandlerKey, HandlerExecution> actual = beanScanner.getHandlerExecutions(beanFactory);
 
         final HandlerKey expectedKey = new HandlerKey("/questions", RequestMethod.GET);
         final HandlerExecution handlerExecutionActual = actual.get(expectedKey);
