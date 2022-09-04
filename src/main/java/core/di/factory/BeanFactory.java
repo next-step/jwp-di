@@ -125,4 +125,8 @@ public class BeanFactory implements BeanDefinitionRegistry {
             .forEach(clazz -> controllers.put(clazz, beans.get(clazz)));
         return controllers;
     }
+
+    public Set<Class<?>> getBeanClasses() {
+        return beans.keySet();
+    }
 }
