@@ -32,8 +32,9 @@ public class ClassPathBeanDefinitionScanner {
             preInstantiateBeans.addAll(reflections.getTypesAnnotatedWith(annotationClass));
         }
 
-        for (Class<?> beanClass : preInstantiateBeans) {
-            registry.registerBeanDefinition(beanClass, new BeanDefinition(beanClass));
-        }
+        preInstantiateBeans.forEach(beanClass ->
+            registry.registerBeanDefinition(beanClass, new BeanDefinition(beanClass)));
+
+        System.out.println("register finished");
     }
 }

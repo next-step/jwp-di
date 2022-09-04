@@ -6,17 +6,17 @@ import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
 
-import core.di.ConfigurationBeanScanner;
+import core.di.AnnotatedBeanDefinitionReader;
 import core.di.factory.example.ExampleConfig;
 
-class ConfigurationBeanScannerTest {
+class AnnotatedBeanDefinitionReaderTest {
 
     @Test
     void register() {
-        BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner scanner = new ConfigurationBeanScanner(beanFactory);
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        AnnotatedBeanDefinitionReader scanner = new AnnotatedBeanDefinitionReader(beanFactory);
         scanner.register(ExampleConfig.class);
-        beanFactory.initialize();
+        beanFactory.preInstantiateSingletons();
 
         assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
     }

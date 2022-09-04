@@ -16,10 +16,10 @@ import org.springframework.core.ParameterNameDiscoverer;
 
 import com.google.common.collect.Maps;
 
+import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.ClassPathBeanDefinitionScanner;
-import core.di.factory.BeanFactory;
+import core.di.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -39,20 +39,26 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         new ModelArgumentResolver()
     );
 
-    private final Object[] basePackage;
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final ApplicationContext applicationContext;
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
+    public AnnotationHandlerMapping(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        BeanFactory beanFactory = new BeanFactory();
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanFactory);
-        scanner.scan(basePackage);
-        Map<Class<?>, Object> controllers = beanFactory.getControllers();
+        Map<Class<?>, Object> controllers = getControllers(applicationContext);
         controllers.forEach((clazz, handler) -> addHandlerExecution(handlerExecutions, handler, clazz.getMethods()));
+    }
+
+    private Map<Class<?>, Object> getControllers(ApplicationContext applicationContext) {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        applicationContext.getBeanClasses()
+            .stream()
+            .filter(beanClass -> beanClass.isAnnotationPresent(Controller.class))
+            .forEach(beanClass -> controllers.put(beanClass, applicationContext.getBean(beanClass)));
+        return controllers;
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {

@@ -6,8 +6,8 @@ import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
 
-import core.di.ConfigurationBeanScanner;
-import core.di.factory.BeanFactory;
+import core.di.AnnotatedBeanDefinitionReader;
+import core.di.factory.DefaultListableBeanFactory;
 import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
@@ -22,10 +22,10 @@ class MyConfigurationTest {
 
     @Test
     void scan() {
-        BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner scanner = new ConfigurationBeanScanner(beanFactory);
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        AnnotatedBeanDefinitionReader scanner = new AnnotatedBeanDefinitionReader(beanFactory);
         scanner.register(MyConfiguration.class);
-        beanFactory.initialize();
+        beanFactory.preInstantiateSingletons();
 
         assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
         assertThat(beanFactory.getBean(JdbcTemplate.class)).isNotNull();
