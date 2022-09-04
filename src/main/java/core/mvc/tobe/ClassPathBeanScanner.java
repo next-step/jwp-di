@@ -13,9 +13,9 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
-public class BeanScanner {
+public class ClassPathBeanScanner {
 
-    private BeanScanner() {
+    private ClassPathBeanScanner() {
     }
 
     public static Set<Class<?>> scan(Object... basePackage) {

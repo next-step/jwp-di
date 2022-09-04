@@ -39,7 +39,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        BeanFactory beanFactory = new BeanFactory(BeanScanner.scan(basePackage));
+        BeanFactory beanFactory = new BeanFactory(ClassPathBeanScanner.scan(basePackage));
         Map<Class<?>, Object> controllers = beanFactory.getControllers();
         controllers.forEach((clazz, handler) -> addHandlerExecution(handlerExecutions, handler, clazz.getMethods()));
     }

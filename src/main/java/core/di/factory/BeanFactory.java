@@ -1,21 +1,31 @@
 package core.di.factory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import core.annotation.web.Controller;
-import org.springframework.beans.BeanUtils;
-
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.BeanUtils;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
+import core.annotation.web.Controller;
+
 public class BeanFactory {
-    private final Set<Class<?>> preInstantiateBeans;
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
+    private Set<Class<?>> preInstantiateBeans = Sets.newHashSet();
+
+    public BeanFactory() {
+    }
 
     public BeanFactory(Set<Class<?>> preInstantiateBeans) {
         this.preInstantiateBeans = preInstantiateBeans;
+    }
+
+    public void addBean(Class<?> clazz, Object bean) {
+        beans.put(clazz, bean);
     }
 
     @SuppressWarnings("unchecked")
