@@ -18,6 +18,7 @@ import com.google.common.collect.Maps;
 
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.ClassPathBeanDefinitionScanner;
 import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;

@@ -1,13 +1,11 @@
-package next.config;
+package core.di;
 
 import java.util.Arrays;
 
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
-import core.di.BeanDefinition;
 import core.di.factory.BeanFactory;
-import core.mvc.tobe.ClassPathBeanDefinitionScanner;
 
 public class ConfigurationBeanScanner {
 

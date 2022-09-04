@@ -1,4 +1,4 @@
-package core.mvc.tobe;
+package core.di;
 
 import java.lang.annotation.Annotation;
 import java.util.List;

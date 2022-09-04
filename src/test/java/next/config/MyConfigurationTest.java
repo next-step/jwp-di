@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
 
+import core.di.ConfigurationBeanScanner;
 import core.di.factory.BeanFactory;
 import core.di.factory.example.QnaController;
 import core.jdbc.JdbcTemplate;
