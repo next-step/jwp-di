@@ -11,11 +11,10 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 
 import com.google.common.collect.Sets;
 
+import core.annotation.Component;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
-import core.di.BeanDefinition;
-import core.di.BeanDefinitionRegistry;
 
 public class ClassPathBeanDefinitionScanner {
 
@@ -27,7 +26,7 @@ public class ClassPathBeanDefinitionScanner {
 
     public void scan(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        List<Class<? extends Annotation>> annotationClasses = List.of(Controller.class, Service.class, Repository.class);
+        List<Class<? extends Annotation>> annotationClasses = List.of(Controller.class, Service.class, Repository.class, Component.class);
         Set<Class<?>> preInstantiateBeans = Sets.newHashSet();
         for (Class<? extends Annotation> annotationClass : annotationClasses) {
             preInstantiateBeans.addAll(reflections.getTypesAnnotatedWith(annotationClass));

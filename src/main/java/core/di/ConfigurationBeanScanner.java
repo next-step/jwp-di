@@ -29,7 +29,6 @@ public class ConfigurationBeanScanner {
         if (componentClass.isAnnotationPresent(ComponentScan.class)) {
             ComponentScan annotation = componentClass.getAnnotation(ComponentScan.class);
             Object[] packages = annotation.value();
-            System.out.println("packages = " + Arrays.toString(packages));
             ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanFactory);
             scanner.scan(packages);
         }

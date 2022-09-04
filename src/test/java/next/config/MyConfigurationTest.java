@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import core.di.ConfigurationBeanScanner;
 import core.di.factory.BeanFactory;
+import core.di.factory.example.JdbcQuestionRepository;
+import core.di.factory.example.JdbcUserRepository;
+import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import core.jdbc.JdbcTemplate;
 import next.controller.ApiQnaController;
@@ -33,5 +36,11 @@ class MyConfigurationTest {
         assertThat(beanFactory.getBean(HomeController.class)).isNotNull();
         assertThat(beanFactory.getBean(QnaController.class)).isNotNull();
         assertThat(beanFactory.getBean(UserController.class)).isNotNull();
+
+        // core 및 하위 패키지
+        assertThat(beanFactory.getBean(JdbcQuestionRepository.class)).isNotNull();
+        assertThat(beanFactory.getBean(JdbcUserRepository.class)).isNotNull();
+        assertThat(beanFactory.getBean(MyQnaService.class)).isNotNull();
+        assertThat(beanFactory.getBean(QnaController.class)).isNotNull();
     }
 }

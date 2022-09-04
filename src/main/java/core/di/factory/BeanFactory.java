@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import com.google.common.collect.Lists;
@@ -16,11 +14,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import core.annotation.web.Controller;
+import core.di.Autowire;
 import core.di.BeanDefinition;
 import core.di.BeanDefinitionRegistry;
 
 public class BeanFactory implements BeanDefinitionRegistry {
-    private static final Logger log = LoggerFactory.getLogger(BeanFactory.class);
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
     private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
@@ -44,8 +42,7 @@ public class BeanFactory implements BeanDefinitionRegistry {
     }
 
     private void initiateBeanDefinitions() {
-        Set<Class<?>> classes = beanDefinitions.keySet();
-        for (Class<?> clazz : classes) {
+        for (Class<?> clazz : getBeanClasses()) {
             getBean(clazz);
         }
     }
@@ -70,7 +67,8 @@ public class BeanFactory implements BeanDefinitionRegistry {
         }
 
         BeanDefinition beanDefinition = beanDefinitions.get(requiredType);
-        if (beanDefinition.hasMethod()) {
+
+        if (beanDefinition != null && beanDefinition.hasBeanMethod()) {
             Method method = beanDefinition.getMethod();
             Class<?>[] parameterTypes = method.getParameterTypes();
             Object[] arguments = getArguments(parameterTypes);
@@ -85,7 +83,19 @@ public class BeanFactory implements BeanDefinitionRegistry {
         }
 
         Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(requiredType, beanDefinitions.keySet());
-        bean = BeanUtils.instantiateClass(concreteClass);
+        beanDefinition = beanDefinitions.get(concreteClass);
+        Autowire autowire = beanDefinition.getResolvedAutowireMode();
+
+        if (autowire == Autowire.NO) {
+            bean = BeanUtils.instantiateClass(concreteClass);
+        }
+
+        if (autowire == Autowire.CONSTRUCTOR) {
+            Constructor<?> constructor = beanDefinition.getConstructor();
+            Object[] arguments = getArguments(constructor.getParameterTypes());
+            bean = BeanUtils.instantiateClass(constructor, arguments);
+        }
+
         beans.put(requiredType, bean);
         return (T) bean;
     }
