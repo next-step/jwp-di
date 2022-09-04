@@ -1,14 +1,11 @@
 package core.di.factory;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import core.annotation.web.RequestMethod;
 import core.mvc.tobe.HandlerExecution;
 import core.mvc.tobe.HandlerKey;
 import java.util.Map;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +20,7 @@ class BeanScannerTest {
         final HandlerKey expectedKey = new HandlerKey("/questions", RequestMethod.GET);
 
         assertThat(scan).containsKey(expectedKey);
-        Assertions.assertThat(scan.get(expectedKey)).isNotNull().isInstanceOf(HandlerExecution.class);
-
+        assertThat(scan.get(expectedKey)).isNotNull().isInstanceOf(HandlerExecution.class);
     }
 
 }
