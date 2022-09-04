@@ -1,25 +1,19 @@
 package next.dao;
 
+import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
 import core.jdbc.RowMapper;
 import next.model.Question;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.sql.*;
 import java.util.List;
 
+@Repository
 public class QuestionDao {
-    private static QuestionDao questionDao = new QuestionDao();
-
     private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
-
-    private QuestionDao() {
-    }
-
-    public static QuestionDao getInstance() {
-        return questionDao;
-    }
 
     public Question insert(Question question) {
         String sql = "INSERT INTO QUESTIONS (writer, title, contents, createdDate) VALUES (?, ?, ?, ?)";
