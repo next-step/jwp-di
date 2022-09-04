@@ -8,7 +8,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan(basePackages = {"core", "next"})
+@ComponentScan(basePackages = {"core"})
 public class ExampleConfig {
     @Bean
     public DataSource dataSource() {

@@ -3,6 +3,9 @@ package core.di;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import core.di.factory.ConfigurationBeanScanner;
+import core.mvc.tobe.HandlerExecution;
+import core.mvc.tobe.HandlerKey;
+import java.util.Map;
 import java.util.Set;
 
 public class BeanContext {
@@ -24,4 +27,9 @@ public class BeanContext {
 
         beanScanner.scan(beanFactory);
     }
+
+    public Map<HandlerKey, HandlerExecution> getHandlerExecutions() {
+        return beanScanner.getHandlerExecutions(beanFactory);
+    }
+
 }

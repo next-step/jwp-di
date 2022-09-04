@@ -2,7 +2,6 @@ package core.di;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,17 +12,17 @@ class ComponentClassesScannerTest {
     void scan_with_component_scan_annotated_classes() {
         final String targetPackages = "core";
 
-        final Set<String> actual = ComponentClassesScanner.scanBasePackages(targetPackages);
+        final Object[] actual = ComponentClassesScanner.scanBasePackages(targetPackages);
 
-        assertThat(actual).containsExactlyInAnyOrder("core", "next");
+        assertThat(actual).containsExactly("core");
     }
 
     @DisplayName("`@ComponentScan` 애너테이션이 적용된 클래스가 없으면 빈 목록을 반환한다")
     @Test
     void no_configuration_classes() {
-        final String targetPackages = "next";
+        final String targetPackages = "mvc";
 
-        final Set<String> actual = ComponentClassesScanner.scanBasePackages(targetPackages);
+        final Object[] actual = ComponentClassesScanner.scanBasePackages(targetPackages);
 
         assertThat(actual).isEmpty();
     }
