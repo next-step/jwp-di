@@ -11,3 +11,4 @@
 ### 구현 요구 사항
 * BeanFactoryTest 의 di()테스트를 성공 시킨다.
   * @Controller, @Service, @Repository 애노테이션을 통한 빈 자동 주입 기능을 생성한다.
+  * ControllerScanner 패키지 이동 후 BeanScanner Rename 및 @Service, @Repository 애노테이션 까지 지원
