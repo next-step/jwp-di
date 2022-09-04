@@ -15,6 +15,7 @@ import com.google.common.collect.Maps;
 import core.di.Autowire;
 import core.di.BeanDefinition;
 import core.di.BeanDefinitionRegistry;
+import core.di.BeanNameGenerator;
 
 public class DefaultListableBeanFactory implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 
@@ -40,34 +41,37 @@ public class DefaultListableBeanFactory implements ConfigurableListableBeanFacto
 
         if (beanDefinition != null && beanDefinition.hasBeanMethod()) {
             Method method = beanDefinition.getMethod();
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            Object[] arguments = getArguments(parameterTypes);
-            try {
-                Object beanContainingMethod = getBean(method.getDeclaringClass());
-                bean = method.invoke(beanContainingMethod, arguments);
-                beans.put(requiredType, bean);
-                return (T) bean;
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+            Object[] arguments = getArguments(method.getParameterTypes());
+            bean = createBeanByMethod(method, arguments);
+            beans.put(requiredType, bean);
+            return (T) bean;
         }
 
-        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(requiredType, beanDefinitions.keySet());
-        beanDefinition = beanDefinitions.get(concreteClass);
+        bean = createAutowireBean(requiredType);
+        beans.put(requiredType, bean);
+        return (T) bean;
+    }
+
+    private Object createBeanByMethod(Method method, Object[] arguments) {
+        try {
+            return method.invoke(getBean(method.getDeclaringClass()), arguments);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T> Object createAutowireBean(Class<T> beanClass) {
+        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(beanClass, getBeanClasses());
+        BeanDefinition beanDefinition = beanDefinitions.get(concreteClass);
         Autowire autowire = beanDefinition.getResolvedAutowireMode();
-
-        if (autowire == Autowire.NO) {
-            bean = BeanUtils.instantiateClass(concreteClass);
-        }
 
         if (autowire == Autowire.CONSTRUCTOR) {
             Constructor<?> constructor = beanDefinition.getConstructor();
             Object[] arguments = getArguments(constructor.getParameterTypes());
-            bean = BeanUtils.instantiateClass(constructor, arguments);
+            return BeanUtils.instantiateClass(constructor, arguments);
         }
 
-        beans.put(requiredType, bean);
-        return (T) bean;
+        return BeanUtils.instantiateClass(concreteClass);
     }
 
     private Object[] getArguments(Class<?>[] parameterTypes) {
@@ -94,12 +98,12 @@ public class DefaultListableBeanFactory implements ConfigurableListableBeanFacto
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Map<Class<T>, T> getBeansOfType(Class<T> type) {
-        Map<Class<T>, T> beansOfType = Maps.newHashMap();
+    public <T> Map<String, T> getBeansOfType(Class<T> type) {
+        Map<String, T> beansOfType = Maps.newHashMap();
         this.beans.entrySet()
             .stream()
-            .filter(entry -> entry.getKey() == type)
-            .forEach(entry -> beansOfType.put(type, (T) entry.getValue()));
+            .filter(entry -> type.isAssignableFrom(entry.getKey()))
+            .forEach(entry -> beansOfType.put(beanDefinitions.get(entry.getKey()).getBeanName(), (T) entry.getValue()));
         return beansOfType;
     }
 

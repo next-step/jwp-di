@@ -33,7 +33,7 @@ public class GenericApplicationContext implements BeanDefinitionRegistry, Applic
     }
 
     @Override
-    public <T> Map<Class<T>, T> getBeansOfType(Class<T> type) {
+    public <T> Map<String, T> getBeansOfType(Class<T> type) {
         return beanFactory.getBeansOfType(type);
     }
 

@@ -13,6 +13,7 @@ import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import core.jdbc.JdbcTemplate;
+import core.mvc.tobe.AbstractNewController;
 import next.controller.ApiQnaController;
 import next.controller.ApiUserController;
 import next.controller.HomeController;
@@ -27,6 +28,7 @@ class MyConfigurationTest {
         scanner.register(MyConfiguration.class);
         beanFactory.preInstantiateSingletons();
 
+        assertThat(beanFactory.getBean(MyConfiguration.class)).isNotNull();
         assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
         assertThat(beanFactory.getBean(JdbcTemplate.class)).isNotNull();
 
@@ -36,6 +38,7 @@ class MyConfigurationTest {
         assertThat(beanFactory.getBean(HomeController.class)).isNotNull();
         assertThat(beanFactory.getBean(QnaController.class)).isNotNull();
         assertThat(beanFactory.getBean(UserController.class)).isNotNull();
+        assertThat(beanFactory.getBeansOfType(AbstractNewController.class)).hasSize(4);
 
         // core 및 하위 패키지
         assertThat(beanFactory.getBean(JdbcQuestionRepository.class)).isNotNull();

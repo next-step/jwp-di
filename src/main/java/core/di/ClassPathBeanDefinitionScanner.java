@@ -34,7 +34,5 @@ public class ClassPathBeanDefinitionScanner {
 
         preInstantiateBeans.forEach(beanClass ->
             registry.registerBeanDefinition(beanClass, new BeanDefinition(beanClass)));
-
-        System.out.println("register finished");
     }
 }

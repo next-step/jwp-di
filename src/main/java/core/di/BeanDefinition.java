@@ -7,18 +7,18 @@ import core.di.factory.BeanFactoryUtils;
 
 public class BeanDefinition {
 
-    private final Class<?> clazz;
     private final Constructor<?> constructor;
     private final Method method;
+    private final String name;
 
     public BeanDefinition(Class<?> clazz) {
         this(clazz, null);
     }
 
-    public BeanDefinition(Class<?> clazz, Method method) {
-        this.clazz = clazz;
-        this.constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
+    public BeanDefinition(Class<?> beanClass, Method method) {
+        this.constructor = BeanFactoryUtils.getInjectedConstructor(beanClass);
         this.method = method;
+        this.name = BeanNameGenerator.generateBeanName(beanClass.getSimpleName());
     }
 
     public boolean hasBeanMethod() {
@@ -31,6 +31,10 @@ public class BeanDefinition {
 
     public Method getMethod() {
         return method;
+    }
+
+    public String getBeanName() {
+        return name;
     }
 
     public Autowire getResolvedAutowireMode() {
