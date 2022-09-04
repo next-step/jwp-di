@@ -1,8 +1,6 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.annotation.Annotation;
@@ -15,9 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
-
-    private Set<Class<?>> preInstanticateBeans;
+    private final Set<Class<?>> preInstanticateBeans;
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
@@ -48,23 +44,35 @@ public class BeanFactory {
         }
 
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstanticateBean);
-
         if (Objects.isNull(injectedConstructor)) {
-            Object result = BeanUtils.instantiateClass(preInstanticateBean);
-            beans.put(preInstanticateBean, result);
-            return result;
+            return createOrPutNewBeanByDefaultConstructor(preInstanticateBean);
         }
 
+        return createOrPutNewBean(preInstanticateBean, injectedConstructor);
+    }
+
+    private Object createOrPutNewBeanByDefaultConstructor(Class<?> preInstanticateBean) {
+        Object result = BeanUtils.instantiateClass(preInstanticateBean);
+        beans.put(preInstanticateBean, result);
+        return result;
+    }
+
+    private Object createOrPutNewBean(Class<?> preInstanticateBean, Constructor<?> injectedConstructor) {
         Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
+        List<Object> parameters = instantiateDependencyArguments(parameterTypes);
+
+        Object object = BeanUtils.instantiateClass(injectedConstructor, parameters.toArray());
+        beans.put(preInstanticateBean, object);
+        return object;
+    }
+
+    private List<Object> instantiateDependencyArguments(Class<?>[] parameterTypes) {
         List<Object> parameters = new ArrayList<>();
 
         for (Class<?> parameterType : parameterTypes) {
             Class<?> concreteType = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
             parameters.add(instantiateBean(concreteType));
         }
-
-        Object object = BeanUtils.instantiateClass(injectedConstructor, parameters.toArray());
-        beans.put(preInstanticateBean, object);
-        return object;
+        return parameters;
     }
 }

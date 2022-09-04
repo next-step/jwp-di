@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BeanScanner {
-
     private final List<Class<? extends Annotation>> targetAnnotationClasses;
 
     public BeanScanner(List<Class<? extends Annotation>> targetAnnotationClasses) {
