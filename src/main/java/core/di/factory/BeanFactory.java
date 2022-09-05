@@ -9,9 +9,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -21,7 +23,7 @@ import org.springframework.beans.BeanUtils;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstantiateBeans;
+    private Set<Class<?>> preInstantiateBeans = new HashSet<>();
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
@@ -67,7 +69,11 @@ public class BeanFactory {
         }
     }
 
-    private void createDependencies() throws Exception {
+    private void createDependencies() {
+        if (Objects.isNull(preInstantiateBeans) || preInstantiateBeans.isEmpty()) {
+            return;
+        }
+
         for (Class<?> clazz : preInstantiateBeans) {
             beans.putIfAbsent(clazz, recursive(clazz));
         }
@@ -95,6 +101,10 @@ public class BeanFactory {
     private Object[] getArguments(Class<?>[] parameterTypes) {
         Object[] params = new Object[parameterTypes.length];
         for (int i = 0; i < params.length; ++i) {
+            if (beans.containsKey(parameterTypes[i])) {
+                params[i] = beans.get(parameterTypes[i]);
+                continue;
+            }
             Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterTypes[i], this.preInstantiateBeans);
             params[i] = recursive(concreteClass);
         }
@@ -107,7 +117,7 @@ public class BeanFactory {
         for (Parameter parameter : parameters) {
             Object autowireBean = this.getBean(parameter.getType());
             if (autowireBean == null) {
-                throw new RuntimeException("의존 관계를 주입할 Bean이 존재하지 않습니다.");
+                throw new RuntimeException("의존 관계를 주입할 Bean 이 존재하지 않습니다.");
             }
             arguments.add(autowireBean);
         }
@@ -121,6 +131,10 @@ public class BeanFactory {
                 .isAnnotationPresent(Controller.class))
             .map(Entry::getValue)
             .collect(Collectors.toList());
+    }
+
+    public void addPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
+        this.preInstantiateBeans.addAll(preInstantiateBeans);
     }
 
 }

@@ -29,10 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.util.Assert;
 
-public class BeanScanner {
+public class ClasspathBeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClasspathBeanScanner.class);
 
     private BeanFactory beanFactory;
     private Reflections reflections;
@@ -47,12 +48,18 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        this.reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+    public ClasspathBeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public Map<HandlerKey, HandlerExecution> doScan(Object... basePackages) {
+        Assert.notEmpty(basePackages, "At least one base package must be specified");
+
+        this.reflections = new Reflections(basePackages, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
 
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        this.beanFactory = new BeanFactory(getTypesAnnotatedWith(Controller.class, Service.class, Repository.class));
+        this.beanFactory.addPreInstantiateBeans(getTypesAnnotatedWith(Controller.class, Service.class, Repository.class));
         this.beanFactory.initialize();
 
         List<Object> controllers = this.beanFactory.getControllers();
