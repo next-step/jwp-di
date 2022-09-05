@@ -72,4 +72,21 @@ public class MethodBeanRegister implements BeanRegister {
     public void unsubscribe() {
         this.subject = null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MethodBeanRegister)) {
+            return false;
+        }
+        MethodBeanRegister that = (MethodBeanRegister) o;
+        return Objects.equals(method, that.method) && Objects.equals(subject, that.subject);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(method, subject);
+    }
 }
