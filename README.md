@@ -1,8 +1,8 @@
 # DI 프레임워크 구현
 
 ## 3, 4단계 요구사항
-- [ ] 자바 클래스가 설정 파일이라는 표시는 @Configuration으로 한다. 각 메소드에서 생성하는 인스턴스가 BeanFactory에 빈으로 등록하라는 설정은 @Bean 애노테이션으로 한다.
-  - [ ] 설정 파일을 읽어 Bean 등록 기능 추가
+- [x] 자바 클래스가 설정 파일이라는 표시는 @Configuration으로 한다. 각 메소드에서 생성하는 인스턴스가 BeanFactory에 빈으로 등록하라는 설정은 @Bean 애노테이션으로 한다.
+  - [x] 설정 파일을 읽어 Bean 등록 기능 추가
 - [ ] BeanScanner에서 사용할 기본 패키지에 대한 설정을 하드코딩했는데 설정 파일에서 @ComponentScan으로 설정할 수 있도록 지원하면 좋겠다.
   - [ ] 설정 파일을 통해 등록한 Bean과 ClasspathBeanScanner를 통해 추가한 Bean 통합
 - [ ] 위와 같이 @Configuration 설정 파일을 통해 등록한 빈과 BeanScanner를 통해 등록한 빈 간에도 DI가 가능해야 한다.

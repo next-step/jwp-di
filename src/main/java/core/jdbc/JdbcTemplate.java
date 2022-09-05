@@ -1,5 +1,6 @@
 package core.jdbc;
 
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,9 +11,13 @@ import java.util.List;
 public class JdbcTemplate {
     private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
 
-    private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private static JdbcTemplate jdbcTemplate
+        = new JdbcTemplate(ConnectionManager.getDataSource());
 
-    private JdbcTemplate() {
+    private final DataSource dataSource;
+
+    public JdbcTemplate(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public static JdbcTemplate getInstance() {
