@@ -31,11 +31,11 @@ public class BeanFactory {
                 beans.put(preInstanticateBean, instantiateClass(preInstanticateBean));
             }
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            logger.error("InstantiationException : {}", e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            logger.error("IllegalAccessException : {}", e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            logger.error("InvocationTargetException : {}", e);
         }
     }
 
