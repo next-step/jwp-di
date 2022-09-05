@@ -1,5 +1,8 @@
-package core.mvc.tobe;
+package core.di;
 
+import com.google.common.collect.Sets;
+import core.annotation.Repository;
+import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.mvc.tobe.HandlerExecution;
@@ -14,15 +17,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
-public class ControllerScanner {
+public class BeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final List<Class<? extends Annotation>> ANNOTATIONS = List.of(Controller.class, Repository.class, Service.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
@@ -33,17 +39,15 @@ public class ControllerScanner {
         );
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
+    private final Object[] basePackage;
 
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+    public BeanScanner(Object[] basePackage) {
+        this.basePackage = basePackage;
+    }
+
+    public Map<HandlerKey, HandlerExecution> scan() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
-        for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
-            addHandlerExecution(handlers, target, controller.getMethods());
-        }
-
+        beans().forEach(bean -> addHandlerExecution(handlers, newInstance(bean), bean.getMethods()));
         return handlers;
     }
 
@@ -57,6 +61,14 @@ public class ControllerScanner {
                     handlers.put(handlerKey, handlerExecution);
                     logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
                 });
+    }
+
+    private Set<Class<?>> beans() {
+        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+
+        Set<Class<?>> set = new HashSet<>();
+        ANNOTATIONS.forEach(annotation -> set.addAll(reflections.getTypesAnnotatedWith(annotation)));
+        return set;
     }
 
 }
