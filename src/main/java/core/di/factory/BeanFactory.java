@@ -5,6 +5,7 @@ import core.annotation.web.Controller;
 import core.util.ReflectionUtils;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,8 +20,20 @@ public class BeanFactory {
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
+    public BeanFactory() {
+        this.preInstanticateBeans = new HashSet<>();
+    }
+
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
+    }
+
+    public void addPreInstanticateBeans(Class<?>... classes) {
+        preInstanticateBeans.addAll(Arrays.asList(classes));
+    }
+
+    public void addBean(Class<?> clazz, Object bean) {
+        beans.put(clazz, bean);
     }
 
     @SuppressWarnings("unchecked")

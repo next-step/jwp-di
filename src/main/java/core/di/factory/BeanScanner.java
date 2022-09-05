@@ -9,9 +9,6 @@ import core.mvc.tobe.HandlerKey;
 import core.mvc.tobe.support.*;
 import core.util.ReflectionUtils;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -26,6 +23,12 @@ public class BeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
+    private final Object[] basePackage;
+
+    public BeanScanner(final Object... basePackage) {
+        this.basePackage = basePackage;
+    }
+
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
                 new HttpResponseArgumentResolver(),
@@ -36,13 +39,16 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+    public void scan(final BeanFactory beanFactory) {
+        Reflections reflections = new Reflections(basePackage);
 
         final Set<Class<?>> preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
-        final BeanFactory beanFactory = new BeanFactory(preInstanticateBeans);
-        beanFactory.initialize();
 
+        beanFactory.addPreInstanticateBeans(preInstanticateBeans.toArray(Class<?>[]::new));
+        beanFactory.initialize();
+    }
+
+    public Map<HandlerKey, HandlerExecution> getHandlerExecutions(final BeanFactory beanFactory) {
         Set<Class<?>> controllerTypes = beanFactory.getControllerTypes();
 
         return addHandlerExecution(beanFactory, controllerTypes);
