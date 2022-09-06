@@ -1,11 +1,5 @@
 package next.config;
 
-import static org.assertj.core.api.Assertions.*;
-
-import javax.sql.DataSource;
-
-import org.junit.jupiter.api.Test;
-
 import core.di.AnnotatedBeanDefinitionReader;
 import core.di.factory.DefaultListableBeanFactory;
 import core.di.factory.example.JdbcQuestionRepository;
@@ -13,11 +7,16 @@ import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import core.jdbc.JdbcTemplate;
-import core.mvc.tobe.AbstractNewController;
 import next.controller.ApiQnaController;
 import next.controller.ApiUserController;
 import next.controller.HomeController;
 import next.controller.UserController;
+import org.junit.jupiter.api.Test;
+
+import javax.sql.DataSource;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class MyConfigurationTest {
 
@@ -28,22 +27,26 @@ class MyConfigurationTest {
         scanner.register(MyConfiguration.class);
         beanFactory.preInstantiateSingletons();
 
-        assertThat(beanFactory.getBean(MyConfiguration.class)).isNotNull();
-        assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
-        assertThat(beanFactory.getBean(JdbcTemplate.class)).isNotNull();
+        Set<Class<?>> beanClasses = beanFactory.getBeanClasses();
 
-        // next 및 하위 패키지
-        assertThat(beanFactory.getBean(ApiQnaController.class)).isNotNull();
-        assertThat(beanFactory.getBean(ApiUserController.class)).isNotNull();
-        assertThat(beanFactory.getBean(HomeController.class)).isNotNull();
-        assertThat(beanFactory.getBean(QnaController.class)).isNotNull();
-        assertThat(beanFactory.getBean(UserController.class)).isNotNull();
-        assertThat(beanFactory.getBeansOfType(AbstractNewController.class)).hasSize(4);
+        assertThat(beanClasses).contains(
+            // @Configuration 으로 등록한 Bean
+            MyConfiguration.class,
+            DataSource.class,
+            JdbcTemplate.class,
 
-        // core 및 하위 패키지
-        assertThat(beanFactory.getBean(JdbcQuestionRepository.class)).isNotNull();
-        assertThat(beanFactory.getBean(JdbcUserRepository.class)).isNotNull();
-        assertThat(beanFactory.getBean(MyQnaService.class)).isNotNull();
-        assertThat(beanFactory.getBean(QnaController.class)).isNotNull();
+            // next 및 하위 패키지
+            ApiQnaController.class,
+            ApiUserController.class,
+            HomeController.class,
+            QnaController.class,
+            UserController.class,
+
+            // core 및 하위 패키지
+            JdbcQuestionRepository.class,
+            JdbcUserRepository.class,
+            MyQnaService.class,
+            QnaController.class
+        );
     }
 }
