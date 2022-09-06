@@ -2,6 +2,7 @@ package core.di.factory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import core.di.factory.exception.NoSuchDefaultConstructorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +14,12 @@ import java.util.*;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
+    private Set<Class<?>> preInstanticateBeans = Sets.newHashSet();
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
+
+    public BeanFactory() {
+    }
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -93,5 +97,7 @@ public class BeanFactory {
         }
     }
 
-
+    public void register(Class<?> configuration, Object bean) {
+        beans.put(configuration, bean);
+    }
 }
