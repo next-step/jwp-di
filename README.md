@@ -94,4 +94,4 @@
 - [ ] ConfigurationBean 매개변수 없는 순서대로 정렬 제거
 - [ ] ConfigurationBean 에서 BeanFactory 를 주입받지 않고 등록할 빈을 리턴하도록 변경
 - [ ] ConfigurationBean 에서 getArguments 메서드 대신 BeanFactory 에서 클래스를 제공받는 메서드 추가 
-- [ ] BeanScanner basePackage 변수명 단수 -> 복수형 변경
+- [x] BeanScanner basePackage 변수명 단수 -> 복수형 변경
