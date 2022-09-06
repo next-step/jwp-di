@@ -7,12 +7,20 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 public class JdbcTemplate {
     private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
 
     private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
+    private DataSource dataSource;
+
     private JdbcTemplate() {
+    }
+
+    public JdbcTemplate(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public static JdbcTemplate getInstance() {

@@ -1,23 +1,32 @@
 package core.mvc.tobe;
 
-import com.google.common.collect.Maps;
-import core.annotation.web.RequestMapping;
-import core.annotation.web.RequestMethod;
-import core.di.factory.BeanFactory;
-import core.mvc.HandlerMapping;
-import core.mvc.tobe.support.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
-import org.springframework.core.ParameterNameDiscoverer;
+import static java.util.Arrays.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.ParameterNameDiscoverer;
+
+import com.google.common.collect.Maps;
+
+import core.annotation.web.Controller;
+import core.annotation.web.RequestMapping;
+import core.annotation.web.RequestMethod;
+import core.di.ApplicationContext;
+import core.mvc.HandlerMapping;
+import core.mvc.tobe.support.ArgumentResolver;
+import core.mvc.tobe.support.HttpRequestArgumentResolver;
+import core.mvc.tobe.support.HttpResponseArgumentResolver;
+import core.mvc.tobe.support.ModelArgumentResolver;
+import core.mvc.tobe.support.PathVariableArgumentResolver;
+import core.mvc.tobe.support.RequestParamArgumentResolver;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
@@ -30,18 +39,26 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         new ModelArgumentResolver()
     );
 
-    private final Object[] basePackage;
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final ApplicationContext applicationContext;
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
+    public AnnotationHandlerMapping(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        BeanFactory beanFactory = new BeanFactory(BeanScanner.scan(basePackage));
-        Map<Class<?>, Object> controllers = beanFactory.getControllers();
+        Map<Class<?>, Object> controllers = getControllers(applicationContext);
         controllers.forEach((clazz, handler) -> addHandlerExecution(handlerExecutions, handler, clazz.getMethods()));
+    }
+
+    private Map<Class<?>, Object> getControllers(ApplicationContext applicationContext) {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        applicationContext.getBeanClasses()
+            .stream()
+            .filter(beanClass -> beanClass.isAnnotationPresent(Controller.class))
+            .forEach(beanClass -> controllers.put(beanClass, applicationContext.getBean(beanClass)));
+        return controllers;
     }
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
