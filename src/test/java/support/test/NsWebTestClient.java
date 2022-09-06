@@ -42,11 +42,19 @@ public class NsWebTestClient {
 
     public <T> void updateResource(URI location, T body, Class<T> clazz) {
         testClientBuilder.build()
-                .put()
-                .uri(location.toString())
-                .body(Mono.just(body), clazz)
-                .exchange()
-                .expectStatus().isOk();
+            .put()
+            .uri(location.toString())
+            .body(Mono.just(body), clazz)
+            .exchange()
+            .expectStatus().isOk();
+    }
+
+    public void deleteResource(URI location) {
+        testClientBuilder.build()
+            .delete()
+            .uri(location.toString())
+            .exchange()
+            .expectStatus().isOk();
     }
 
     public <T> T getResource(URI location, Class<T> clazz) {

@@ -31,9 +31,9 @@ import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.util.Assert;
 
-public class ClasspathBeanScanner {
+public class ClassPathBeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClasspathBeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClassPathBeanScanner.class);
 
     private BeanFactory beanFactory;
     private Reflections reflections;
@@ -48,7 +48,7 @@ public class ClasspathBeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public ClasspathBeanScanner(BeanFactory beanFactory) {
+    public ClassPathBeanScanner(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 

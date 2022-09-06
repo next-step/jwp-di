@@ -61,4 +61,14 @@ public class UserDao {
         String sql = "UPDATE USERS set password = ?, name = ?, email = ? WHERE userId = ?";
         jdbcTemplate.update(sql, user.getPassword(), user.getName(), user.getEmail(), user.getUserId());
     }
+
+    public void delete(String userId) {
+        String sql = "DELETE FROM USERS WHERE userId = ?";
+        jdbcTemplate.update(sql, userId);
+    }
+
+    public void deleteAll() {
+        String sql = "DELETE FROM USERS";
+        jdbcTemplate.update(sql);
+    }
 }

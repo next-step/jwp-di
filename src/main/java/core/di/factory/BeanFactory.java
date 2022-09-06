@@ -30,10 +30,6 @@ public class BeanFactory {
     public BeanFactory() {
     }
 
-    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
-        this.preInstantiateBeans = preInstantiateBeans;
-    }
-
     public void register(Class<?> clazz) {
         if (!clazz.isAnnotationPresent(Configuration.class)) {
             return;

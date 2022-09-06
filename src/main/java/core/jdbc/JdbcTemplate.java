@@ -14,10 +14,7 @@ public class JdbcTemplate {
     private static JdbcTemplate jdbcTemplate
         = new JdbcTemplate(ConnectionManager.getDataSource());
 
-    private DataSource dataSource;
-
-    private JdbcTemplate() {
-    }
+    private final DataSource dataSource;
 
     private JdbcTemplate(DataSource dataSource) {
         this.dataSource = dataSource;

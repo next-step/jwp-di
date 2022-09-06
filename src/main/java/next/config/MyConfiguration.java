@@ -8,8 +8,8 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 @Configuration
-@ComponentScan({"next", "core"})
-public class DataConfiguration {
+@ComponentScan(basePackages = {"next", "core"})
+public class MyConfiguration {
     private static final String DB_DRIVER = "org.h2.Driver";
     private static final String DB_URL = "jdbc:h2:mem://localhost/~/jwp-di;MODE=MySQL;DB_CLOSE_DELAY=-1";
     private static final String DB_USERNAME = "sa";

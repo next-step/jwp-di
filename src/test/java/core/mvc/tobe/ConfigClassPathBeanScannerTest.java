@@ -6,19 +6,19 @@ import core.di.factory.BeanFactory;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyJdbcTemplate;
 import javax.sql.DataSource;
-import next.config.DataConfiguration;
+import next.config.MyConfiguration;
 import org.junit.jupiter.api.Test;
 
-class ConfigClasspathBeanScannerTest {
+class ConfigClassPathBeanScannerTest {
 
     @Test
     void register_classpathBeanScanner_통합() {
         BeanFactory beanFactory = new BeanFactory();
 
         ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        configurationBeanScanner.register(DataConfiguration.class);
+        configurationBeanScanner.register(MyConfiguration.class);
 
-        ClasspathBeanScanner cbds = new ClasspathBeanScanner(beanFactory);
+        ClassPathBeanScanner cbds = new ClassPathBeanScanner(beanFactory);
         cbds.doScan("core.di");
 
         beanFactory.initialize();
@@ -38,7 +38,7 @@ class ConfigClasspathBeanScannerTest {
     void register_simple() {
         BeanFactory beanFactory = new BeanFactory();
         ConfigurationBeanScanner configBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        configBeanScanner.register(DataConfiguration.class);
+        configBeanScanner.register(MyConfiguration.class);
         beanFactory.initialize();
 
         assertNotNull(beanFactory.getBean(DataSource.class));

@@ -1,45 +1,48 @@
-package core.di.factory;
+package next.context.annotation;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import core.di.factory.BeanFactory;
+import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
-import core.di.factory.example.QnaController;
+import core.di.factory.example.UserRepository;
 import core.mvc.tobe.ClassPathBeanScanner;
 import core.mvc.tobe.ConfigurationBeanScanner;
+import javax.sql.DataSource;
 import next.config.MyConfiguration;
-import next.context.annotation.AnnotationConfigApplicationContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class BeanFactoryTest {
+class AnnotationConfigApplicationContextTest {
+
     private AnnotationConfigApplicationContext annotationConfigApplicationContext;
-    private BeanFactory beanFactory;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
-    public void setup() throws Exception {
+    void setUp() {
         BeanFactory beanFactory = new BeanFactory();
         ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner(beanFactory);
         ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
         this.annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
             beanFactory, classPathBeanScanner, configurationBeanScanner
         );
-        this.beanFactory = this.annotationConfigApplicationContext.getBeanFactory();
     }
 
+    @DisplayName("Configuration 클래스의 ComponentScan 값의 basePackages 하위 빈들이 추가된다.")
     @Test
-    void di() {
+    void registerTest() {
         this.annotationConfigApplicationContext.register(MyConfiguration.class);
         this.annotationConfigApplicationContext.scan("core.di.factory.example");
 
-        QnaController qnaController = beanFactory.getBean(QnaController.class);
+        BeanFactory beanFactory = this.annotationConfigApplicationContext.getBeanFactory();
 
-        assertNotNull(qnaController);
-        assertNotNull(qnaController.getQnaService());
+        assertNotNull(beanFactory.getBean(DataSource.class));
 
-        MyQnaService qnaService = qnaController.getQnaService();
-        assertNotNull(qnaService.getUserRepository());
-        assertNotNull(qnaService.getQuestionRepository());
+        MyQnaService qnaService = beanFactory.getBean(MyQnaService.class);
+        assertNotNull(qnaService);
+
+        UserRepository userRepository = beanFactory.getBean(JdbcUserRepository.class);
+        assertNotNull(userRepository);
     }
 
 }
