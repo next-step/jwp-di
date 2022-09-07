@@ -1,32 +1,37 @@
-package core.jdbc;
+package core.di.factory.example;
 
+import core.jdbc.ConnectionManager;
+import core.jdbc.DataAccessException;
+import core.jdbc.KeyHolder;
+import core.jdbc.PreparedStatementCreator;
+import core.jdbc.PreparedStatementSetter;
+import core.jdbc.RowMapper;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+public class MyJdbcTemplate {
+    private static final Logger logger = LoggerFactory.getLogger( MyJdbcTemplate.class );
 
-public class JdbcTemplate {
-    private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
+    private DataSource dataSource;
 
-    private static JdbcTemplate jdbcTemplate
-        = new JdbcTemplate(ConnectionManager.getDataSource());
-
-    private final DataSource dataSource;
-
-    private JdbcTemplate(DataSource dataSource) {
+    public MyJdbcTemplate(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public static JdbcTemplate getInstance() {
-        return jdbcTemplate;
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     public void update(String sql, PreparedStatementSetter pss) throws DataAccessException {
         try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pss.setParameters(pstmt);
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -40,7 +45,7 @@ public class JdbcTemplate {
 
     public void update(PreparedStatementCreator psc, KeyHolder holder) {
         try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement ps = psc.createPreparedStatement(conn)) {
+            PreparedStatement ps = psc.createPreparedStatement(conn)) {
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
@@ -69,7 +74,7 @@ public class JdbcTemplate {
 
     public <T> List<T> query(String sql, RowMapper<T> rm, PreparedStatementSetter pss) throws DataAccessException {
         try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pss.setParameters(pstmt);
             return mapResultSetToObject(rm, pstmt);
         } catch (SQLException e) {

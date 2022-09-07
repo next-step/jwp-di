@@ -24,12 +24,12 @@ class AnnotationHandlerMappingTest {
     }
 
     @Test
-    public void create_find() throws Exception {
+    void create_find() throws Exception {
         User user = new User("pobi", "password", "포비", "pobi@nextstep.camp");
         createUser(user);
         assertThat(userDao.findByUserId(user.getUserId())).isEqualTo(user);
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/my/users");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
         HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
@@ -39,7 +39,7 @@ class AnnotationHandlerMappingTest {
     }
 
     private void createUser(User user) throws Exception {
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/users");
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/my/users");
         request.setParameter("userId", user.getUserId());
         request.setParameter("password", user.getPassword());
         request.setParameter("name", user.getName());

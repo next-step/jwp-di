@@ -24,7 +24,7 @@ public class MyController {
         this.userDao = userDao;
     }
 
-    @RequestMapping(value = "/users", method = RequestMethod.GET)
+    @RequestMapping(value = "/my/users", method = RequestMethod.GET)
     public ModelAndView findUserId(HttpServletRequest request, HttpServletResponse response) {
         String userId = request.getParameter("userId");
         logger.debug("Find UserId : {}", userId);
@@ -33,7 +33,7 @@ public class MyController {
         return null;
     }
 
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
+    @RequestMapping(value = "/my/users", method = RequestMethod.POST)
     public ModelAndView save(HttpServletRequest request, HttpServletResponse response) {
         User user = new User(
                 request.getParameter("userId"),

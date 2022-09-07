@@ -1,6 +1,14 @@
 # DI 프레임워크 구현
 
-## 요구사항
+## 3, 4단계 요구사항
+- [x] 자바 클래스가 설정 파일이라는 표시는 @Configuration으로 한다. 각 메소드에서 생성하는 인스턴스가 BeanFactory에 빈으로 등록하라는 설정은 @Bean 애노테이션으로 한다.
+  - [x] 설정 파일을 읽어 Bean 등록 기능 추가
+- [x] BeanScanner에서 사용할 기본 패키지에 대한 설정을 하드코딩했는데 설정 파일에서 @ComponentScan으로 설정할 수 있도록 지원하면 좋겠다.
+  - [x] 설정 파일을 통해 등록한 Bean과 ClasspathBeanScanner를 통해 추가한 Bean 통합
+- [ ] 위와 같이 @Configuration 설정 파일을 통해 등록한 빈과 BeanScanner를 통해 등록한 빈 간에도 DI가 가능해야 한다.
+  - [ ] ConfigurationBeanScanner와 ClasspathBeanScanner을 통합하는 클래스 추가
+
+## 1, 2단계 요구사항
 - [x] BeanFactoryTest 통과 구현
   - BeanFactoryTest의 di() 테스트가 성공하면 생성자를 활용하는 DI 프레임워크 구현을 완료한 것이다. 또한 구현 중 필요한 기능을 도와주기 위해 core.di.factory.BeanFactoryUtils 클래스를 제공하고 있다.
   - 자바 클래스에 대한 인스턴스 생성은 자바 리플렉션 API를 직접 이용할 수도 있지만 이를 추상화한 Spring 프레임워크에서 제공하는org.springframework.beans.BeanUtils의 instantiateClass() 메소드를 사용해도 된다.

@@ -14,7 +14,7 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserAcceptanceTest {
+class UserAcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(UserAcceptanceTest.class);
 
     private NsWebTestClient client;
@@ -47,5 +47,8 @@ public class UserAcceptanceTest {
         assertThat(actual.getPassword()).isEqualTo(updateUser.getPassword());
         assertThat(actual.getName()).isEqualTo(updateUser.getName());
         assertThat(actual.getEmail()).isEqualTo(updateUser.getEmail());
+
+        // 삭제
+        client.deleteResource(location);
     }
 }
