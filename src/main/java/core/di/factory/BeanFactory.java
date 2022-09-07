@@ -1,6 +1,5 @@
 package core.di.factory;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +11,12 @@ import java.util.*;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private final Set<Class<?>> preInstanticateBeans;
+    private final Set<Class<?>> preInstantiateBeans;
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
+        this.preInstantiateBeans = preInstantiateBeans;
     }
 
     @SuppressWarnings("unchecked")
@@ -26,8 +25,8 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        for (Class<?> preInstanticateBean : preInstanticateBeans) {
-            beans.put(preInstanticateBean, instantiateClass(preInstanticateBean));
+        for (Class<?> preInstantiateBean : preInstantiateBeans) {
+            beans.put(preInstantiateBean, instantiateClass(preInstantiateBean));
         }
     }
 
@@ -37,7 +36,7 @@ public class BeanFactory {
             logger.debug("Cached class : {}", clazz);
             return beans.get(clazz);
         }
-        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
+        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstantiateBeans);
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(concreteClass);
         if (injectedConstructor == null) {
             logger.debug("injectedConstructor not exist. Default Constructor : {}", concreteClass);
