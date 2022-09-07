@@ -24,10 +24,6 @@ public class BeanFactory {
         this.preInstanticateBeans = new HashSet<>();
     }
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-    }
-
     public void addPreInstanticateBeans(Class<?>... classes) {
         preInstanticateBeans.addAll(Arrays.asList(classes));
     }

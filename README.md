@@ -90,7 +90,7 @@
   - 기존의 BeanScanner 와 ConfigurationBeanScanner 로 찾은 빈을 하나의 BeanFactory 에서 관리하기 위함.
 
 ### 3단계 피드백
-- [ ] BeanFactory 테스트에서만 사용되는 생성자 제거  
+- [x] BeanFactory 테스트에서만 사용되는 생성자 제거  
 - [ ] ConfigurationBean 매개변수 없는 순서대로 정렬 제거
 - [ ] ConfigurationBean 에서 BeanFactory 를 주입받지 않고 등록할 빈을 리턴하도록 변경
 - [ ] ConfigurationBean 에서 getArguments 메서드 대신 BeanFactory 에서 클래스를 제공받는 메서드 추가 
