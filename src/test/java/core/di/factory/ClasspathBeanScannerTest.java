@@ -27,4 +27,18 @@ class ClasspathBeanScannerTest {
                         new ClassBeanRegister(MyQnaService.class),
                         new ClassBeanRegister(QnaController.class));
     }
+
+    @DisplayName("scan메서드는 String 기반의 경로를 기반으로 스캐닝하여 BeanRegister목록을 반환한다.")
+    @Test
+    void itIsReturnsBeanRegistersFromStringPath() {
+        ClasspathBeanScanner scanner = new ClasspathBeanScanner();
+
+        Set<BeanRegister> registers = scanner.scan("core.di.factory");
+
+        assertThat(registers).isNotEmpty()
+                .contains(new ClassBeanRegister(JdbcQuestionRepository.class),
+                        new ClassBeanRegister(JdbcUserRepository.class),
+                        new ClassBeanRegister(MyQnaService.class),
+                        new ClassBeanRegister(QnaController.class));
+    }
 }

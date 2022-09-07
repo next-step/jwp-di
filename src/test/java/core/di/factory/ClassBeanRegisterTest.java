@@ -47,6 +47,8 @@ class ClassBeanRegisterTest {
     @Test
     void itIsReturnsParameterCountOfConstructor() {
         ClassBeanRegister register = new ClassBeanRegister(SingleClass.class);
+        BeanFactory beanFactory = new BeanFactory();
+        beanFactory.register(register);
 
         assertThat(register.getParameterCount()).isEqualTo(1);
     }
