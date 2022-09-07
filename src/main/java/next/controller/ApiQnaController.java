@@ -1,5 +1,6 @@
 package next.controller;
 
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
@@ -19,10 +20,15 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class ApiQnaController extends AbstractNewController {
-    private static final Logger logger = LoggerFactory.getLogger( ApiQnaController.class );
+    private static final Logger logger = LoggerFactory.getLogger(ApiQnaController.class);
 
-    private QuestionDao questionDao = QuestionDao.getInstance();
+    private final QuestionDao questionDao;
     private AnswerDao answerDao = AnswerDao.getInstance();
+
+    @Inject
+    public ApiQnaController(QuestionDao questionDao) {
+        this.questionDao = questionDao;
+    }
 
     @RequestMapping(value = "/api/qna/list", method = RequestMethod.GET)
     public ModelAndView questions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -37,7 +43,7 @@ public class ApiQnaController extends AbstractNewController {
 
         User user = UserSessionUtils.getUserFromSession(req.getSession());
         Answer answer = new Answer(user.getUserId(), req.getParameter("contents"),
-                Long.parseLong(req.getParameter("questionId")));
+            Long.parseLong(req.getParameter("questionId")));
         logger.debug("answer : {}", answer);
 
         Answer savedAnswer = answerDao.insert(answer);

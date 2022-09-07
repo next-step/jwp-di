@@ -6,6 +6,7 @@ import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.config.MyConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext("next.controller");
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(MyConfiguration.class);
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
