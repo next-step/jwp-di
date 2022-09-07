@@ -23,11 +23,12 @@ public class ApiQnaController extends AbstractNewController {
     private static final Logger logger = LoggerFactory.getLogger(ApiQnaController.class);
 
     private final QuestionDao questionDao;
-    private AnswerDao answerDao = AnswerDao.getInstance();
+    private final AnswerDao answerDao;
 
     @Inject
-    public ApiQnaController(QuestionDao questionDao) {
+    public ApiQnaController(QuestionDao questionDao, AnswerDao answerDao) {
         this.questionDao = questionDao;
+        this.answerDao = answerDao;
     }
 
     @RequestMapping(value = "/api/qna/list", method = RequestMethod.GET)

@@ -1,34 +1,31 @@
 package core.jdbc;
 
+import core.annotation.Component;
+import core.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
+@Component
 public class JdbcTemplate {
     private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
 
-    private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private final DataSource dataSource;
 
-    private DataSource dataSource;
-
-    private JdbcTemplate() {
-    }
-
+    @Inject
     public JdbcTemplate(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public static JdbcTemplate getInstance() {
-        return jdbcTemplate;
-    }
-
     public void update(String sql, PreparedStatementSetter pss) throws DataAccessException {
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pss.setParameters(pstmt);
             pstmt.executeUpdate();
@@ -42,7 +39,7 @@ public class JdbcTemplate {
     }
 
     public void update(PreparedStatementCreator psc, KeyHolder holder) {
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = psc.createPreparedStatement(conn)) {
             ps.executeUpdate();
 
@@ -71,7 +68,7 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(String sql, RowMapper<T> rm, PreparedStatementSetter pss) throws DataAccessException {
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pss.setParameters(pstmt);
             return mapResultSetToObject(rm, pstmt);

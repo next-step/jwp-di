@@ -21,12 +21,13 @@ import java.util.List;
 @Controller
 public class QnaController extends AbstractNewController {
     private final QuestionDao questionDao;
-    private AnswerDao answerDao = AnswerDao.getInstance();
+    private final AnswerDao answerDao;
     private final QnaService qnaService;
 
     @Inject
-    public QnaController(QuestionDao questionDao, QnaService qnaService) {
+    public QnaController(QuestionDao questionDao, AnswerDao answerDao, QnaService qnaService) {
         this.questionDao = questionDao;
+        this.answerDao = answerDao;
         this.qnaService = qnaService;
     }
 

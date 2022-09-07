@@ -15,11 +15,12 @@ import java.util.List;
 public class QnaService {
 
     private final QuestionDao questionDao;
-    private AnswerDao answerDao = AnswerDao.getInstance();
+    private final AnswerDao answerDao;
 
     @Inject
-    public QnaService(QuestionDao questionDao) {
+    public QnaService(QuestionDao questionDao, AnswerDao answerDao) {
         this.questionDao = questionDao;
+        this.answerDao = answerDao;
     }
 
     public Question findById(long questionId) {

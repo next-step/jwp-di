@@ -5,8 +5,6 @@ import com.google.common.collect.Maps;
 import core.di.Autowire;
 import core.di.BeanDefinition;
 import core.di.BeanDefinitionRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
@@ -17,8 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class DefaultListableBeanFactory implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
-
-    private static final Logger log = LoggerFactory.getLogger(DefaultListableBeanFactory.class);
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
     private final Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
@@ -63,7 +59,6 @@ public class DefaultListableBeanFactory implements ConfigurableListableBeanFacto
 
     private <T> Object createAutowireBean(Class<T> beanClass) {
         Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(beanClass, getBeanClasses());
-        log.info("concrete class = {}", concreteClass);
         BeanDefinition beanDefinition = beanDefinitions.get(concreteClass);
         Autowire autowire = beanDefinition.getResolvedAutowireMode();
 
