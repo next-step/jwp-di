@@ -1,18 +1,20 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans;
+    private final Set<Class<?>> preInstanticateBeans;
 
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
+    private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -24,6 +26,48 @@ public class BeanFactory {
     }
 
     public void initialize() {
+        for (Class<?> preInstanticateBean : preInstanticateBeans) {
+            beans.put(preInstanticateBean, instantiateClass(preInstanticateBean));
+        }
+    }
 
+    private Object instantiateClass(Class<?> clazz) {
+        logger.debug("InstantiateClass : {}", clazz);
+        if (beans.containsKey(clazz)) {
+            logger.debug("Cached class : {}", clazz);
+            return beans.get(clazz);
+        }
+        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
+        Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(concreteClass);
+        if (injectedConstructor == null) {
+            logger.debug("injectedConstructor not exist. Default Constructor : {}", concreteClass);
+            return initiateByDefaultConstructor(concreteClass);
+        }
+        return instantiateInjectedConstructor(injectedConstructor);
+    }
+
+    private Object initiateByDefaultConstructor(Class<?> concreteClass) {
+        try {
+            return concreteClass.getConstructor().newInstance();
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+    }
+
+    private Object instantiateInjectedConstructor(Constructor<?> injectedConstructor) {
+        Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
+        Object[] parameters = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            parameters[i] = instantiateClass(parameterTypes[i]);
+        }
+        return getInjectedConstructorInstance(injectedConstructor, parameters);
+    }
+
+    private Object getInjectedConstructorInstance(Constructor<?> injectedConstructor, Object[] parameters) {
+        try {
+            return injectedConstructor.newInstance(parameters);
+        } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+            throw new IllegalStateException(e.getMessage());
+        }
     }
 }
