@@ -23,7 +23,9 @@ public class BeanContext {
     public void initialize() {
         final Set<Class<?>> configurationClasses = ConfigurationAnnotatedClassesScanner.scan(basePackage);
         final ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(configurationClasses);
-        configurationBeanScanner.scan(beanFactory);
+
+        final Map<Class<?>, Object> configurationBeans = configurationBeanScanner.scan(beanFactory);
+        beanFactory.addBean(configurationBeans);
 
         beanScanner.scan(beanFactory);
     }

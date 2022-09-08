@@ -1,22 +1,19 @@
 package core.di.factory;
 
-import static java.util.stream.Collectors.*;
-
 import core.annotation.Bean;
 import core.util.ReflectionUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ConfigurationBeanScanner {
 
     private static final Map<Class<?>, Object> CONFIGURATION_INSTANCES = new HashMap<>();
+
     private final Set<Class<?>> configurationClasses;
     private final Set<Method> methods;
 
@@ -25,17 +22,11 @@ public class ConfigurationBeanScanner {
         this.methods = ReflectionUtils.getMethodsAnnotatedWith(configurationClasses, Bean.class);
     }
 
-    public void scan(final BeanFactory beanFactory) {
-        methods.stream()
-            .sorted(Comparator.comparingInt(Method::getParameterCount))
-            .forEach(method -> addBean(beanFactory, method));
-    }
-
-    public Map<Class<?>, Object> scan2(final BeanFactory beanFactory) {
+    public Map<Class<?>, Object> scan(final BeanFactory beanFactory) {
         return methods.stream()
             .collect(
                 HashMap::new,
-                (map, method) -> map.put(method.getReturnType(), initiateBean2(beanFactory, method)),
+                (map, method) -> map.put(method.getReturnType(), initiateBean(beanFactory, method)),
                 HashMap::putAll
             );
     }
@@ -47,30 +38,7 @@ public class ConfigurationBeanScanner {
         return ReflectionUtils.invokeMethod(instance, method, arguments);
     }
 
-    private Object initiateBean2(final BeanFactory beanFactory, final Method method) {
-        final Object[] arguments = getArguments2(beanFactory, method.getParameters());
-        final Object instance = getInstance(method);
-
-        return ReflectionUtils.invokeMethod(instance, method, arguments);
-    }
-
-    private void addBean(final BeanFactory beanFactory, final Method method) {
-        final Class<?> returnType = method.getReturnType();
-        Object[] arguments = getArguments(beanFactory, method.getParameters());
-        Object instance = getInstance(method);
-
-        final Object bean = ReflectionUtils.invokeMethod(instance, method, arguments);
-        beanFactory.addBean(returnType, bean);
-    }
-
     private Object[] getArguments(final BeanFactory beanFactory, final Parameter[] parameters) {
-        return Arrays.stream(parameters)
-            .map(parameter -> beanFactory.getBean(parameter.getType()))
-            .toArray();
-    }
-
-    private Object[] getArguments2(final BeanFactory beanFactory, final Parameter[] parameters) {
-
         return Arrays.stream(parameters)
             .filter(this::hasSameTypeOfParameter)
             .findAny()

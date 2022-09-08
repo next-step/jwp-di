@@ -91,7 +91,7 @@
 
 ### 3단계 피드백
 - [x] BeanFactory 테스트에서만 사용되는 생성자 제거  
-- [ ] ConfigurationBeanScanner 매개변수 없는 순서대로 정렬 제거
+- [x] ConfigurationBeanScanner 매개변수 없는 순서대로 정렬 제거
 - [x] ConfigurationBeanScanner 에서 BeanFactory 에 직접 등록하지 않고 스캔한 빈을 리턴하도록 변경
 - [ ] ConfigurationBeanScanner 에서 getArguments 메서드 대신 BeanFactory 에서 클래스를 제공받는 메서드 추가 
 - [x] BeanScanner basePackage 변수명 단수 -> 복수형 변경

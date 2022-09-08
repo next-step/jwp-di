@@ -29,10 +29,6 @@ public class BeanFactory {
         preInstanticateBeans.addAll(Arrays.asList(classes));
     }
 
-    public void addBean(Class<?> clazz, Object bean) {
-        beans.put(clazz, bean);
-    }
-
     public void addBean(Map<Class<?>, Object> beans) {
         this.beans.putAll(beans);
     }
