@@ -1,21 +1,18 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import core.di.Autowire;
+import core.di.BeanDefinition;
+import core.di.BeanDefinitionRegistry;
+import org.springframework.beans.BeanUtils;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.springframework.beans.BeanUtils;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import core.di.Autowire;
-import core.di.BeanDefinition;
-import core.di.BeanDefinitionRegistry;
-import core.di.BeanNameGenerator;
 
 public class DefaultListableBeanFactory implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 
