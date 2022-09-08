@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import core.annotation.Configuration;
 import core.di.factory.example.MyJdbcTemplate;
 import core.util.ReflectionUtils;
+import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +16,7 @@ import org.reflections.Reflections;
 
 class ConfigurationBeanScannerTest {
 
-    private Set<Class<?>> configurationClasses = ReflectionUtils.getTypesAnnotatedWith(new Reflections("core.di.factory.example"), Configuration.class);
+    private Set<Class<?>> configurationClasses;
     private ConfigurationBeanScanner configurationBeanScanner;
 
     @BeforeEach
@@ -33,7 +35,9 @@ class ConfigurationBeanScannerTest {
     @Test
     void scan_beans_annotation() {
         final BeanFactory beanFactory = new BeanFactory();
-        configurationBeanScanner.scan(beanFactory);
+        final Map<Class<?>, Object> scan = configurationBeanScanner.scan2(beanFactory);
+        beanFactory.addBean(scan);
+        beanFactory.initialize();
 
         final DataSource dataSourceActual = beanFactory.getBean(DataSource.class);
         final MyJdbcTemplate myJdbcTemplateActual = beanFactory.getBean(MyJdbcTemplate.class);

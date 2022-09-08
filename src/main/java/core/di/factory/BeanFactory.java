@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import core.util.ReflectionUtils;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +31,10 @@ public class BeanFactory {
 
     public void addBean(Class<?> clazz, Object bean) {
         beans.put(clazz, bean);
+    }
+
+    public void addBean(Map<Class<?>, Object> beans) {
+        this.beans.putAll(beans);
     }
 
     @SuppressWarnings("unchecked")
