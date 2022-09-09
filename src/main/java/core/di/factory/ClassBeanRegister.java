@@ -88,4 +88,21 @@ public class ClassBeanRegister implements BeanRegister {
     public void unsubscribe() {
         this.subject = null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ClassBeanRegister)) {
+            return false;
+        }
+        ClassBeanRegister that = (ClassBeanRegister) o;
+        return Objects.equals(clazz, that.clazz) && Objects.equals(subject, that.subject) && Objects.equals(concreteClass, that.concreteClass) && Objects.equals(constructor, that.constructor);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clazz, subject, concreteClass, constructor);
+    }
 }
