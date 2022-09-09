@@ -18,3 +18,25 @@
 > 클래스 이름도 @Controller 애노테이션만 찾던 역할에서 @Service, @Repository 애노테이션까지 확대 되었으니 BeanScanner 로 이름을 리팩토링 한다.
 
 > MVC 프레임워크의 AnnotationHandlerMapping 이 BeanFactory 와 BeanScanner 를 활용하여 동작하도록 리팩토링 한다.
+
+# 기능 목록
+- BeanScanner 객체
+  - 특정 package 하위에 @Controller, @Service, @Repository 애노테이션이 붙은 클래스를 reflections 를 이용하여 scan 하고 그 타입을 가져온다.
+- BeanFactory 객체
+  - BeanScanner 를 통해 얻어온 @Controller, @Service, @Repository 애노테이션이 붙은 클래스 타입과 그 인스턴스를 관리한다.
+  - BeanFactory 초기 생성 시, 인스턴스화 되기 전 후보 빈들에 대한 타입을 필드로 갖는다.
+  - BeanFactory 초기화 시, 후보 빈들을 인스턴스 화 시킨다.
+    - @Inject 애노테이션이 붙은 생성자를 찾는다.
+      - @Inject 생성자가 있으면 해당 생성자의 파라미터들을 이용하여 해당 빈을 인스턴스 화 시킨다. (인터페이스가 아닌 후보 빈 구현 클래스 타입이 존재해야 한다.)
+      - @Inject 생성자가 없으면 기본 생성자로 해당 빈을 인스턴스 화 시킨다.
+    - @Controller, @Service, @Repository 를 순서대로 빈 인스턴스화 시키면 필드끼리 의존관계가 존재할 수 있는 상황에서 인스턴스가 주입되지 않는 현상 발생
+      - 재귀를 통해 의존관계가 없는 빈부터 인스턴스화 시키도록 함.
+- ApplicationContext 객체
+  - basePackage 와 beanFactory 를 관리한다.
+  - BeanScanner 와 BeanFactory 동작을 함께 처리한다.
+    - ApplicationContext 초기화 시, BeanScanner 를 통해 후보 빈을 BeanFactory 에 등록하고, BeanFactory 초기화 하여 후보 빈을 인스턴스화 시킨다.
+  - 특정 애노테이션을 가지는 클래스들에 대한 타입과 그 인스턴스를 반환할 수 있다.
+  - DispatcherServlet 이 초기화 될 때 함꼐 가장 먼저 초기화 된다. 
+- HandlerScanner 객체
+  - 요청에 대한 Handler 를 찾아주는 역할을 담당한다.
+  - AnnotationHandlerMapping 생성 시 주입된 ApplicationContext 를 통해 Controller 애노테이션이 붙은 빈 정보를 넘겨받아서 Handler 를 찾는다.
