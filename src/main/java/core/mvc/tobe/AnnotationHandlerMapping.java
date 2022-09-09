@@ -13,13 +13,11 @@ import java.util.Map;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private final Object[] basePackage;
     private final BeanScanner beanScanner;
 
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
     public AnnotationHandlerMapping(Object... basePackage) {
-        this.basePackage = basePackage;
         this.beanScanner = new BeanScanner(basePackage);
     }
 
