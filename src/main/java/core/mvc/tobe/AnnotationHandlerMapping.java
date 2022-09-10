@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanScanner;
 import core.mvc.HandlerMapping;
+import core.mvc.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,6 @@ public class AnnotationHandlerMapping implements HandlerMapping {
                 return handlerExecutions.get(handlerKey);
             }
         }
-        return null;
+        throw new NotFoundException("Request Uri와 일치하는 정보가 존재하지 않습니다.");
     }
 }
