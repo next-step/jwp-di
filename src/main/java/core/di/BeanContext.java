@@ -21,13 +21,21 @@ public class BeanContext {
     }
 
     public void initialize() {
+        addConfigurationBeans();
+        addComponentBeans();
+
+        beanFactory.initialize();
+    }
+
+    private void addComponentBeans() {
+        beanFactory.addPreInstanticateBeans(beanScanner.scan());
+    }
+
+    private void addConfigurationBeans() {
         final Set<Class<?>> configurationClasses = ConfigurationAnnotatedClassesScanner.scan(basePackage);
         final ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(configurationClasses);
 
-        final Map<Class<?>, Object> configurationBeans = configurationBeanScanner.scan(beanFactory);
-        beanFactory.addBean(configurationBeans);
-
-        beanScanner.scan(beanFactory);
+        beanFactory.addBean(configurationBeanScanner.scan(beanFactory));
     }
 
     public Map<HandlerKey, HandlerExecution> getHandlerExecutions() {

@@ -18,7 +18,9 @@ class BeanScannerTest {
         final BeanFactory beanFactory = new BeanFactory();
         final BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
 
-        beanScanner.scan(beanFactory);
+        final Class<?>[] componentClasses = beanScanner.scan();
+        beanFactory.addPreInstanticateBeans(componentClasses);
+        beanFactory.initialize();
 
         final QnaController beanActual = beanFactory.getBean(QnaController.class);
 
@@ -31,7 +33,10 @@ class BeanScannerTest {
         final BeanFactory beanFactory = new BeanFactory();
         final BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
 
-        beanScanner.scan(beanFactory);
+        final Class<?>[] classes = beanScanner.scan();
+        beanFactory.addPreInstanticateBeans(classes);
+        beanFactory.initialize();
+
         final Map<HandlerKey, HandlerExecution> actual = beanScanner.getHandlerExecutions(beanFactory);
 
         final HandlerKey expectedKey = new HandlerKey("/questions", RequestMethod.GET);
