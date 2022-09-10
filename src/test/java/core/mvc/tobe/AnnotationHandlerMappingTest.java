@@ -1,5 +1,6 @@
 package core.mvc.tobe;
 
+import next.dao.TestEnvironment;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +11,7 @@ import support.test.DBInitializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AnnotationHandlerMappingTest {
+class AnnotationHandlerMappingTest extends TestEnvironment {
     private AnnotationHandlerMapping handlerMapping;
     private UserDao userDao;
 
@@ -19,8 +20,8 @@ class AnnotationHandlerMappingTest {
         handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
         handlerMapping.initialize();
 
-        DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+        this.setUpConfig();
+        this.userDao = this.beanFactory.getBean(UserDao.class);
     }
 
     @Test

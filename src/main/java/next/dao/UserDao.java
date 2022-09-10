@@ -1,7 +1,8 @@
 package next.dao;
 
+import core.annotation.Inject;
 import core.annotation.Repository;
-import core.jdbc.JdbcTemplate;
+import core.di.factory.example.MyJdbcTemplate;
 import core.jdbc.RowMapper;
 import next.model.User;
 
@@ -11,17 +12,14 @@ import java.util.List;
 
 @Repository
 public class UserDao {
-    private static UserDao userDao;
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
-    private UserDao() {
-    }
+    private MyJdbcTemplate jdbcTemplate;
 
-    public static UserDao getInstance() {
-        if (userDao == null) {
-            userDao = new UserDao();
-        }
-        return userDao;
+    private UserDao() { }
+
+    @Inject
+    public UserDao(MyJdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public void insert(User user) {
