@@ -40,9 +40,9 @@ public class BeanScanner {
     private final Reflections reflections;
 
     public BeanScanner(Object... basePackage) {
-        this.beanFactory = new BeanFactory(getTypesAnnotatedWith(Controller.class, Service.class, Repository.class));
         this.reflections = new Reflections(basePackage, new TypeAnnotationsScanner(),
                 new SubTypesScanner(), new MethodAnnotationsScanner());
+        this.beanFactory = new BeanFactory(getTypesAnnotatedWith(Controller.class, Service.class, Repository.class));
     }
 
     @SafeVarargs
@@ -57,7 +57,7 @@ public class BeanScanner {
     public Map<HandlerKey, HandlerExecution> scan() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
         beanFactory.initialize();
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
+        Set<Class<?>> controllers = beanFactory.getControllerBeans();
         for (Class<?> controller : controllers) {
             addHandlerExecution(handlers, beanFactory.getBean(controller), controller.getMethods());
         }
