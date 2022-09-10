@@ -53,6 +53,33 @@ public class BeanFactory {
         }
     }
 
+    private Object getInstance(Method method) {
+        if (beans.containsKey(method.getReturnType())) {
+            return beans.get(method.getReturnType());
+        }
+
+        final Object configurationInstance = getConfigurationInstance(method);
+        final Object[] arguments = createMethodArguments(method.getParameterTypes());
+
+        return ReflectionUtils.invokeMethod(configurationInstance, method, arguments);
+    }
+
+    private Object getConfigurationInstance(final Method method) {
+        final Class<?> declaringClass = method.getDeclaringClass();
+
+        if (CONFIGURATION_INSTANCES.containsKey(declaringClass)) {
+            return CONFIGURATION_INSTANCES.get(declaringClass);
+        }
+
+        return CONFIGURATION_INSTANCES.computeIfAbsent(declaringClass, ReflectionUtils::newInstance);
+    }
+
+    private Object[] createMethodArguments(final Class<?>[] parameterTypes) {
+        return Arrays.stream(parameterTypes)
+            .map(parameterType -> getInstance(BeanFactoryUtils.findConcreteMethod(parameterType, preInstanticateMethodBeans)))
+            .toArray();
+    }
+
     private Object getInstance(Class<?> clazz) {
         if (beans.containsKey(clazz)) {
             return beans.get(clazz);
@@ -65,17 +92,6 @@ public class BeanFactory {
         final Object[] arguments = createArguments(parameterTypes);
 
         return ReflectionUtils.newInstance(constructor, arguments);
-    }
-
-    private Object getInstance(Method method) {
-        if (beans.containsKey(method.getReturnType())) {
-            return beans.get(method.getReturnType());
-        }
-
-        final Object configurationInstance = getConfigurationInstance(method);
-        final Object[] arguments = createMethodArguments(method.getParameterTypes());
-
-        return ReflectionUtils.invokeMethod(configurationInstance, method, arguments);
     }
 
     private Constructor<?> getInjectedConstructor(final Class<?> clazz) {
@@ -93,25 +109,9 @@ public class BeanFactory {
             .toArray();
     }
 
-    private Object[] createMethodArguments(final Class<?>[] parameterTypes) {
-        return Arrays.stream(parameterTypes)
-            .map(parameterType -> getInstance(BeanFactoryUtils.findConcreteMethod(parameterType, preInstanticateMethodBeans)))
-            .toArray();
-    }
-
     public Set<Class<?>> getControllerTypes() {
         return beans.keySet().stream()
             .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
             .collect(Collectors.toUnmodifiableSet());
-    }
-
-    private Object getConfigurationInstance(final Method method) {
-        final Class<?> declaringClass = method.getDeclaringClass();
-
-        if (CONFIGURATION_INSTANCES.containsKey(declaringClass)) {
-            return CONFIGURATION_INSTANCES.get(declaringClass);
-        }
-
-        return CONFIGURATION_INSTANCES.computeIfAbsent(declaringClass, ReflectionUtils::newInstance);
     }
 }
