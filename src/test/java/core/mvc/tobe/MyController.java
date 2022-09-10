@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 public class MyController {
     private static final Logger logger = LoggerFactory.getLogger(MyController.class);
 
-    private UserDao userDao = UserDao.getInstance();
+    private final UserDao userDao = new UserDao();
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public ModelAndView findUserId(HttpServletRequest request, HttpServletResponse response) {
