@@ -1,14 +1,15 @@
 package core.di.factory;
 
-import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+
+import com.google.common.collect.Maps;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -29,6 +30,10 @@ public class BeanFactory {
     public void initialize() {
         preInstanticateBeans
                 .forEach(preInstanticateBean -> beans.put(preInstanticateBean, instanticateBean(preInstanticateBean)));
+
+        if (logger.isTraceEnabled()) {
+            beans.values().forEach(value -> logger.trace(value.toString()));
+        }
     }
 
     public Object instanticateBean(Class<?> clazz) {
@@ -56,6 +61,7 @@ public class BeanFactory {
             final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
             final Object instance = getInstance(concreteClass);
             parameterValues[i] = instance;
+            beans.put(concreteClass, instance);
         }
         return parameterValues;
     }
