@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 class ConfigClassPathBeanScannerTest {
 
-    @DisplayName("@Configuration 클래스 내의 @Bean 메서드로 빈을 생성한다.")
+    @DisplayName("@Configuration 클래스 내의 @Bean 메서드로 빈을 생성과, classPath 스캔 방식의 빈 생성을 통합한다")
     @Test
     void register_classpathBeanScanner_통합() {
         BeanFactory beanFactory = new BeanFactory();

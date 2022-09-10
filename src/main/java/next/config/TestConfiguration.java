@@ -8,7 +8,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 @Configuration
-@ComponentScan(basePackages = {"next"})
+@ComponentScan(basePackages = {"next", "core"})
 public class TestConfiguration {
     private static final String DB_DRIVER = "org.h2.Driver";
     private static final String DB_URL = "jdbc:h2:mem://localhost/~/jwp-di;MODE=MySQL;DB_CLOSE_DELAY=-1";

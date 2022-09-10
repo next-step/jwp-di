@@ -7,6 +7,7 @@ import core.di.factory.example.QnaController;
 import core.mvc.tobe.ClassPathBeanScanner;
 import core.mvc.tobe.ConfigurationBeanScanner;
 import next.config.MyConfiguration;
+import next.config.TestConfiguration;
 import next.context.annotation.AnnotationConfigApplicationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,20 +19,12 @@ class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() throws Exception {
-        BeanFactory beanFactory = new BeanFactory();
-        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner(beanFactory);
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        this.annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
-            beanFactory, classPathBeanScanner, configurationBeanScanner
-        );
+        this.annotationConfigApplicationContext = new AnnotationConfigApplicationContext(TestConfiguration.class);
         this.beanFactory = this.annotationConfigApplicationContext.getBeanFactory();
     }
 
     @Test
     void di() {
-        this.annotationConfigApplicationContext.register(MyConfiguration.class);
-        this.annotationConfigApplicationContext.scan("core.di.factory.example");
-
         QnaController qnaController = beanFactory.getBean(QnaController.class);
 
         assertNotNull(qnaController);

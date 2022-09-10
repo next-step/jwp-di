@@ -1,5 +1,7 @@
 package core.mvc.tobe;
 
+import next.config.MyConfiguration;
+import next.context.annotation.AnnotationConfigApplicationContext;
 import next.dao.TestEnvironment;
 import next.dao.UserDao;
 import next.model.User;
@@ -17,7 +19,8 @@ class AnnotationHandlerMappingTest extends TestEnvironment {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+        AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(MyConfiguration.class);
+        handlerMapping = new AnnotationHandlerMapping(ac);
         handlerMapping.initialize();
 
         this.setUpConfig();

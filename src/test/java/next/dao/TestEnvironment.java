@@ -26,17 +26,10 @@ public class TestEnvironment {
     }
 
     private void setUpBeans() {
-        this.beanFactory = new BeanFactory();
-        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner(beanFactory);
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        AnnotationConfigApplicationContext annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
-            beanFactory, classPathBeanScanner, configurationBeanScanner
-        );
+        AnnotationConfigApplicationContext annotationConfigApplicationContext
+            = new AnnotationConfigApplicationContext(TestConfiguration.class);
 
-        annotationConfigApplicationContext.register(
-            TestConfiguration.class
-        );
-        annotationConfigApplicationContext.scan();
+        this.beanFactory = annotationConfigApplicationContext.getBeanFactory();
     }
 
 }

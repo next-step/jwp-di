@@ -1,5 +1,6 @@
 package next.context.annotation;
 
+import com.google.common.collect.Maps;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
 import core.di.factory.BeanFactory;
@@ -11,21 +12,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import next.context.support.GenericApplicationContext;
+import next.config.MyConfiguration;
+import org.springframework.util.Assert;
 
-public class AnnotationConfigApplicationContext extends GenericApplicationContext implements AnnotationConfigRegistry {
+public class AnnotationConfigApplicationContext implements AnnotationConfigRegistry {
 
     private ClassPathBeanScanner classPathBeanScanner;
-
+    private BeanFactory beanFactory;
     private ConfigurationBeanScanner configurationBeanScanner;
     private List<Object> basePackages = new ArrayList<>();
-    private Map<HandlerKey, HandlerExecution> handlerExecutionMap;
+    private Map<HandlerKey, HandlerExecution> handlerExecutionMap = Maps.newHashMap();
 
-    public AnnotationConfigApplicationContext(BeanFactory beanFactory, ClassPathBeanScanner classPathBeanScanner, ConfigurationBeanScanner configurationBeanScanner) {
-        super(beanFactory);
-        this.classPathBeanScanner = classPathBeanScanner;
-        this.configurationBeanScanner = configurationBeanScanner;
+    public AnnotationConfigApplicationContext(Class<?>... configurations) {
+        this.beanFactory = new BeanFactory();
+        this.classPathBeanScanner = new ClassPathBeanScanner(beanFactory);
+        this.configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+
+        this.register(configurations);
+        this.scan();
     }
 
     @Override
@@ -54,7 +60,14 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
                 .collect(Collectors.toList())
         );
 
-        this.handlerExecutionMap = classPathBeanScanner.doScan(this.basePackages.toArray());
+        if (this.basePackages.isEmpty()) {
+            return;
+        }
+
+        Map<HandlerKey, HandlerExecution> handlerKeyHandlerExecutionMap = classPathBeanScanner.doScan(this.basePackages.toArray());
+        for (Entry<HandlerKey, HandlerExecution> handlerEntry : handlerKeyHandlerExecutionMap.entrySet()) {
+            this.handlerExecutionMap.putIfAbsent(handlerEntry.getKey(), handlerEntry.getValue());
+        }
     }
 
 
