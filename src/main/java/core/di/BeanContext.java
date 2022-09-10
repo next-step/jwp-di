@@ -35,11 +35,10 @@ public class BeanContext {
         final Set<Class<?>> configurationClasses = ConfigurationAnnotatedClassesScanner.scan(basePackage);
         final ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(configurationClasses);
 
-        beanFactory.addBean(configurationBeanScanner.scan(beanFactory));
+        beanFactory.addPreInstanticateMethodBeans(configurationBeanScanner.scan());
     }
 
     public Map<HandlerKey, HandlerExecution> getHandlerExecutions() {
         return beanScanner.getHandlerExecutions(beanFactory);
     }
-
 }

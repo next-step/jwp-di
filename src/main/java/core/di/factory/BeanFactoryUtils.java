@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import core.annotation.Inject;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Set;
 
 import static org.reflections.ReflectionUtils.getAllConstructors;
@@ -57,11 +58,29 @@ public class BeanFactoryUtils {
         return findImplementedConcreteClass(injectedClazz, preInstanticateBeans);
     }
 
+    public static Method findConcreteMethod(Class<?> parameterType, Set<Method> preInstanticateMethodBeans) {
+        if (!parameterType.isInterface()) {
+            return preInstanticateMethodBeans.stream()
+                .filter(method -> method.getReturnType().equals(parameterType))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 메서드를 찾을 수 없습니다."));
+        }
+
+        return findImplementedConcreteMethodBean(parameterType, preInstanticateMethodBeans);
+    }
+
     private static Class<?> findImplementedConcreteClass(final Class<?> injectedClazz, final Set<Class<?>> preInstanticateBeans) {
         return preInstanticateBeans.stream()
             .filter(bean -> contains(bean.getInterfaces(), injectedClazz))
             .findAny()
-            .orElseThrow(() -> new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다."));
+            .orElseThrow(() -> new IllegalStateException(injectedClazz + " 인터페이스를 구현하는 Bean이 존재하지 않는다."));
+    }
+
+    private static Method findImplementedConcreteMethodBean(final Class<?> returnType, final Set<Method> preInstanticateMethodBeans) {
+        return preInstanticateMethodBeans.stream()
+            .filter(methodBean -> methodBean.getReturnType().isInterface())
+            .findAny()
+            .orElseThrow(() -> new IllegalStateException(returnType + " 인터페이스를 구현하는 Bean이 존재하지 않는다."));
     }
 
     private static boolean contains(final Class<?>[] interfaces, final Class<?> injectedClazz) {

@@ -82,6 +82,6 @@ class BeanFactoryUtilsTest {
 
         assertThatThrownBy(actual)
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageEndingWith(RequestParam.class.getName() + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+            .hasMessageEndingWith(RequestParam.class.getName() + " 인터페이스를 구현하는 Bean이 존재하지 않는다.");
     }
 }
