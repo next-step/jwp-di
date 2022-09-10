@@ -1,28 +1,21 @@
 package core.mvc;
 
-import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
-import core.di.factory.BeanFactory;
-import core.mvc.asis.ControllerHandlerAdapter;
-import core.mvc.asis.RequestMapping;
-import core.mvc.tobe.AnnotationHandlerMapping;
-import core.mvc.tobe.HandlerExecutionHandlerAdapter;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.Optional;
-import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
 public class DispatcherServlet extends HttpServlet {
@@ -32,33 +25,18 @@ public class DispatcherServlet extends HttpServlet {
     private HandlerMappingRegistry handlerMappingRegistry;
     private HandlerAdapterRegistry handlerAdapterRegistry;
     private HandlerExecutor handlerExecutor;
-    private BeanFactory beanFactory;
 
     @Override
     public void init() {
-        Reflections reflections = new Reflections("next");
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
-        beanFactory.initialize();
-
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory, "next.controller"));
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping("next.controller"));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
         handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
     }
 
     @Override
@@ -68,11 +46,10 @@ public class DispatcherServlet extends HttpServlet {
 
         try {
             Optional<Object> maybeHandler = handlerMappingRegistry.getHandler(req);
-            if (!maybeHandler.isPresent()) {
+            if (maybeHandler.isEmpty()) {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
                 return;
             }
-
 
             ModelAndView mav = handlerExecutor.handle(req, resp, maybeHandler.get());
             render(mav, req, resp);
