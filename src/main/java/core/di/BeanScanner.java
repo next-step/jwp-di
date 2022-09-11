@@ -1,17 +1,14 @@
 package core.di;
 
-import com.google.common.collect.Sets;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
+import core.di.factory.BeanFactory;
 import core.mvc.tobe.HandlerExecution;
 import core.mvc.tobe.HandlerKey;
 import core.mvc.tobe.support.*;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -20,7 +17,6 @@ import org.springframework.core.ParameterNameDiscoverer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
@@ -40,14 +36,18 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
     private final Object[] basePackage;
+    private final BeanFactory beanFactory;
 
-    public BeanScanner(Object[] basePackage) {
+    public BeanScanner(BeanFactory beanFactory, Object[] basePackage) {
         this.basePackage = basePackage;
+        this.beanFactory = beanFactory;
     }
 
     public Map<HandlerKey, HandlerExecution> scan() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        beans().forEach(bean -> addHandlerExecution(handlers, newInstance(bean), bean.getMethods()));
+        Set<Class<?>> beans = beans();
+        beans.forEach(bean -> addHandlerExecution(handlers, newInstance(bean), bean.getMethods()));
+        this.beanFactory.addPreInstantiateBeans(beans);
         return handlers;
     }
 
@@ -64,8 +64,7 @@ public class BeanScanner {
     }
 
     private Set<Class<?>> beans() {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-
+        Reflections reflections = new Reflections(basePackage);
         Set<Class<?>> set = new HashSet<>();
         ANNOTATIONS.forEach(annotation -> set.addAll(reflections.getTypesAnnotatedWith(annotation)));
         return set;
