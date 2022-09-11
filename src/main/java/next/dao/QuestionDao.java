@@ -22,7 +22,7 @@ public class QuestionDao {
     private QuestionDao() { }
 
     @Inject
-    private QuestionDao(MyJdbcTemplate jdbcTemplate) {
+    public QuestionDao(MyJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
