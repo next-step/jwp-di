@@ -1,12 +1,14 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -28,6 +30,12 @@ public class BeanFactory {
         for (Class<?> preInstantiateBean : preInstantiateBeans) {
             beans.put(preInstantiateBean, instantiateClass(preInstantiateBean));
         }
+    }
+
+    public Set<Class<?>> getControllerBeans() {
+        return preInstantiateBeans.stream()
+                .filter(bean -> bean.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     private Object instantiateClass(Class<?> clazz) {
