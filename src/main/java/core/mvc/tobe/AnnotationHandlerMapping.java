@@ -23,7 +23,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(new HandlerScanner().scan(applicationContext.getBeansAnnotatedWith(Controller.class)));
+        handlerExecutions.putAll(new HandlerConverter().convert(applicationContext.getBeansAnnotatedWith(Controller.class)));
     }
 
     public Object getHandler(HttpServletRequest request) {

@@ -20,9 +20,9 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 
-public class HandlerScanner {
+public class HandlerConverter {
 
-    private static final Logger logger = LoggerFactory.getLogger(HandlerScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(HandlerConverter.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
@@ -34,7 +34,7 @@ public class HandlerScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public Map<HandlerKey, HandlerExecution> scan(Map<Class<?>, Object> handlerBeans) {
+    public Map<HandlerKey, HandlerExecution> convert(Map<Class<?>, Object> handlerBeans) {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
         handlerBeans.forEach((key, value) -> addHandlerExecution(handlers, value, key.getMethods()));
         return handlers;
