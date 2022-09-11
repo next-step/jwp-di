@@ -20,20 +20,13 @@ class AnnotationConfigApplicationContextTest {
 
     @BeforeEach
     void setUp() {
-        BeanFactory beanFactory = new BeanFactory();
-        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner(beanFactory);
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        this.annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
-            beanFactory, classPathBeanScanner, configurationBeanScanner
-        );
+        this.annotationConfigApplicationContext
+            = new AnnotationConfigApplicationContext(MyConfiguration.class);
     }
 
     @DisplayName("Configuration 클래스의 ComponentScan 값의 basePackages 하위 빈들이 추가된다.")
     @Test
     void registerTest() {
-        this.annotationConfigApplicationContext.register(MyConfiguration.class);
-        this.annotationConfigApplicationContext.scan("core.di.factory.example");
-
         BeanFactory beanFactory = this.annotationConfigApplicationContext.getBeanFactory();
 
         assertNotNull(beanFactory.getBean(DataSource.class));

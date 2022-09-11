@@ -2,31 +2,21 @@ package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
 import core.annotation.web.RequestMethod;
-import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
-import next.config.MyConfiguration;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 import next.context.annotation.AnnotationConfigApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
-
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private final AnnotationConfigApplicationContext annotationConfigApplicationContext;
+    private AnnotationConfigApplicationContext annotationConfigApplicationContext;
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        BeanFactory beanFactory = new BeanFactory();
-        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner(beanFactory);
-        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
-        this.annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
-            beanFactory, classPathBeanScanner, configurationBeanScanner
-        );
-        this.annotationConfigApplicationContext.register(MyConfiguration.class);
-        this.annotationConfigApplicationContext.scan(basePackage);
+    public AnnotationHandlerMapping(AnnotationConfigApplicationContext applicationContext) {
+        this.annotationConfigApplicationContext = applicationContext;
     }
 
     public void initialize() {

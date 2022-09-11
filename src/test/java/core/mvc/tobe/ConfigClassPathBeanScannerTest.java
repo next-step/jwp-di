@@ -7,10 +7,12 @@ import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyJdbcTemplate;
 import javax.sql.DataSource;
 import next.config.MyConfiguration;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ConfigClassPathBeanScannerTest {
 
+    @DisplayName("@Configuration 클래스 내의 @Bean 메서드로 빈을 생성과, classPath 스캔 방식의 빈 생성을 통합한다")
     @Test
     void register_classpathBeanScanner_통합() {
         BeanFactory beanFactory = new BeanFactory();
