@@ -23,10 +23,10 @@ public class BeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
-    private final Object[] basePackage;
+    private final Object[] basePackages;
 
-    public BeanScanner(final Object... basePackage) {
-        this.basePackage = basePackage;
+    public BeanScanner(final Object... basePackages) {
+        this.basePackages = basePackages;
     }
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
@@ -39,13 +39,11 @@ public class BeanScanner {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public void scan(final BeanFactory beanFactory) {
-        Reflections reflections = new Reflections(basePackage);
+    public Class<?>[] scan() {
+        Reflections reflections = new Reflections(basePackages);
 
-        final Set<Class<?>> preInstanticateBeans = ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
-
-        beanFactory.addPreInstanticateBeans(preInstanticateBeans.toArray(Class<?>[]::new));
-        beanFactory.initialize();
+        return ReflectionUtils.getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class)
+            .toArray(Class<?>[]::new);
     }
 
     public Map<HandlerKey, HandlerExecution> getHandlerExecutions(final BeanFactory beanFactory) {
