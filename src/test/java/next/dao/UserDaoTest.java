@@ -1,14 +1,15 @@
 package next.dao;
 
-import next.dto.UserUpdatedDto;
-import next.model.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import support.test.DBInitializer;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import next.dto.UserUpdatedDto;
+import next.model.User;
+import support.test.DBInitializer;
 
 public class UserDaoTest {
 
@@ -18,7 +19,7 @@ public class UserDaoTest {
     public void setup() {
         DBInitializer.initialize();
 
-        userDao = UserDao.getInstance();
+        userDao = new UserDao();
     }
 
     @Test
