@@ -1,30 +1,33 @@
 package core.mvc.tobe;
 
-import com.google.common.collect.Maps;
-import core.annotation.web.RequestMethod;
-import core.mvc.HandlerMapping;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+import com.google.common.collect.Maps;
+
+import core.annotation.web.RequestMethod;
+import core.mvc.HandlerMapping;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
     private Object[] basePackage;
-    private ControllerScanner controllerScanner;
+    private BeanScanner beanScanner;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;
-        controllerScanner = new ControllerScanner();
+        beanScanner = new BeanScanner();
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(controllerScanner.scan(basePackage));
+        handlerExecutions.putAll(beanScanner.scan(basePackage));
     }
 
     public Object getHandler(HttpServletRequest request) {
