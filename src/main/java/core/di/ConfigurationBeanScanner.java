@@ -8,13 +8,13 @@ import core.di.factory.BeanFactory;
 import org.reflections.Reflections;
 import org.springframework.beans.BeanUtils;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ConfigurationBeanScanner {
@@ -53,9 +53,17 @@ public class ConfigurationBeanScanner {
     }
 
     private Object[] scanPackages() {
-        final Class<? extends Annotation> componentScan = ComponentScan.class;
-        Reflections reflections = new Reflections(CONFIG_SCAN_PATH);
-        return reflections.getTypesAnnotatedWith(componentScan).toArray();
+        final Class<ComponentScan> componentScan = ComponentScan.class;
+        final Reflections reflections = new Reflections(CONFIG_SCAN_PATH);
+        final Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(componentScan);
+
+        for (Class<?> aClass : typesAnnotatedWith) {
+            if (aClass.isAnnotationPresent(componentScan)) {
+                return aClass.getAnnotation(componentScan).value();
+            }
+        }
+
+        throw new RuntimeException("Component Scan Value가 존재하지 않습니다.");
     }
 
     private Object[] arguments(Method beanMethod) {

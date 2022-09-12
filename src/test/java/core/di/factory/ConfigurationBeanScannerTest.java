@@ -2,6 +2,7 @@ package core.di.factory;
 
 import core.di.ConfigurationBeanScanner;
 import core.jdbc.JdbcTemplate;
+import next.controller.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,5 +38,18 @@ public class ConfigurationBeanScannerTest {
         beanFactory.initialize();
 
         assertThat(beanFactory.getBean(JdbcTemplate.class)).isNotNull();
+    }
+
+    @Test
+    @DisplayName("@ComponentScan 정상 적용 테스트")
+    void componentScan() {
+        scanner.register();
+        beanFactory.initialize();
+
+        assertThat(beanFactory.getBean(ApiUserController.class)).isNotNull();
+        assertThat(beanFactory.getBean(ApiQnaController.class)).isNotNull();
+        assertThat(beanFactory.getBean(HomeController.class)).isNotNull();
+        assertThat(beanFactory.getBean(QnaController.class)).isNotNull();
+        assertThat(beanFactory.getBean(UserController.class)).isNotNull();
     }
 }
