@@ -1,22 +1,14 @@
 package core.mvc.tobe;
 
-import java.lang.annotation.Annotation;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.reflections.Reflections;
+import com.google.common.collect.Maps;
+import core.annotation.web.RequestMethod;
+import core.di.factory.BeanScanner;
+import core.mvc.HandlerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import core.annotation.web.Controller;
-import core.annotation.web.RequestMethod;
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
-import core.mvc.HandlerMapping;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
@@ -28,18 +20,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         this.basePackage = basePackage;
     }
 
-    @SuppressWarnings("unchecked")
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-
-        Reflections reflections = new Reflections(basePackage);
-        Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(reflections, Controller.class);
-        BeanFactory beanFactory = new BeanFactory(preInstanticateClazz);
-        beanFactory.initialize();
-
-        BeanScanner beanScanner = new BeanScanner(beanFactory);
-
-        handlerExecutions.putAll(beanScanner.scan(Controller.class, basePackage));
+        handlerExecutions.putAll(new BeanScanner().scan(basePackage));
     }
 
     public Object getHandler(HttpServletRequest request) {
@@ -49,22 +32,12 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         return getHandlerInternal(new HandlerKey(requestUri, rm));
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Reflections reflections, Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
-    }
-
     private HandlerExecution getHandlerInternal(HandlerKey requestHandlerKey) {
         for (HandlerKey handlerKey : handlerExecutions.keySet()) {
             if (handlerKey.isMatch(requestHandlerKey)) {
                 return handlerExecutions.get(handlerKey);
             }
         }
-
         return null;
     }
 }

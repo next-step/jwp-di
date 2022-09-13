@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -29,11 +31,16 @@ public class BeanFactory {
 
     public void initialize() {
         preInstanticateBeans
-                .forEach(preInstanticateBean -> beans.put(preInstanticateBean, instanticateBean(preInstanticateBean)));
+                .forEach(preInstanticateBean -> {
+                    beans.put(preInstanticateBean, instanticateBean(preInstanticateBean));
+                    logger.debug("Add bean to factory: {}", preInstanticateBean.getName());
+                });
+    }
 
-        if (logger.isTraceEnabled()) {
-            beans.values().forEach(value -> logger.trace(value.toString()));
-        }
+    public Map<Class<?>, Object> getControllers() {
+        return preInstanticateBeans.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(clazz -> clazz, beans::get));
     }
 
     private Object instanticateBean(Class<?> clazz) {
