@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 public class ConfigurationBeanScannerTest {
 
@@ -46,10 +47,12 @@ public class ConfigurationBeanScannerTest {
         scanner.register();
         beanFactory.initialize();
 
-        assertThat(beanFactory.getBean(ApiUserController.class)).isNotNull();
-        assertThat(beanFactory.getBean(ApiQnaController.class)).isNotNull();
-        assertThat(beanFactory.getBean(HomeController.class)).isNotNull();
-        assertThat(beanFactory.getBean(QnaController.class)).isNotNull();
-        assertThat(beanFactory.getBean(UserController.class)).isNotNull();
+        assertAll(
+                () -> assertThat(beanFactory.getBean(ApiUserController.class)).isNotNull(),
+                () -> assertThat(beanFactory.getBean(ApiQnaController.class)).isNotNull(),
+                () -> assertThat(beanFactory.getBean(HomeController.class)).isNotNull(),
+                () -> assertThat(beanFactory.getBean(QnaController.class)).isNotNull(),
+                () -> assertThat(beanFactory.getBean(UserController.class)).isNotNull()
+        );
     }
 }

@@ -4,6 +4,9 @@ import com.google.common.collect.Lists;
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
+import core.di.exception.BeanCreateFailException;
+import core.di.exception.BeanNotFoundException;
+import core.di.exception.ComponentScanNotFoundException;
 import core.di.factory.BeanFactory;
 import org.reflections.Reflections;
 import org.springframework.beans.BeanUtils;
@@ -47,7 +50,7 @@ public class ConfigurationBeanScanner {
                 Object bean = beanMethod.invoke(configurationBean, arguments);
                 beanFactory.addBean(beanMethod.getReturnType(), bean);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("빈 추가를 실패 하였습니다. Error Message : " + e);
+                throw new BeanCreateFailException(e);
             }
         }
     }
@@ -63,7 +66,7 @@ public class ConfigurationBeanScanner {
             }
         }
 
-        throw new RuntimeException("Component Scan Value가 존재하지 않습니다.");
+        throw new ComponentScanNotFoundException();
     }
 
     private Object[] arguments(Method beanMethod) {
@@ -71,7 +74,7 @@ public class ConfigurationBeanScanner {
         for (Parameter parameter : beanMethod.getParameters()) {
             Object bean = beanFactory.getBean(parameter.getType());
             if (bean == null) {
-                throw new RuntimeException("의존 관계를 주입할 Bean이 없습니다.");
+                throw new BeanNotFoundException();
             }
             arguments.add(bean);
         }

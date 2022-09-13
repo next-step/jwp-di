@@ -47,7 +47,7 @@ public class BeanScanner {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
         Set<Class<?>> beans = beans();
         beans.forEach(bean -> addHandlerExecution(handlers, newInstance(bean), bean.getMethods()));
-        this.beanFactory.addPreInstantiateBeans(beans);
+        this.beanFactory.addPreInstanticateBeans(beans);
         return handlers;
     }
 

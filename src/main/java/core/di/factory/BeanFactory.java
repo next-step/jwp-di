@@ -36,7 +36,7 @@ public class BeanFactory {
         preInstanticateBeans.forEach(this::createInstance);
     }
 
-    public void addPreInstantiateBeans(Set<Class<?>> beans) {
+    public void addPreInstanticateBeans(Set<Class<?>> beans) {
         this.preInstanticateBeans.addAll(beans);
     }
 
