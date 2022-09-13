@@ -1,14 +1,15 @@
 package core.mvc.tobe;
 
-import next.dao.UserDao;
-import next.model.User;
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import support.test.DBInitializer;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import next.dao.UserDao;
+import next.model.User;
+import support.test.DBInitializer;
 
 public class AnnotationHandlerMappingTest {
     private AnnotationHandlerMapping handlerMapping;
@@ -20,7 +21,7 @@ public class AnnotationHandlerMappingTest {
         handlerMapping.initialize();
 
         DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+        userDao = new UserDao();
     }
 
     @Test

@@ -1,27 +1,30 @@
 package next.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
 import core.jdbc.RowMapper;
 import next.model.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.sql.*;
-import java.util.List;
-
+@Repository
 public class AnswerDao {
     private static final Logger logger = LoggerFactory.getLogger( AnswerDao.class );
 
-    private static AnswerDao answerDao = new AnswerDao();
     private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
-    private AnswerDao() {
-    }
-
-    public static AnswerDao getInstance() {
-        return answerDao;
+    public AnswerDao() {
     }
 
     public Answer insert(Answer answer) {
