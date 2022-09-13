@@ -38,6 +38,9 @@ public class BeanFactory {
     }
 
     private Object instantiate(Class<?> preInstantiateBean) {
+        if (beans.containsKey(preInstantiateBean)) {
+            return beans.get(preInstantiateBean);
+        }
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstantiateBean);
         if (injectedConstructor == null) {
             return BeanUtils.instantiateClass(preInstantiateBean);
