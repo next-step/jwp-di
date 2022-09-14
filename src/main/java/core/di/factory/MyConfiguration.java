@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan({ "next", "core" })
+@ComponentScan({ "next", "core.di.factory" })
 public class MyConfiguration {
     @Bean
     public DataSource dataSource() {
