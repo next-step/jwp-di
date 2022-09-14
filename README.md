@@ -9,6 +9,13 @@
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
 
 ### 구현 요구 사항
-* BeanFactoryTest 의 di()테스트를 성공 시킨다.
-  * @Controller, @Service, @Repository 애노테이션을 통한 빈 자동 주입 기능을 생성한다.
-  * ControllerScanner 패키지 이동 후 BeanScanner Rename 및 @Service, @Repository 애노테이션 까지 지원
+* Step 1
+  * BeanFactoryTest 의 di()테스트를 성공 시킨다.
+    * @Controller, @Service, @Repository 애노테이션을 통한 빈 자동 주입 기능을 생성한다.
+    * ControllerScanner 패키지 이동 후 BeanScanner Rename 및 @Service, @Repository 애노테이션 까지 지원
+* Step2
+  * Step 1 구조로 진행 함
+* Step3
+  * 설정 파일이라는 표시를 @Configuration으로, BeanFactory에 등록하라는 설정은 @Bean 애노테이션으로 함.
+  * BeanScanner 사용할 기본 패키지에 대한 설정을 설정 파일에서 @ComponentScan으로 설정.
+  * @Configuration <-> BeanScanner를 통한 빈 사이에도 DI 가능하여야 함.

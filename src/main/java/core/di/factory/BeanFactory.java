@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
@@ -18,6 +15,10 @@ public class BeanFactory {
     private final Set<Class<?>> preInstanticateBeans;
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
+
+    public BeanFactory() {
+        this.preInstanticateBeans = new HashSet<>();
+    }
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -33,6 +34,14 @@ public class BeanFactory {
 
     public void initialize() {
         preInstanticateBeans.forEach(this::createInstance);
+    }
+
+    public void addPreInstanticateBeans(Set<Class<?>> beans) {
+        this.preInstanticateBeans.addAll(beans);
+    }
+
+    public void addBean(Class<?> clazz, Object bean) {
+        beans.put(clazz, bean);
     }
 
     private Object createInstance(Class<?> clazz) {
