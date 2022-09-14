@@ -1,4 +1,4 @@
-package core.di;
+package core.di.factory;
 
 import core.di.factory.BeanFactory;
 import org.slf4j.Logger;
