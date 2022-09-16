@@ -24,7 +24,8 @@ public class BeanFactoryTest {
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
+        beanFactory = new BeanFactory();
+        beanFactory.putPreInstanticateBeans(preInstanticateClazz);
         beanFactory.initialize();
     }
 

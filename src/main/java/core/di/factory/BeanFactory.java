@@ -1,6 +1,11 @@
 package core.di.factory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,12 +18,19 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 
 public class BeanFactory {
-    private Set<Class<?>> preInstanticateBeans;
-
+    private Set<Class<?>> preInstanticateBeans = new HashSet<>();
+    Map<Method, Object> configureBeanMethod = new HashMap<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory() {
+    }
+
+    public void putPreInstanticateBeans(Set<Class<?>> preInstanticateBeans) {
+        this.preInstanticateBeans.addAll(preInstanticateBeans);
+    }
+
+    public void putConfigureBeans(Map<Method, Object> configureBeanMethod) {
+        this.configureBeanMethod.putAll(configureBeanMethod);
     }
 
     @SuppressWarnings("unchecked")
@@ -27,8 +39,37 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        for (Class<?> bean : preInstanticateBeans) {
-            instantiateClass(bean);
+        initializePreInstanticateBeans();
+        initializeConfigureBeans();
+    }
+
+    private void initializePreInstanticateBeans() {
+        preInstanticateBeans.stream()
+                            .forEach(this::instantiateClass);
+    }
+
+    private void initializeConfigureBeans() {
+        for(Method method : configureBeanMethod.keySet()) {
+            addConfigurationBean(method, configureBeanMethod.get(method));
+        }
+    }
+
+    private void addConfigurationBean(Method method, Object instance) {
+        try {
+            Class<?> returnType = method.getReturnType();
+            if (beans.containsKey(returnType)) {
+                return;
+            }
+            Parameter[] parameters = method.getParameters();
+            List<Object> objects = new ArrayList<>();
+            for (Parameter parameter : parameters) {
+                objects.add(getBean(parameter.getType()));
+            }
+            Object obj = method.invoke(instance, objects.toArray());
+
+            beans.put(returnType, obj);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
