@@ -14,12 +14,15 @@ public class ConfigurationBeanScannerTest {
 	@Test
 	@DisplayName("Bean 어노테이션 Bean 등록 테스트")
 	public void register() {
+		// given
 		BeanFactory beanFactory = new BeanFactory();
 		ConfigurationBeanScanner scanner = new ConfigurationBeanScanner(beanFactory);
-		scanner.scan("core.di.factory.example");
 
+		// when
+		scanner.scan("core.di.factory.example");
 		beanFactory.initialize();
 
+		// then
 		assertThat(beanFactory.getBean(DataSource.class)).isNotNull();
 		assertThat(beanFactory.getBean(MyJdbcTemplate.class)).isNotNull();
 	}
