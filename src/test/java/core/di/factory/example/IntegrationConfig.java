@@ -1,12 +1,16 @@
 package core.di.factory.example;
 
-import core.annotation.Bean;
-import core.annotation.Configuration;
-import org.apache.commons.dbcp2.BasicDataSource;
-
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import core.annotation.Bean;
+import core.annotation.ComponentScan;
+import core.annotation.Configuration;
+import core.jdbc.JdbcTemplate;
+
 @Configuration
+@ComponentScan(basePackages = {"core.di", "core.mvc"})
 public class IntegrationConfig {
     @Bean
     public DataSource dataSource() {
@@ -19,7 +23,12 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public MyJdbcTemplate jdbcTemplate(DataSource dataSource) {
+    public MyJdbcTemplate myJdbcTemplate(DataSource dataSource) {
         return new MyJdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 }

@@ -10,7 +10,7 @@ import core.annotation.Configuration;
 import core.jdbc.JdbcTemplate;
 
 @Configuration
-@ComponentScan({"core", "next"})
+@ComponentScan(basePackages = {"next", "core"})
 public class DataSourceConfig {
 	private static final String DB_DRIVER = "org.h2.Driver";
 	private static final String DB_URL = "jdbc:h2:mem://localhost/~/jwp-di;MODE=MySQL;DB_CLOSE_DELAY=-1";
