@@ -1,15 +1,17 @@
 package core.di.factory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
-import com.google.common.collect.Maps;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -29,41 +31,43 @@ public class BeanFactory {
 
     public void initialize() {
         preInstanticateBeans
-                .forEach(preInstanticateBean -> beans.put(preInstanticateBean, instanticateBean(preInstanticateBean)));
-
-        if (logger.isTraceEnabled()) {
-            beans.values().forEach(value -> logger.trace(value.toString()));
-        }
+                .forEach(preInstanticateBean -> {
+                    beans.put(preInstanticateBean, instanticateBean(preInstanticateBean));
+                    logger.debug("Add bean to factory: {}", preInstanticateBean.getName());
+                });
     }
 
-    public Object instanticateBean(Class<?> clazz) {
+    public Map<Class<?>, Object> getControllers() {
+        return preInstanticateBeans.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(clazz -> clazz, beans::get));
+    }
+
+    private Object instanticateBean(Class<?> clazz) {
         if (beans.containsKey(clazz)) {
             return beans.get(clazz);
         }
+        return instanticate(clazz);
+    }
 
+    private Object instanticate(Class<?> clazz) {
         final Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
         if (constructor == null) {
             return BeanUtils.instantiateClass(clazz);
         }
-
-        try {
-            return constructor.newInstance(getParameterValues(constructor));
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalStateException("BeanFactory 초기화를 실패하였습니다.", e);
-        }
+        return BeanUtils.instantiateClass(constructor, getArgs(constructor));
     }
 
-    private Object[] getParameterValues(Constructor<?> constructor) {
+    private Object[] getArgs(Constructor<?> constructor) {
         final Class<?>[] parameterTypes = constructor.getParameterTypes();
-        final Object[] parameterValues = new Object[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> parameterType = parameterTypes[i];
+        final List<Object> args = new ArrayList<>();
+        for (Class<?> parameterType : parameterTypes) {
             final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
             final Object instance = getInstance(concreteClass);
-            parameterValues[i] = instance;
+            args.add(instance);
             beans.put(concreteClass, instance);
         }
-        return parameterValues;
+        return args.toArray();
     }
 
     private Object getInstance(Class<?> concreteClass) {
