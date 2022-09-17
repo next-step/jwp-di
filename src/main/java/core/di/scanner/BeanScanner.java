@@ -1,50 +1,58 @@
 package core.di.scanner;
 
-import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
+import core.annotation.ComponentScan;
 import core.di.factory.BeanFactory;
 
 public class BeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
-
-    private static final List<Class<? extends Annotation>> ANNOTATIONS = List.of(Controller.class, Repository.class, Service.class);
-    private final Reflections reflections;
-    private final BeanFactory beanFactory;
-
+    private final BeanFactory beanFactory = new BeanFactory();
+    private final List<String[]> basePackages;
 
     public BeanScanner(Object... basePackage) {
-        reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        beanFactory = new BeanFactory(getPreInstantiateClazz());
-        initialize();
+        this.basePackages = getBasePackageList(basePackage);
     }
 
-    private Set<Class<?>> getPreInstantiateClazz() {
-        return ANNOTATIONS.stream()
-                          .map(reflections::getTypesAnnotatedWith)
-                          .flatMap(Set::stream)
-                          .collect(Collectors.toSet());
+    private List<String[]> getBasePackageList(Object... basePackage) {
+        Reflections reflections = new Reflections(basePackage);
+        Set<Class<?>> componentScanClassSet = reflections.getTypesAnnotatedWith(ComponentScan.class);
+
+        List<String[]> basePackages = new ArrayList<>();
+        for (Class<?> componentScanClass : componentScanClassSet) {
+            basePackages.add(getBasePackages(componentScanClass));
+        }
+        return basePackages;
     }
 
-    private void initialize() {
+    private String[] getBasePackages(Class<?> configuration) {
+        ComponentScan componentScan = configuration.getAnnotation(ComponentScan.class);
+        return componentScan.basePackages();
+    }
+
+    public void scan() {
+        for (String[] basePackage : basePackages) {
+            ConfigurationBeanScanner configurationScanner = new ConfigurationBeanScanner(beanFactory);
+            ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner(beanFactory);
+            Object[] basePackages = Arrays.stream(basePackage).toArray();
+            configurationScanner.scan(basePackages);
+            classPathBeanScanner.scan(basePackages);
+        }
+    }
+
+    public void beanInitialize() {
         beanFactory.initialize();
     }
 
-    public Map<Class<?>, Object> getControllers() {
-        return beanFactory.getControllers();
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
     }
 }

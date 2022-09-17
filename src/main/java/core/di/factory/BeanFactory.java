@@ -2,15 +2,15 @@ package core.di.factory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ReflectionUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,7 +19,7 @@ import core.annotation.web.Controller;
 
 public class BeanFactory {
     private Set<Class<?>> preInstanticateBeans = new HashSet<>();
-    Map<Method, Object> configureBeanMethod = new HashMap<>();
+    private Map<Class<?>, Method> preInstanticateBeanMethods = new HashMap<>();
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public BeanFactory() {
@@ -29,8 +29,8 @@ public class BeanFactory {
         this.preInstanticateBeans.addAll(preInstanticateBeans);
     }
 
-    public void putConfigureBeans(Map<Method, Object> configureBeanMethod) {
-        this.configureBeanMethod.putAll(configureBeanMethod);
+    public void putInstanticateBeanMethods(Map<Class<?>, Method> preInstanticateBeanMethods) {
+        this.preInstanticateBeanMethods.putAll(preInstanticateBeanMethods);
     }
 
     @SuppressWarnings("unchecked")
@@ -39,8 +39,8 @@ public class BeanFactory {
     }
 
     public void initialize() {
+        initializeConfigureBeanMethods();
         initializePreInstanticateBeans();
-        initializeConfigureBeans();
     }
 
     private void initializePreInstanticateBeans() {
@@ -48,29 +48,40 @@ public class BeanFactory {
                             .forEach(this::instantiateClass);
     }
 
-    private void initializeConfigureBeans() {
-        for(Method method : configureBeanMethod.keySet()) {
-            addConfigurationBean(method, configureBeanMethod.get(method));
+    private void initializeConfigureBeanMethods() {
+        for (Method method : preInstanticateBeanMethods.values()) {
+            instantiateBeanMethod(method);
         }
     }
 
-    private void addConfigurationBean(Method method, Object instance) {
-        try {
-            Class<?> returnType = method.getReturnType();
-            if (beans.containsKey(returnType)) {
-                return;
-            }
-            Parameter[] parameters = method.getParameters();
-            List<Object> objects = new ArrayList<>();
-            for (Parameter parameter : parameters) {
-                objects.add(getBean(parameter.getType()));
-            }
-            Object obj = method.invoke(instance, objects.toArray());
-
-            beans.put(returnType, obj);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+    private Object instantiateBeanMethod(Method method) {
+        Object bean = getBean(method.getReturnType());
+        if (Objects.nonNull(bean)) {
+            return bean;
         }
+
+        Object instance = BeanUtils.instantiateClass(method.getDeclaringClass());
+        Object[] parameters = getBeanMethodParameters(method);
+        Object methodBean = ReflectionUtils.invokeMethod(method, instance, parameters);
+        beans.put(method.getReturnType(), methodBean);
+        return methodBean;
+    }
+
+    private Object[] getBeanMethodParameters(Method method) {
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Object[] results = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            results[i] = getBeanMethodParameter(parameterTypes[i]);
+        }
+        return results;
+    }
+
+    private Object getBeanMethodParameter(Class<?> parameterType) {
+        Object bean = beans.get(parameterType);
+        if (Objects.nonNull(bean)) {
+            return bean;
+        }
+        return instantiateBeanMethod(preInstanticateBeanMethods.get(parameterType));
     }
 
     private Object instantiateClass(Class<?> clazz) {
@@ -100,7 +111,7 @@ public class BeanFactory {
             }
             return constructor;
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Not Found Constructor");
+            throw new RuntimeException(clazz.getName() + " : Not Found Constructor");
         }
     }
 
