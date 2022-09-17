@@ -31,7 +31,7 @@ import core.mvc.tobe.support.RequestParamArgumentResolver;
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
     private final BeanScanner beanScanner;
 
@@ -44,8 +44,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public AnnotationHandlerMapping(Object... basePackage) {
-        beanScanner = new BeanScanner(basePackage);
+    public AnnotationHandlerMapping(BeanScanner beanScanner) {
+        this.beanScanner = beanScanner;
     }
 
     public void initialize() {
@@ -71,7 +71,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private Map<HandlerKey, HandlerExecution> createHandlerExecutions() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        Map<Class<?>, Object> controllers = beanScanner.getControllers();
+        Map<Class<?>, Object> controllers = beanScanner.getBeanFactory().getControllers();
         for (Class<?> controller : controllers.keySet()) {
             Object target = controllers.get(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
