@@ -1,24 +1,25 @@
 package next.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
+
+import core.annotation.Inject;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
 import core.jdbc.PreparedStatementCreator;
 import core.jdbc.RowMapper;
 import next.model.Question;
 
-import java.sql.*;
-import java.util.List;
-
 public class QuestionDao {
-    private static QuestionDao questionDao = new QuestionDao();
+    private final JdbcTemplate jdbcTemplate;
 
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
-
-    private QuestionDao() {
-    }
-
-    public static QuestionDao getInstance() {
-        return questionDao;
+    @Inject
+    private QuestionDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Question insert(Question question) {

@@ -1,5 +1,11 @@
 package next.controller;
 
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
@@ -13,15 +19,18 @@ import next.model.Question;
 import next.model.User;
 import next.service.QnaService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-
 @Controller
 public class QnaController extends AbstractNewController {
-    private QuestionDao questionDao = QuestionDao.getInstance();
-    private AnswerDao answerDao = AnswerDao.getInstance();
-    private QnaService qnaService = QnaService.getInstance();
+    private final QuestionDao questionDao;
+    private final AnswerDao answerDao;
+    private final QnaService qnaService;
+
+    @Inject
+    public QnaController(QnaService qnaService, QuestionDao questionDao, AnswerDao answerDao) {
+        this.qnaService = qnaService;
+        this.questionDao = questionDao;
+        this.answerDao = answerDao;
+    }
 
     @RequestMapping(value = "/qna/form", method = RequestMethod.GET)
     public ModelAndView createForm(HttpServletRequest req, HttpServletResponse resp) throws Exception {
