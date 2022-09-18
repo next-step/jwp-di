@@ -1,13 +1,14 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
-import core.annotation.Inject;
+import static org.reflections.ReflectionUtils.*;
 
 import java.lang.reflect.Constructor;
+import java.util.Optional;
 import java.util.Set;
 
-import static org.reflections.ReflectionUtils.getAllConstructors;
-import static org.reflections.ReflectionUtils.withAnnotation;
+import com.google.common.collect.Sets;
+
+import core.annotation.Inject;
 
 public class BeanFactoryUtils {
     /**
@@ -18,12 +19,12 @@ public class BeanFactoryUtils {
      * @Inject 애노테이션이 설정되어 있는 생성자는 클래스당 하나로 가정한다.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Constructor<?> getInjectedConstructor(Class<?> clazz) {
+    public static Optional<Constructor<?>> getInjectedConstructor(Class<?> clazz) {
         Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
-        return injectedConstructors.iterator().next();
+        return Optional.of(injectedConstructors.iterator().next());
     }
 
     /**
