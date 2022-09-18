@@ -2,17 +2,13 @@ package core.di.factory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
-
-import core.annotation.Inject;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -32,16 +28,8 @@ public class BeanFactory {
 
     public void initialize() {
         for (Class<?> preInstantiateBean : preInstantiateBeans) {
-            Class<?> beanClass = findRootClass(preInstantiateBean);
-
-            beans.putIfAbsent(beanClass, fetchBean(preInstantiateBean));
+            beans.putIfAbsent(preInstantiateBean, fetchBean(preInstantiateBean));
         }
-    }
-
-    private Class<?> findRootClass(Class<?> preInstantiateBean) {
-        return Arrays.stream(preInstantiateBean.getInterfaces())
-            .findAny()
-            .orElse(preInstantiateBean);
     }
 
     private Object fetchBean(Class<?> target) {
@@ -49,19 +37,26 @@ public class BeanFactory {
             return beans.get(target);
         }
 
-        var maybeConstructor = Arrays.stream(target.getDeclaredConstructors())
-            .filter(it -> it.isAnnotationPresent(Inject.class))
-            .findAny();
-
-        if (maybeConstructor.isEmpty()) {
-            return createRootBean(target);
+        if (target.isInterface()) {
+            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(target, preInstantiateBeans);
+            return fetchBean(concreteClass);
         }
 
-        Constructor<?> constructor = maybeConstructor.get();
-        return createParameterBean(constructor);
+        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(target)
+            .orElseGet(() -> fetchDefaultConstructor(target));
+
+        return createBean(constructor);
     }
 
-    private Object createParameterBean(Constructor<?> constructor) {
+    private Constructor<?> fetchDefaultConstructor(Class<?> target) {
+        try {
+            return target.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("기본생성자를 찾을 수 없습니다" + target);
+        }
+    }
+
+    private Object createBean(Constructor<?> constructor) {
         var parameterTypes = constructor.getParameterTypes();
         var parameterCount = constructor.getParameterCount();
 
@@ -72,27 +67,10 @@ public class BeanFactory {
         }
 
         try {
+            constructor.setAccessible(true);
             return constructor.newInstance(parameterValues);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new IllegalArgumentException("bean을 생성할 수 없습니다" + constructor);
-        }
-    }
-
-    private Object createRootBean(Class<?> target) {
-        if (target.isInterface()) {
-            var reflections = new Reflections(target);
-            Class<?> subType = reflections.getSubTypesOf((Class<Object>)target).stream()
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("인터페이스의 구현체가 없습니다"));
-            return fetchBean(subType);
-        }
-
-        try {
-            var declaredConstructor = target.getDeclaredConstructor();
-            declaredConstructor.setAccessible(true);
-            return declaredConstructor.newInstance();
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new IllegalArgumentException("Bean을 생성할 수 없습니다 (no-args)" + target);
         }
     }
 }
