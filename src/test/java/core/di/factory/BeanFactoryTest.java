@@ -1,19 +1,22 @@
 package core.di.factory;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.reflections.Reflections;
+
 import com.google.common.collect.Sets;
+
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
-
-import java.lang.annotation.Annotation;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BeanFactoryTest {
     private Reflections reflections;
@@ -24,7 +27,9 @@ public class BeanFactoryTest {
     public void setup() {
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstanticateClazz);
+        var configurations = getTypesAnnotatedWith(Configuration.class);
+
+        beanFactory = new BeanFactory(preInstanticateClazz, configurations);
         beanFactory.initialize();
     }
 

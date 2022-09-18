@@ -2,6 +2,7 @@ package core.mvc.tobe;
 
 import static java.util.Arrays.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
+import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
@@ -51,8 +52,10 @@ public class BeanScanner {
             new MethodAnnotationsScanner());
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Class<?>> beans = findBeanClasses(reflections);
-        var beanFactory = new BeanFactory(beans);
+        var beans = findBeanClasses(reflections, Controller.class, Service.class, Repository.class);
+        var configurations = findBeanClasses(reflections, Configuration.class);
+
+        var beanFactory = new BeanFactory(beans, configurations);
         beanFactory.initialize();
 
         for (Class<?> bean : beans) {
@@ -67,8 +70,8 @@ public class BeanScanner {
         return handlers;
     }
 
-    private Set<Class<?>> findBeanClasses(Reflections reflections) {
-        return Stream.of(Controller.class, Service.class, Repository.class)
+    private Set<Class<?>> findBeanClasses(Reflections reflections, Class<? extends Annotation>... classes) {
+        return Arrays.stream(classes)
             .flatMap(it -> reflections.getTypesAnnotatedWith(it).stream())
             .collect(Collectors.toSet());
     }

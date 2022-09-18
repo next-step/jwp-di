@@ -11,6 +11,7 @@ import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTemplate;
 import next.model.Answer;
 
 public class AnswerDaoTest {
@@ -27,7 +28,7 @@ public class AnswerDaoTest {
     public void addAnswer() throws Exception {
         long questionId = 1L;
         Answer expected = new Answer("javajigi", "answer contents", questionId);
-        AnswerDao dut = new AnswerDao();
+        AnswerDao dut = new AnswerDao(new JdbcTemplate(ConnectionManager.getDataSource()));
         Answer answer = dut.insert(expected);
         log.debug("Answer : {}", answer);
         assertThat(answer).isNotNull();
