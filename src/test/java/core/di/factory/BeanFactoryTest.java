@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,7 +22,7 @@ public class BeanFactoryTest {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setup() {
+    public void setup() throws InvocationTargetException, IllegalAccessException, InstantiationException {
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstanticateClazz);
