@@ -7,3 +7,9 @@
 
 ## 온라인 코드 리뷰 과정
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
+
+
+## 1단계 - DI 구현
+1. BeanFactoryTest의 di() 테스트를 성공시키기 위해 BeanFactory 클래스를 구현한다.
+2. BeanFactory의 initialize() 메서드를 구현하여, beans Map을 초기화한다. (BeanFactoryUtils, BeanUtils 를 사용한다.)
+3. MVC 프레임워크의 AnnotationHandlerMapping이 BeanFactory와 BeanScanner를 활용해 동작하도록 리팩토링한다.
