@@ -3,13 +3,13 @@ package core.di.factory;
 import core.annotation.Bean;
 import core.annotation.ComponentScan;
 import core.annotation.Configuration;
+import core.jdbc.JdbcTemplate;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan({ "next", "core.di.factory" })
+@ComponentScan({ "next"})
 public class MyConfiguration {
     @Bean
     public DataSource dataSource() {
