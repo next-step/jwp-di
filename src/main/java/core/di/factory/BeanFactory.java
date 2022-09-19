@@ -1,7 +1,7 @@
 package core.di.factory;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -29,14 +29,18 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void initialize() {
         for (Class<?> preInstanticateBean : preInstanticateBeans) {
             beans.put(preInstanticateBean, instanticate(preInstanticateBean));
         }
     }
 
-    Object instanticate(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        return instantiateClass(clazz);
+    Object instanticate(Class<?> clazz) {
+        try {
+            return instantiateClass(clazz);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Object instantiateClass(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -60,5 +64,15 @@ public class BeanFactory {
             parameters.add(instantiateClass(parameterType));
         }
         return BeanUtils.instantiateClass(constructor, parameters.toArray());
+    }
+
+    public Map<Class<?>, Object> getControllers() {
+        Map<Class<?>, Object> controllers = Maps.newHashMap();
+        for (Class<?> clazz : preInstanticateBeans) {
+            if (clazz.isAnnotationPresent(Controller.class)) {
+                controllers.put(clazz, beans.get(clazz));
+            }
+        }
+        return controllers;
     }
 }
