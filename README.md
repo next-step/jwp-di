@@ -13,3 +13,10 @@
 1. BeanFactoryTest의 di() 테스트를 성공시키기 위해 BeanFactory 클래스를 구현한다.
 2. BeanFactory의 initialize() 메서드를 구현하여, beans Map을 초기화한다. (BeanFactoryUtils, BeanUtils 를 사용한다.)
 3. MVC 프레임워크의 AnnotationHandlerMapping이 BeanFactory와 BeanScanner를 활용해 동작하도록 리팩토링한다.
+
+## 2단계 - DI 구현 (힌트)
+1. 재귀함수를 통해 @Inject 애노테이션이 설정되어있는 생성자를 통해 빈을 생성한다.
+2. Class, Constructor에 대한 빈 인스턴스를 생성하는 메소드를 구현한다.
+3. Bean 인스턴스 생성 로직을 구현한다.
+4. 생성자를 활용한 인스턴스 생성을 구현한다.
+5. MVC 프레임워크의 AnnotationHandlerMapping이 BeanFactory와 BeanScanner를 활용해 동작하도록 리팩토링한다.
