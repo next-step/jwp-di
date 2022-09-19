@@ -1,5 +1,6 @@
 package core.di.factory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,31 +36,29 @@ public class BeanFactory {
     }
 
     Object instanticate(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        return instantiateClass(clazz);
+    }
+
+    private Object instantiateClass(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         if (beans.containsKey(clazz)) {
             return beans.get(clazz);
         }
 
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
-
         if (injectedConstructor == null) {
-            return instantiateClass(clazz);
+            return BeanUtils.instantiateClass(BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans));
         }
 
-        Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
+        return instantiateConstructor(injectedConstructor);
+    }
+
+    private Object instantiateConstructor(Constructor<?> constructor)
+            throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
         List<Object> parameters = new ArrayList<>();
         for (Class<?> parameterType : parameterTypes) {
-            parameters.add(instanticate(parameterType));
+            parameters.add(instantiateClass(parameterType));
         }
-        return instantiateConstructor(injectedConstructor, parameters);
-    }
-
-    private Object instantiateClass(Class<?> clazz) {
-        Class<?> concreteChildClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
-        return BeanUtils.instantiateClass(concreteChildClass);
-    }
-
-    private Object instantiateConstructor(Constructor<?> constructor, List<Object> parameters)
-            throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        return constructor.newInstance(parameters.toArray());
+        return BeanUtils.instantiateClass(constructor, parameters.toArray());
     }
 }
