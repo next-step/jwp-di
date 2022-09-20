@@ -2,9 +2,7 @@ package core.di.factory.scanner;
 
 import core.di.factory.definition.BeanDefinition;
 
-public interface Scanner {
+public interface BeanScanner {
 
     void doScan(Class<?>... configurations);
-
-    boolean support(BeanDefinition beanDefinition);
 }
