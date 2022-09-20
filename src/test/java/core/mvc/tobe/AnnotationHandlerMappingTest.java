@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import core.di.scanner.BeanScanner;
+import core.di.ApplicationContext;
 import next.model.User;
 import support.test.DBInitializer;
 
@@ -19,14 +19,14 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        BeanScanner beanScanner = new BeanScanner("core.di");
-        beanScanner.scan();
-        beanScanner.beanInitialize();
+        ApplicationContext applicationContext = new ApplicationContext("core.di");
+        applicationContext.scan();
+        applicationContext.beanInitialize();
 
-        handlerMapping = new AnnotationHandlerMapping(beanScanner);
+        handlerMapping = new AnnotationHandlerMapping(applicationContext);
         handlerMapping.initialize();
 
-        DBInitializer.initialize(beanScanner.getBeanFactory().getBean(DataSource.class));
+        DBInitializer.initialize(applicationContext.getBeanFactory().getBean(DataSource.class));
     }
 
     @Test

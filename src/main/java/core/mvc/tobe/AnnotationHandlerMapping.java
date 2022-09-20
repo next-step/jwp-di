@@ -19,7 +19,7 @@ import com.google.common.collect.Maps;
 
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.scanner.BeanScanner;
+import core.di.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
@@ -33,7 +33,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    private final BeanScanner beanScanner;
+    private final ApplicationContext applicationContext;
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
             new HttpRequestArgumentResolver(),
@@ -44,8 +44,8 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
-    public AnnotationHandlerMapping(BeanScanner beanScanner) {
-        this.beanScanner = beanScanner;
+    public AnnotationHandlerMapping(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public void initialize() {
@@ -71,7 +71,7 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private Map<HandlerKey, HandlerExecution> createHandlerExecutions() {
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
-        Map<Class<?>, Object> controllers = beanScanner.getBeanFactory().getControllers();
+        Map<Class<?>, Object> controllers = applicationContext.getBeanFactory().getControllers();
         for (Class<?> controller : controllers.keySet()) {
             Object target = controllers.get(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
