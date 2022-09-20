@@ -1,33 +1,31 @@
 package core.di.factory;
 
-import core.annotation.ComponentScan;
+import core.di.factory.definition.BeanDefinitionRegistry;
+import core.di.factory.scanner.BeanScannerRegistry;
+import core.di.factory.scanner.ClassPathBeanScanner;
+import core.di.factory.scanner.ConfigurationBeanScanner;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class ApplicationContext {
     private final BeanFactory beanFactory;
+    private final BeanScannerRegistry beanScannerRegistry;
 
     public ApplicationContext(Class<?>... configurations) {
-        BeanDefinitions beanDefinitions = new BeanDefinitions();
+        BeanDefinitionRegistry beanDefinitions = new BeanDefinitionRegistry();
+        beanScannerRegistry = new BeanScannerRegistry();
         beanFactory = new BeanFactory(beanDefinitions);
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanDefinitions);
-        cbs.register(configurations);
-        ClassPathBeanScanner cdbs = new ClassPathBeanScanner(beanDefinitions);
-        cdbs.doScan(getBasePackages(configurations));
+        beanScannerRegistry.addBeanScanner(new ConfigurationBeanScanner(beanDefinitions));
+        beanScannerRegistry.addBeanScanner(new ClassPathBeanScanner(beanDefinitions));
+        beanScannerRegistry.scan(configurations);
         beanFactory.register();
-    }
-
-    private Object[] getBasePackages(Class<?>[] configurations) {
-        return Arrays.stream(configurations)
-                .filter(configuration -> configuration.isAnnotationPresent(ComponentScan.class))
-                .map(clazz -> clazz.getAnnotation(ComponentScan.class).value())
-                .flatMap(Stream::of)
-                .toArray();
     }
 
     public Map<Class<?>, Object> getControllers() {
         return beanFactory.getControllers();
+    }
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
     }
 }

@@ -3,7 +3,6 @@ package core.di.factory;
 import com.google.common.collect.Maps;
 import core.annotation.Bean;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class BeanDefinitions {
+public class BeanDefinitionRegistry {
 
     private Map<Class<?>, BeanDefinition> beanDefinitions = Maps.newHashMap();
 

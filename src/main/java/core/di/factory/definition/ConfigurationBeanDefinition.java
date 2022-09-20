@@ -19,13 +19,8 @@ public class ConfigurationBeanDefinition implements BeanDefinition {
     }
 
     @Override
-    public Method getMethod() {
-        return this.method;
-    }
-
-    @Override
     public Class<?>[] parameterTypes() {
-        return getMethod().getParameterTypes();
+        return method.getParameterTypes();
     }
 
     @Override

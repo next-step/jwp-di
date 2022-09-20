@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 public class ConfigurationBeanScanner {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private final BeanDefinitions beanDefinitions;
+    private final BeanDefinitionRegistry beanDefinitions;
 
-    public ConfigurationBeanScanner(BeanDefinitions beanDefinitions) {
+    public ConfigurationBeanScanner(BeanDefinitionRegistry beanDefinitions) {
         this.beanDefinitions = beanDefinitions;
     }
 

@@ -6,8 +6,6 @@ public interface BeanDefinition {
 
     Class<?> getClazz();
 
-    Method getMethod();
-
     Class<?>[] parameterTypes();
 
     Object instantiate(Object[] objects);

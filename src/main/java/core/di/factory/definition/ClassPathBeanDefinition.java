@@ -21,11 +21,6 @@ public class ClassPathBeanDefinition implements BeanDefinition {
     }
 
     @Override
-    public Method getMethod() {
-        return null;
-    }
-
-    @Override
     public Class<?>[] parameterTypes() {
         return getConstructor().getParameterTypes();
     }

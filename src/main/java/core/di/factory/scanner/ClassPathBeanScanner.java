@@ -1,20 +1,16 @@
 package core.di.factory;
 
-import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Set;
 
 public class ClassPathBeanScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(ClassPathBeanScanner.class);
 
-    private BeanDefinitions beanDefinitions;
+    private BeanDefinitionRegistry beanDefinitions;
 
 
-    public ClassPathBeanScanner(BeanDefinitions beanDefinitions) {
+    public ClassPathBeanScanner(BeanDefinitionRegistry beanDefinitions) {
         this.beanDefinitions = beanDefinitions;
     }
 
