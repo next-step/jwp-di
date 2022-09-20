@@ -47,11 +47,11 @@ public class BeanScanner {
         return this.scanBeanClassesWithAnnotations(reflections, targetAnnotations);
     }
 
-    public Map<HandlerKey, HandlerExecution> getHandlers(Set<Object> classes) {
+    public Map<HandlerKey, HandlerExecution> getHandlers(Map<Class<?>, Object> beans) {
 
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Object> controllers = classes.stream()
+        Set<Object> controllers = beans.values().stream()
                 .filter(this::isController)
                 .collect(Collectors.toSet());
 
