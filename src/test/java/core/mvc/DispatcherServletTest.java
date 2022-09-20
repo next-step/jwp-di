@@ -1,14 +1,22 @@
 package core.mvc;
 
-import next.controller.UserSessionUtils;
-import next.model.User;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import javax.sql.DataSource;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import support.test.DBInitializer;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import core.di.scanner.BeanScanner;
+import core.mvc.asis.ControllerHandlerAdapter;
+import core.mvc.asis.RequestMapping;
+import core.mvc.tobe.AnnotationHandlerMapping;
+import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.controller.UserSessionUtils;
+import next.model.User;
+import support.test.DBInitializer;
 
 class DispatcherServletTest {
     private DispatcherServlet dispatcher;
@@ -17,13 +25,22 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
+        BeanScanner beanScanner = new BeanScanner("next.config");
+        beanScanner.scan();
+        beanScanner.beanInitialize();
+
+        DBInitializer.initialize(beanScanner.getBeanFactory().getBean(DataSource.class));
+
         dispatcher = new DispatcherServlet();
+        dispatcher.addHandlerMapping(new RequestMapping());
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(beanScanner));
+        dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
+        dispatcher.addHandlerAdapter(new ControllerHandlerAdapter());
+
         dispatcher.init();
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
-
-        DBInitializer.initialize();
     }
 
     @Test
