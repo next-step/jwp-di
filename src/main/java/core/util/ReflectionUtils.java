@@ -6,10 +6,18 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public class ReflectionUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);
+
+    public static Constructor<?> getNoArgsConstructor(Class<?> clazz) {
+        return Arrays.stream(clazz.getConstructors())
+                .filter(constructor -> constructor.getParameterTypes().length == 0)
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+    }
 
     public static <T> T newInstance(Class<T> clazz, Object... args) {
 
@@ -23,7 +31,7 @@ public class ReflectionUtils {
             return clazz.cast(constructor.newInstance(args));
         } catch (IllegalAccessException e) {
             logger.warn("{} constructor access failed", constructor.getName());
-        } catch(InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             logger.warn("{} target invalid", clazz.getSimpleName());
         } catch (InstantiationException e) {
             logger.warn("{} instantiation failed", clazz.getSimpleName());
@@ -50,17 +58,20 @@ public class ReflectionUtils {
 
         final Class[] parameterTypes = constructor.getParameterTypes();
         for (int i = 0; i < args.length; i++) {
-            if (parameterTypes[i] != args[i].getClass()) { // todo handle primitive type
-                return false;
+            Class<?> parameterClass = parameterTypes[i];
+            Class<?> argClass = args[i].getClass();
+
+            if (parameterClass.equals(argClass) || Arrays.asList(argClass.getInterfaces()).contains(parameterClass)) {
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
     public static Object convertStringValue(String value, Class<?> clazz) {
         if (clazz == String.class) {
-          return clazz.cast(value);
+            return clazz.cast(value);
         } else if (clazz == int.class || clazz == Integer.class) {
             return Integer.valueOf(value);
         } else if (clazz == long.class || clazz == Long.class) {
