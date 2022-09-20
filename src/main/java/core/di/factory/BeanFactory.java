@@ -3,6 +3,8 @@ package core.di.factory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
+import core.di.factory.definition.BeanDefinition;
+import core.di.factory.definition.BeanDefinitionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,13 +14,10 @@ import java.util.stream.Collectors;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private BeanDefinitions beanDefinitions;
+    private BeanDefinitionRegistry beanDefinitions;
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory() {
-    }
-
-    public BeanFactory(BeanDefinitions beanDefinitions) {
+    public BeanFactory(BeanDefinitionRegistry beanDefinitions) {
         this.beanDefinitions = beanDefinitions;
     }
 

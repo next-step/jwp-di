@@ -1,4 +1,4 @@
-package core.di.factory;
+package core.di.factory.definition;
 
 import com.google.common.collect.Maps;
 import core.annotation.Bean;

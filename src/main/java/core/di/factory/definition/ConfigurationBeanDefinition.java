@@ -1,4 +1,4 @@
-package core.di.factory;
+package core.di.factory.definition;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
