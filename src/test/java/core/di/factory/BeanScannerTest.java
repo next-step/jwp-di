@@ -9,10 +9,7 @@ import core.mvc.tobe.HandlerKey;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class BeanScannerTest {
 
@@ -26,8 +23,11 @@ class BeanScannerTest {
 
     @Test
     void getHandlersTest() {
-        Set<Object> expectedControllers = new HashSet<>(Arrays.asList(new QnaController(new MyQnaService(new JdbcUserRepository(), new JdbcQuestionRepository()))));
-        Map<HandlerKey, HandlerExecution> handlers = BeanScanner.getInstance().getHandlers(expectedControllers);
+        QnaController qnaController = new QnaController(new MyQnaService(new JdbcUserRepository(), new JdbcQuestionRepository()));
+        Map<Class<?>, Object> beans = new HashMap<>() {{
+            put(QnaController.class, qnaController);
+        }};
+        Map<HandlerKey, HandlerExecution> handlers = BeanScanner.getInstance().getHandlers(beans);
 
         Assertions.assertThat(handlers.size()).isEqualTo(1);
     }
