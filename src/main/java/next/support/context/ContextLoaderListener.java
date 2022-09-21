@@ -12,7 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
-import core.di.scanner.BeanScanner;
+import core.di.ApplicationContext;
 import core.jdbc.ConnectionManager;
 import core.mvc.DispatcherServlet;
 import core.mvc.asis.ControllerHandlerAdapter;
@@ -38,14 +38,14 @@ public class ContextLoaderListener implements ServletContextListener {
     }
 
     private void initWeb(ServletContext servletContext) {
-        BeanScanner beanScanner = new BeanScanner("next.config");
-        beanScanner.scan();
-        beanScanner.beanInitialize();
+        ApplicationContext applicationContext = new ApplicationContext("next.config");
+        applicationContext.scan();
+        applicationContext.beanInitialize();
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet();
 
         dispatcherServlet.addHandlerMapping(new RequestMapping());
-        dispatcherServlet.addHandlerMapping(new AnnotationHandlerMapping(beanScanner));
+        dispatcherServlet.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
         dispatcherServlet.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcherServlet.addHandlerAdapter(new ControllerHandlerAdapter());
 

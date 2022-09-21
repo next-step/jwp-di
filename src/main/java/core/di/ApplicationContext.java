@@ -1,4 +1,4 @@
-package core.di.scanner;
+package core.di;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,14 +11,16 @@ import org.slf4j.LoggerFactory;
 
 import core.annotation.ComponentScan;
 import core.di.factory.BeanFactory;
+import core.di.scanner.ClassPathBeanScanner;
+import core.di.scanner.ConfigurationBeanScanner;
 
-public class BeanScanner {
+public class ApplicationContext {
 
-    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
     private final BeanFactory beanFactory = new BeanFactory();
     private final List<String[]> basePackages;
 
-    public BeanScanner(Object... basePackage) {
+    public ApplicationContext(Object... basePackage) {
         this.basePackages = getBasePackageList(basePackage);
     }
 

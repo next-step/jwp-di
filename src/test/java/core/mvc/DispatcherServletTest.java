@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import core.di.scanner.BeanScanner;
+import core.di.ApplicationContext;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
@@ -25,15 +25,15 @@ class DispatcherServletTest {
 
     @BeforeEach
     void setUp() {
-        BeanScanner beanScanner = new BeanScanner("next.config");
-        beanScanner.scan();
-        beanScanner.beanInitialize();
+        ApplicationContext applicationContext = new ApplicationContext("next.config");
+        applicationContext.scan();
+        applicationContext.beanInitialize();
 
-        DBInitializer.initialize(beanScanner.getBeanFactory().getBean(DataSource.class));
+        DBInitializer.initialize(applicationContext.getBeanFactory().getBean(DataSource.class));
 
         dispatcher = new DispatcherServlet();
         dispatcher.addHandlerMapping(new RequestMapping());
-        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(beanScanner));
+        dispatcher.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
         dispatcher.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         dispatcher.addHandlerAdapter(new ControllerHandlerAdapter());
 

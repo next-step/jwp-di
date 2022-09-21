@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import core.di.ApplicationContext;
 import core.di.factory.BeanFactory;
 import core.di.factory.example.MyJdbcTemplate;
 import core.di.factory.example.MyQnaService;
@@ -17,7 +18,7 @@ public class BeanScannerTest {
 	@DisplayName("ComponentScan 설정을 통한 Bean 등록 테스트")
 	public void register() {
 		// given & when
-		BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
+		ApplicationContext beanScanner = new ApplicationContext("core.di.factory.example");
 		beanScanner.scan();
 		beanScanner.beanInitialize();
 		BeanFactory beanFactory = beanScanner.getBeanFactory();
