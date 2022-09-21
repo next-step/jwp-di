@@ -1,5 +1,7 @@
 package core.mvc.tobe;
 
+import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTemplate;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,8 @@ public class AnnotationHandlerMappingTest {
         handlerMapping.initialize();
 
         DBInitializer.initialize();
-        userDao = UserDao.getInstance();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(ConnectionManager.getDataSource());
+        userDao = new UserDao(jdbcTemplate);
     }
 
     @Test

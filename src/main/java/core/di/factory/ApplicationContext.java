@@ -1,31 +1,31 @@
 package core.di.factory;
 
-import core.annotation.ComponentScan;
+import core.di.factory.definition.BeanDefinitionRegistry;
+import core.di.factory.scanner.BeanScannerRegistry;
+import core.di.factory.scanner.ClassPathBeanScanner;
+import core.di.factory.scanner.ConfigurationBeanScanner;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class ApplicationContext {
     private final BeanFactory beanFactory;
+    private final BeanScannerRegistry beanScannerRegistry;
 
     public ApplicationContext(Class<?>... configurations) {
-        beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
-        cbs.register(configurations);
-        ClassPathBeanScanner cdbs = new ClassPathBeanScanner(beanFactory);
-        cdbs.doScan(getBasePackages(configurations));
-        beanFactory.initialize();
-    }
-
-    private Object[] getBasePackages(Class<?>[] configurations) {
-        return Arrays.stream(configurations)
-                .filter(configuration -> configuration.isAnnotationPresent(ComponentScan.class))
-                .map(configuration -> configuration.getAnnotation(ComponentScan.class))
-                .map(ComponentScan::basePackages)
-                .flatMap(Arrays::stream).toArray();
+        BeanDefinitionRegistry beanDefinitions = new BeanDefinitionRegistry();
+        beanScannerRegistry = new BeanScannerRegistry();
+        beanFactory = new BeanFactory(beanDefinitions);
+        beanScannerRegistry.addBeanScanner(new ConfigurationBeanScanner(beanDefinitions));
+        beanScannerRegistry.addBeanScanner(new ClassPathBeanScanner(beanDefinitions));
+        beanScannerRegistry.scan(configurations);
+        beanFactory.register();
     }
 
     public Map<Class<?>, Object> getControllers() {
         return beanFactory.getControllers();
+    }
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
     }
 }

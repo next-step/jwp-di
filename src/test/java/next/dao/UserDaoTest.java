@@ -1,5 +1,7 @@
 package next.dao;
 
+import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTemplate;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UserDaoTest {
 
     private UserDao userDao;
-
     @BeforeEach
     public void setup() {
         DBInitializer.initialize();
-
-        userDao = UserDao.getInstance();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(ConnectionManager.getDataSource());
+        userDao = new UserDao(jdbcTemplate);
     }
 
     @Test

@@ -2,35 +2,23 @@ package core.di.factory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import core.annotation.Bean;
-import core.annotation.Configuration;
 import core.annotation.web.Controller;
-import core.di.factory.exception.NoSuchDefaultConstructorException;
+import core.di.factory.definition.BeanDefinition;
+import core.di.factory.definition.BeanDefinitionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private Set<Class<?>> preInstanticateBeans = Sets.newHashSet();
-    private Set<Class<?>> configurations = Sets.newHashSet();
-
+    private BeanDefinitionRegistry beanDefinitions;
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory() {
-    }
-
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
+    public BeanFactory(BeanDefinitionRegistry beanDefinitions) {
+        this.beanDefinitions = beanDefinitions;
     }
 
     @SuppressWarnings("unchecked")
@@ -44,121 +32,44 @@ public class BeanFactory {
      * MyQnaService
      * QnaController
      */
-    public void initialize() {
+    public void register() {
         // @Inject가 설정된 클래스를 클래스타입으로 넣으면 해당 클래스 리턴
         logger.info("bean initialize");
-        for (Class<?> clazz : preInstanticateBeans) {
-            addBeans(clazz);
-        }
 
-        for (Class<?> configuration : configurations) {
-            addConfiguration(configuration);
-        }
-    }
+        Map<Class<?>, BeanDefinition> beanDefinitionMap = beanDefinitions.getBeanDefinitions();
+        Set<Class<?>> preInstanticateBeans = beanDefinitionMap.keySet();
 
-    private void addConfiguration(Class<?> configuration) {
-        if (!configuration.isAnnotationPresent(Configuration.class)) {
-            return ;
-        }
-
-        List<Method> declaredMethods = Arrays.stream(ReflectionUtils.getDeclaredMethods(configuration))
-                .filter(method -> method.isAnnotationPresent(Bean.class))
-                .collect(Collectors.toList());
-
-        Object configBean = BeanUtils.instantiateClass(configuration);
-
-        for (Method declaredMethod : declaredMethods) {
-            Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
-
-            Object[] parameters = getParametersOfMethod(parameterTypes);
-
-            Object bean = null;
-            try {
-                bean = declaredMethod.invoke(configBean, parameters);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            register(declaredMethod.getReturnType(), bean);
+        for (Class<?> preInstanticateBean : preInstanticateBeans) {
+            BeanDefinition beanDefinition = beanDefinitionMap.get(preInstanticateBean);
+            beans.put(preInstanticateBean, instantiateBeanDefinition(beanDefinition, preInstanticateBeans));
         }
     }
 
-    private Object[] getParametersOfMethod(Class<?>[] parameterTypes) {
+    private Object instantiateBeanDefinition(BeanDefinition beanDefinition, Set<Class<?>> preInstanticateBeans) {
+        Class<?>[] parameterTypes = beanDefinition.parameterTypes();
         List<Object> objects = Lists.newArrayList();
-        for (Class<?> parameterType : parameterTypes) {
-            Object injectedBean = getBean(parameterType);
-            if (injectedBean == null) {
-                throw new RuntimeException("빈이 존재하지 않습니다.");
-            }
-            objects.add(injectedBean);
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Object parameter = getParametersOfBeanDefinition(parameterTypes[i], preInstanticateBeans);
+            objects.add(parameter);
         }
-        return objects.toArray();
+        return instantiateBean(objects.toArray(), beanDefinition);
     }
 
-    private void addBeans(Class<?> bean) {
+    private Object instantiateBean(Object[] parameters, BeanDefinition beanDefinition) {
+        return beanDefinition.instantiate(parameters);
+    }
 
-        if (beans.containsKey(bean)) {
-            return ;
+    private Object getParametersOfBeanDefinition(Class<?> parameterType, Set<Class<?>> preInstanticateBeans) {
+        if (beanDefinitions.get(parameterType) == null) {
+            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
+            Object parameter = instantiateBeanDefinition(beanDefinitions.get(concreteClass), preInstanticateBeans);
+            beans.put(parameterType, parameter);
+            return parameter;
         }
-
-        Constructor<?> constructor = getConstructor(bean);
-        List<Class<?>> parameterTypes = getParameterTypes(constructor);
-
-        for (Class<?> parameterType : parameterTypes) {
-            addBeans(parameterType);
-        }
-
-        Object instance = newInstance(constructor, parameterTypes);
-        beans.put(bean, instance);
+        Object parameter = instantiateBeanDefinition(beanDefinitions.get(parameterType), preInstanticateBeans);
+        beans.put(parameterType, parameter);
+        return parameter;
     }
-
-    private Object newInstance(Constructor<?> constructor, List<Class<?>> parameterTypes) {
-        List<Object> objects = Lists.newArrayList();
-        for (Class<?> parameterType : parameterTypes) {
-            objects.add(beans.get(parameterType));
-        }
-
-        return BeanUtils.instantiateClass(constructor, objects.toArray());
-    }
-
-    private List<Class<?>> getParameterTypes(Constructor<?> constructor) {
-        Class<?>[] parameterTypes = constructor.getParameterTypes();
-        List<Class<?>> args = Lists.newArrayList();
-        for (Class<?> clazz : parameterTypes) {
-            args.add(BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans));
-        }
-        return args;
-    }
-
-    private Constructor<?> getConstructor(Class<?> clazz) {
-        Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
-
-        if (Objects.nonNull(injectedConstructor)) {
-            return injectedConstructor;
-        }
-
-        return getDefaultConstructor(clazz);
-    }
-
-    private Constructor<?> getDefaultConstructor(Class<?> clazz) {
-        try {
-            return clazz.getDeclaredConstructor();
-        } catch (Exception e) {
-            throw new NoSuchDefaultConstructorException(e);
-        }
-    }
-
-    public void addAllPreInstantiateBeans(Set<Class<?>> preInstantiateBeans) {
-        this.preInstanticateBeans.addAll(preInstantiateBeans);
-    }
-
-    public void register(Class<?> configuration, Object bean) {
-        beans.put(configuration, bean);
-    }
-
-    public void addConfigurations(List<Class<?>> configurations) {
-        this.configurations.addAll(configurations);
-    }
-
     public Map<Class<?>, Object> getControllers() {
         return beans.entrySet()
                 .stream()
