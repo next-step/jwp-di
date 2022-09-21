@@ -1,5 +1,6 @@
 package core.mvc.tobe;
 
+import core.di.factory.BeanFactory;
 import next.dao.UserDao;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +9,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import support.test.DBInitializer;
 
+import java.lang.reflect.InvocationTargetException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AnnotationHandlerMappingTest {
@@ -15,8 +18,9 @@ public class AnnotationHandlerMappingTest {
     private UserDao userDao;
 
     @BeforeEach
-    public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+    public void setup() throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        BeanFactory.getInstance().initialize("core.mvc.tobe");
+        handlerMapping = new AnnotationHandlerMapping();
         handlerMapping.initialize();
 
         DBInitializer.initialize();
@@ -32,7 +36,7 @@ public class AnnotationHandlerMappingTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/users");
         request.setParameter("userId", user.getUserId());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
 
         assertThat(request.getAttribute("user")).isEqualTo(user);
@@ -45,7 +49,7 @@ public class AnnotationHandlerMappingTest {
         request.setParameter("name", user.getName());
         request.setParameter("email", user.getEmail());
         MockHttpServletResponse response = new MockHttpServletResponse();
-        HandlerExecution execution = (HandlerExecution)handlerMapping.getHandler(request);
+        HandlerExecution execution = (HandlerExecution) handlerMapping.getHandler(request);
         execution.handle(request, response);
     }
 }
