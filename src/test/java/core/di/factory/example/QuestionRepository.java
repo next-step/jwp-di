@@ -1,5 +1,7 @@
 package core.di.factory.example;
 
-public interface QuestionRepository {
+import core.annotation.Repository;
 
+@Repository
+public interface QuestionRepository {
 }
