@@ -10,6 +10,11 @@ import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.withAnnotation;
 
 public class BeanFactoryUtils {
+    private static final int ASSUMED_INJECT_NUMBER = 1;
+
+    private BeanFactoryUtils() {
+    }
+
     /**
      * 인자로 전달하는 클래스의 생성자 중 @Inject 애노테이션이 설정되어 있는 생성자를 반환
      *
@@ -22,6 +27,9 @@ public class BeanFactoryUtils {
         Set<Constructor> injectedConstructors = getAllConstructors(clazz, withAnnotation(Inject.class));
         if (injectedConstructors.isEmpty()) {
             return null;
+        }
+        if (injectedConstructors.size() > ASSUMED_INJECT_NUMBER) {
+            throw new IllegalArgumentException(String.format("전달 받은 클래스의 생성자는 @Inject 가 %s 개입니다. @Inject 가 붙은 생성자는 1 개 여야 합니다.", injectedConstructors.size()));
         }
         return injectedConstructors.iterator().next();
     }

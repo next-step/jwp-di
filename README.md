@@ -19,25 +19,58 @@
 
 > MVC 프레임워크의 AnnotationHandlerMapping 이 BeanFactory 와 BeanScanner 를 활용하여 동작하도록 리팩토링 한다.
 
+# 기능 요구사항 (@Configuration 설정)
+>현재 JdbcTemplate 에서 데이터베이스의 Connection 을 생성하는 부분이 static 으로 구현되어 있다. 또한 데이터베이스 설정 정보 또한 하드 코딩으로 관리하고 있어서 특정 데이터베이스에 종속되는 구조로 구현되어 있다.
+> 데이터베이스에 종속되지 않도록 구현하고 Connection Pooling 을 지원하기 위해 Connection 대신 javax.sql.DataSource 인터페이스에 의존관계를 가지도록 지원한다.
+
+>이 문제를 해결하기 위해 개발자가 직접 빈을 생성해 관리할 수 있는 별도의 설정 파일을 만든다.
+>예를 들어, 설정 파일에 빈 인스턴스를 생성하는 메소드를 구현해 놓고 애노테이션으로 설정한다. DI 프레임워크는 이 설정 파일을 읽어서 BeanFactory 에 빈으로 저장할 수 있다면 BeanScanner 를 통해 등록한 빈과 같은 저장소에서 관리할 수 있다.
+
+- 자바 클래스가 설정 파일이라는 표시는 @Configuration 으로 한다. 각 메소드에서 생성하는 인스턴스가 BeanFactory 에 빈으로 등록하라는 설정은 @Bean 애노테이션으로 한다.
+- BeanScanner 에서 사용할 기본 패키지에 대한 설정을 하드코딩했는데 설정 파일에서 @ComponentScan 으로 설정할 수 있도록 지원한다.
+- 위와 같이 @Configuration 설정 파일을 통해 등록한 빈과 BeanScanner 를 통해 등록한 빈 간에도 DI가 가능해야 한다.
+
 # 기능 목록
-- BeanScanner 객체
-  - 특정 package 하위에 @Controller, @Service, @Repository 애노테이션이 붙은 클래스를 reflections 를 이용하여 scan 하고 그 타입을 가져온다.
+- BeanDefinition 객체
+  - 빈에 대한 클래스 정보와 메서드 정보를 필드로 가진다.
+  - 해당 빈이 클래스 타입 빈일 경우, 클래스의 타입을 필드로 가지고, 메서드 정보는 null 이다.
+  - 해당 빈이 메서드 타입 빈일 경우, 클래스 타입과 메서드 정보를 모두 가진다.
+- BeanDefinitions 객체
+  - BeanDefinition 을 감싼 일급 컬렉션
+  - 자동 & 수동으로 인해 등록될 모든 Bean 의 Definition 을 갖는다.
+  - 자동 스캔으로 인해 등록된 BeanDefinition 을 가져올 수 있다.
+  - 수동 스캔으로 인해 등록된 BeanDefinition 을 가져올 수 있다.
+- BeanDefinitionRegistry 객체
+  - BeanDefinitions 타입의 필드 2개를 관리한다.
+    - methodBean 과 classBean 을 구분하여 저장하고 관리한다.
+- ClassPathBeanDefinitionScanner 객체
+  - 자동 스캔 : 특정 package 하위에 @Controller, @Service, @Repository, @Component, @Configuration 애노테이션이 붙은 클래스를 reflections 를 이용하여 scan 하여 BeanDefinitionRegistry 에 저장한다.
+- AnnotatedBeanDefinitionReader 객체
+  - 수동 스캔 : 특정 Configuration 설정 클래스에 대한 빈 정보를 저장한다.
 - BeanFactory 객체
-  - BeanScanner 를 통해 얻어온 @Controller, @Service, @Repository 애노테이션이 붙은 클래스 타입과 그 인스턴스를 관리한다.
-  - BeanFactory 초기 생성 시, 인스턴스화 되기 전 후보 빈들에 대한 타입을 필드로 갖는다.
-  - BeanFactory 초기화 시, 후보 빈들을 인스턴스 화 시킨다.
+  - ClassPathBeanDefinitionScanner 과 AnnotatedBeanDefinitionReader 를 통해 저장된 BeanDefinitionRegistry 와, 인스턴스화 된 beans(빈 저장소) 를 관리한다.
+  - BeanFactory 초기 생성 시, 인스턴스화 되기 전 scanner 와 reader 에 의해 저장된 BeanDefinitions 정보(후보 빈)들을 입력받는다.
+  - BeanFactory 초기화 시, 후보 빈 들을 인스턴스 화 시킨다.
     - 빈 저장소에 후보 빈의 인스턴스가 존재할 경우, 바로 그 인스턴스를 반환한다.
-    - @Inject 애노테이션이 붙은 생성자를 찾는다.
+    - 우선 수동 스캔으로 등록된 BeanDefinition 을 먼저 빈 인스턴스화 시킨다.
+      - 만약 해당 설정 파일의 메서드의 파라미터가 존재하면, 해당 파라미터를 다시 인스턴스화 시키기 위해 재귀로 구현한다.
+      - 파라미터가 존재하지 않을 경우, 해당 메서드를 invoke 한다. -> 최초로 빈을 인스턴스화 시킴 
+      - 나머지 빈 정보들은 재귀 스택 프레임을 벗어나며 의존관계를 주입한다.
+    - 이후 자동 스캔으로 등록된 BeanDefinition 을 생성자에 붙은 @Inject 애노테이션을 찾아 주입시킨다.
       - @Inject 생성자가 있으면 해당 생성자의 파라미터들을 이용하여 해당 빈을 인스턴스 화 시킨다. (인터페이스가 아닌 후보 빈 구현 클래스 타입이 존재해야 한다.)
       - @Inject 생성자가 없으면 기본 생성자로 해당 빈을 인스턴스 화 시킨다.
-    - @Controller, @Service, @Repository 를 순서대로 빈 인스턴스화 시키면 필드끼리 의존관계가 존재할 수 있는 상황에서 인스턴스가 주입되지 않는 현상 발생
-      - 재귀를 통해 의존관계가 없는 빈부터 인스턴스화 시키도록 함.
+      - @Controller, @Service, @Repository 를 순서대로 빈 인스턴스화 시키면 필드끼리 의존관계가 존재할 수 있는 상황에서 인스턴스가 주입되지 않는 현상 발생
+        - 재귀를 통해 의존관계가 없는 빈부터 인스턴스화 시키도록 하고 스택 프레임을 벗어나며 나머지 의존관계를 주입한다.
 - ApplicationContext 객체
-  - basePackage 와 beanFactory 를 관리한다.
-  - BeanScanner 와 BeanFactory 동작을 함께 처리한다.
-    - ApplicationContext 초기화 시, BeanScanner 를 통해 후보 빈을 BeanFactory 에 등록하고, BeanFactory 초기화 하여 후보 빈을 인스턴스화 시킨다.
+  - 설정 정보 클래스 타입들과 beanFactory 를 관리한다.
+  - 최소 생성 시 설정 정보에 대한 클래스를 먼저 저장한다.
+  - AnnotatedBeanDefinitionReader 와 ClassPathBeanDefinitionScanner 를 통해 등록된 BeanDefinitions 를 이용하여 BeanFactory 초기화 작업을 진행한다.
+    - 설정 정보에 셋팅된 basePackages 를 기준으로 자동 스캔이 진행된다.
   - 특정 애노테이션을 가지는 클래스들에 대한 타입과 그 인스턴스를 반환할 수 있다.
   - DispatcherServlet 이 초기화 될 때 함꼐 가장 먼저 초기화 된다. 
-- HandlerScanner 객체
+- MyConfiguration 객체
+  - 수동 스캔대상이 되는 설정 정보 클래스이다.
+  - @Bean 애노테이션이 붙은 메서드의 리턴 타입이 빈으로 등록된다.
+- HandlerConverter 객체
   - 요청에 대한 Handler 를 찾아주는 역할을 담당한다.
   - AnnotationHandlerMapping 생성 시 주입된 ApplicationContext 를 통해 Controller 애노테이션이 붙은 빈 정보를 넘겨받아서 Handler 를 찾는다.
