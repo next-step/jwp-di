@@ -18,3 +18,8 @@
 2. [X] 요구사항 2 - 생성된 인스턴스의 의존관계는 @Inject 애노테이션을 사용하여 주입한다.
 3. [X] 요구사항 3 - 기존 ControllerScanner를 BeanFactory를 사용하도록 수정.
 4. [X] 요구사항 4 - Step1 피드백 반영 ( e.printStackTrace() -> Logger.error 로 변경)
+
+## 🚀 3단계 - @Configuration 설정
+1. [ ] 요구사항 1 - @Bean어노테이션을 사용하여 BeanFactory에 빈으로 등록한다.
+2. [ ] 요구사항 2 - @ComponentScan으로 스캔할 패키지를 지원한다.
+3. [ ] 요구사항 3 - @Configuration설정파일을 통해 등록한 빈과 BeanScanner를 통해 등록한 빈 간에도 DI를 지원한다.
