@@ -37,12 +37,15 @@ public class BeanScanner {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
     private Reflections reflections;
     private BeanFactory beanFactory;
+    private ConfigurationBeanScanner configurationBeanScanner;
 
     public BeanScanner(Object... basePackage) {
         reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstanticateClazz);
         beanFactory.initialize();
+        configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.register();
     }
 
     public Map<HandlerKey, HandlerExecution> scan() {

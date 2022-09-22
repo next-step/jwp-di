@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +16,10 @@ public class BeanFactory {
     private Set<Class<?>> preInstanticateBeans;
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
+
+    public BeanFactory() {
+        this.preInstanticateBeans = new HashSet<>();
+    }
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -63,5 +68,9 @@ public class BeanFactory {
         }
         logger.info("Create Instance Used Constructor");
         return constructor.newInstance(parameters);
+    }
+
+    public void addBean(Class<?> clazz, Object bean) {
+        beans.put(clazz, bean);
     }
 }
