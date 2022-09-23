@@ -30,12 +30,14 @@ public class ControllerResolver {
     public void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class))
-                .forEach(method -> {
-                    RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-                    HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
-                    HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
-                    handlers.put(handlerKey, handlerExecution);
-                    logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
-                });
+                .forEach(method -> createHandlers(handlers, target, method));
+    }
+
+    private void createHandlers(Map<HandlerKey, HandlerExecution> handlers, Object target, Method method) {
+        RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+        HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
+        HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
+        handlers.put(handlerKey, handlerExecution);
+        logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
     }
 }

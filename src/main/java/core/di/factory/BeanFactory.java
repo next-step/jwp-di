@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -67,12 +68,7 @@ public class BeanFactory {
     }
 
     public Map<Class<?>, Object> getControllers() {
-        Map<Class<?>, Object> controllers = Maps.newHashMap();
-        for (Class<?> clazz : preInstanticateBeans) {
-            if (clazz.isAnnotationPresent(Controller.class)) {
-                controllers.put(clazz, beans.get(clazz));
-            }
-        }
-        return controllers;
+        return preInstanticateBeans.stream().filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(clazz -> clazz, beans::get));
     }
 }

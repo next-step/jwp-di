@@ -34,8 +34,9 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         Map<Class<?>, Object> controllers = beanFactory.getControllers();
 
         ControllerResolver controllerResolver = new ControllerResolver();
-        for (Class<?> clazz : controllers.keySet()) {
-            controllerResolver.addHandlerExecution(handlerExecutions, controllers.get(clazz), clazz.getDeclaredMethods());
+        for (Map.Entry<Class<?>, Object> classObjectEntry : controllers.entrySet()) {
+            controllerResolver.addHandlerExecution(handlerExecutions, controllers.get(classObjectEntry.getKey()),
+                    classObjectEntry.getKey().getDeclaredMethods());
         }
     }
 
