@@ -1,5 +1,7 @@
 package core.di.factory.example;
 
-public interface UserRepository {
+import core.annotation.Repository;
 
+@Repository
+public interface UserRepository {
 }

@@ -33,3 +33,14 @@
 - 각 클래스의 역할에 맞도록 `@Controller`, `@Service`, `@Repository` 어노테이션을 설정
 - 이 3개의 어노테이션으로 생성된 인스턴스간의 **의존관계는 `@Inject`를 사용**
 - Bean 컨테이너를 실제 기능(사용자 관리 서비스, 질문/답변 게시판)에 적용
+
+## 3단계 - @Configuration 설정
+
+## 요구 사항
+
+- `@Configuration`
+  - 해당 클래스가 설정 파일이라는 표시
+- `@Bean`
+  - BeanFactory에 빈으로 등록되는 각 메소드에서 생성하는 인스턴스
+- BeanScanner에서 사용할 기본 패키지에 대한 설정을 설정 파일에서 `@ComponentScan` 으로 설정할 수 있도록 지원
+- `@Configuration` 설정 파일을 통해 등록한 빈과 `BeanScanner` 로 등록한 빈 간에 DI 가능하게 구현

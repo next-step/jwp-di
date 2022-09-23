@@ -1,4 +1,4 @@
-package core.di.factory;
+package core.di.factory.container;
 
 import com.google.common.collect.Sets;
 import core.annotation.Inject;

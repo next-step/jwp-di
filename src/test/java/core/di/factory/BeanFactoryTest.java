@@ -1,32 +1,35 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
+import core.di.factory.constructor.BeanConstructor;
+import core.di.factory.container.BeanFactory;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import core.di.factory.scanner.ClassPathBeanScanner;
+import core.di.factory.scanner.ConfigurationBeanScanner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DisplayName("빈 팩토리 - 빈의 생명주기, 어플리케이션 서비스 실행 관리")
 public class BeanFactoryTest {
-    private Reflections reflections;
+
     private BeanFactory beanFactory;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     public void setup() {
-        reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
-        beanFactory = new BeanFactory(preInstantiateClazz);
+        ConfigurationBeanScanner configurationBeanScanner =
+                new ConfigurationBeanScanner("core.di.factory.example");
+
+        ClassPathBeanScanner classPathBeanScanner = new ClassPathBeanScanner(configurationBeanScanner.configurations());
+        Collection<BeanConstructor> constructors = new ArrayList<>();
+        constructors.addAll(configurationBeanScanner.scan());
+        constructors.addAll(classPathBeanScanner.scan());
+        beanFactory = new BeanFactory(constructors);
         beanFactory.initialize();
     }
 
@@ -41,14 +44,5 @@ public class BeanFactoryTest {
         MyQnaService qnaService = qnaController.getQnaService();
         assertNotNull(qnaService.getUserRepository());
         assertNotNull(qnaService.getQuestionRepository());
-    }
-
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
     }
 }
