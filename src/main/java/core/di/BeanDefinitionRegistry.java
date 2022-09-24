@@ -19,7 +19,7 @@ public class BeanDefinitionRegistry {
 
     public void registerClassPathBeans(Set<Class<?>> classPathBeanClasses) {
         for (Class<?> classPathBeanClass : classPathBeanClasses) {
-            this.classBeanDefinitions.add(new BeanDefinition(classPathBeanClass));
+            this.classBeanDefinitions.add(new ClassBeanDefinition(classPathBeanClass));
         }
     }
 
@@ -33,7 +33,7 @@ public class BeanDefinitionRegistry {
         Set<Method> beanMethods = ReflectionUtils.getAllMethods(configurationClass, ReflectionUtilsPredicates.withAnnotation(Bean.class));
 
         for (Method method : beanMethods) {
-            this.methodBeanDefinitions.add(new BeanDefinition(configurationClass, method));
+            this.methodBeanDefinitions.add(new MethodBeanDefinition(configurationClass, method));
         }
     }
 
