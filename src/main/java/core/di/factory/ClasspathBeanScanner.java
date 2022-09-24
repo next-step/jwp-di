@@ -12,7 +12,7 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-public class BeanScanner {
+public class ClasspathBeanScanner {
     @SuppressWarnings("unchecked")
     public BeanFactory initBeanFactory(Object... basePackage) {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
