@@ -24,6 +24,10 @@ public class BeanFactory {
         this.preInstanticateBeans = preInstanticateBeans;
     }
 
+    void addBean(Map<? extends Class<?>, Object> beans) {
+        this.beans.putAll(beans);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
         return (T) beans.get(requiredType);
