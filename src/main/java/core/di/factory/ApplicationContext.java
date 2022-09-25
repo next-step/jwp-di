@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationContext {
+    private static final int EMPTY = 0;
+
     private BeanFactory beanFactory;
     private final Set<Class<?>> configurationClasses;
 
@@ -36,9 +38,13 @@ public class ApplicationContext {
     private Object[] getBasePackages(Set<Class<?>> configurationClasses) {
         return configurationClasses.stream()
                 .filter(configurationClass -> configurationClass.isAnnotationPresent(ComponentScan.class))
-                .map(componentScan -> componentScan.getAnnotation(ComponentScan.class))
-                .map(ComponentScan::value)
-                .toArray();
+                .map(configurationClass -> {
+                    ComponentScan componentScan = configurationClass.getAnnotation(ComponentScan.class);
+                    if (componentScan.value().length == EMPTY) {
+                        return configurationClass.getPackageName();
+                    }
+                    return componentScan.value();
+                }).toArray();
     }
 
     public Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {

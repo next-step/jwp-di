@@ -68,6 +68,7 @@
   - 최소 생성 시 설정 정보에 대한 클래스를 먼저 저장한다.
   - AnnotatedBeanDefinitionReader 와 ClassPathBeanDefinitionScanner 를 통해 등록된 BeanDefinitions 를 이용하여 BeanFactory 초기화 작업을 진행한다.
     - 설정 정보에 셋팅된 basePackages 를 기준으로 자동 스캔이 진행된다.
+    - 설정 정보에 basPackages 가 셋팅 되어있지 않다면, 해당 설정 정보의 패키지 위치부터 스캔하도록 한다.
   - 특정 애노테이션을 가지는 클래스들에 대한 타입과 그 인스턴스를 반환할 수 있다.
   - DispatcherServlet 이 초기화 될 때 함꼐 가장 먼저 초기화 된다. 
 - MyConfiguration 객체
