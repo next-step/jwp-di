@@ -1,14 +1,14 @@
 package core.di.factory;
 
-import core.di.AnnotatedBeanDefinitionReader;
+import core.di.AnnotatedBeanDefinitionScanner;
 import core.di.BeanDefinitionRegistry;
+import core.di.BeanScanner;
 import core.di.ClassPathBeanDefinitionScanner;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 
 import java.util.Set;
 
@@ -21,10 +21,10 @@ class BeanFactoryTest {
     @SuppressWarnings("unchecked")
     public void setup() {
         BeanDefinitionRegistry beanDefinitionRegistry = new BeanDefinitionRegistry();
-        AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(beanDefinitionRegistry);
-        reader.register(Set.of(TestConfig.class));
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
-        scanner.scan("core.di.factory.example");
+        BeanScanner annotatedBeanDefinitionScanner = new AnnotatedBeanDefinitionScanner(beanDefinitionRegistry);
+        annotatedBeanDefinitionScanner.scan(Set.of(TestConfig.class));
+        BeanScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
+        classPathBeanDefinitionScanner.scan(Set.of(TestConfig.class));
         beanFactory = new BeanFactory(beanDefinitionRegistry);
         beanFactory.initialize();
     }

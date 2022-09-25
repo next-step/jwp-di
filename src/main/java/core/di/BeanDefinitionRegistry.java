@@ -1,39 +1,25 @@
 package core.di;
 
-import core.annotation.Bean;
-import org.reflections.ReflectionUtils;
-import org.reflections.util.ReflectionUtilsPredicates;
-
-import java.lang.reflect.Method;
 import java.util.Set;
 
 public class BeanDefinitionRegistry {
-
-    private final BeanDefinitions methodBeanDefinitions;
     private final BeanDefinitions classBeanDefinitions;
+    private final BeanDefinitions methodBeanDefinitions;
 
     public BeanDefinitionRegistry() {
         this.methodBeanDefinitions = new BeanDefinitions();
         this.classBeanDefinitions = new BeanDefinitions();
     }
 
-    public void registerClassPathBeans(Set<Class<?>> classPathBeanClasses) {
-        for (Class<?> classPathBeanClass : classPathBeanClasses) {
-            this.classBeanDefinitions.add(new ClassBeanDefinition(classPathBeanClass));
+    public void registerClassPathBeans(Set<BeanDefinition> classPathBeanDefinitions) {
+        for (BeanDefinition classPathBeanDefinition : classPathBeanDefinitions) {
+            this.classBeanDefinitions.add(classPathBeanDefinition);
         }
     }
 
-    public void registerConfigurationBeans(Set<Class<?>> configurationClasses) {
-        for (Class<?> configurationClass : configurationClasses) {
-            registerConfigurationBean(configurationClass);
-        }
-    }
-
-    private void registerConfigurationBean(Class<?> configurationClass) {
-        Set<Method> beanMethods = ReflectionUtils.getAllMethods(configurationClass, ReflectionUtilsPredicates.withAnnotation(Bean.class));
-
-        for (Method method : beanMethods) {
-            this.methodBeanDefinitions.add(new MethodBeanDefinition(configurationClass, method));
+    public void registerConfigurationBeans(Set<BeanDefinition> methodBeanDefinitions) {
+        for (BeanDefinition methodBeanDefinition : methodBeanDefinitions) {
+            this.methodBeanDefinitions.add(methodBeanDefinition);
         }
     }
 
