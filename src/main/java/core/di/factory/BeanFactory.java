@@ -44,24 +44,12 @@ public class BeanFactory {
     }
 
     private Object getNewInstance(Class<?> preInstantiatedBean, List<Object> parameterBeans) {
-        if (parameterBeans.size() == 1) {
-            return ReflectionUtils.newInstance(preInstantiatedBean, parameterBeans.get(0));
+        Object[] constructorParameters = new Object[parameterBeans.size()];
+        int index = 0;
+        for (Object parameterBean : parameterBeans) {
+            constructorParameters[index++] = parameterBean;
         }
-        if (parameterBeans.size() == 2) {
-            return ReflectionUtils.newInstance(preInstantiatedBean, parameterBeans.get(0), parameterBeans.get(1));
-        }
-        if (parameterBeans.size() == 3) {
-            return ReflectionUtils.newInstance(preInstantiatedBean, parameterBeans.get(0), parameterBeans.get(1), parameterBeans.get(2));
-        }
-        if (parameterBeans.size() == 4) {
-            return ReflectionUtils.newInstance(preInstantiatedBean, parameterBeans.get(0), parameterBeans.get(1), parameterBeans.get(2), parameterBeans.get(3));
-        }
-        if (parameterBeans.size() == 5) {
-            return ReflectionUtils.newInstance(preInstantiatedBean, parameterBeans.get(0), parameterBeans.get(1), parameterBeans.get(2), parameterBeans.get(3), parameterBeans.get(4));
-        }
-
-        // TODO 더 많은 수의 parameter 필요 경우 케이스
-        throw new IllegalArgumentException();
+        return ReflectionUtils.newInstance(preInstantiatedBean, constructorParameters);
     }
 
     private List<Class<?>> getConstructorParameterClasses(Class<?>[] parameters, Set<Class<?>> preInstantiatedBeans) {
