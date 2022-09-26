@@ -17,9 +17,12 @@ import java.util.stream.Collectors;
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private final Set<Class<?>> preInstanticateBeans;
+    private Set<Class<?>> preInstanticateBeans;
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
+
+    public BeanFactory() {
+    }
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -30,7 +33,15 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
+    public <T> void setBean(Class<T> inputType, Object object) {
+        beans.put(inputType, object);
+    }
+
     public void initialize() {
+        if (preInstanticateBeans == null || preInstanticateBeans.size() < 1) {
+            return;
+        }
+
         for (Class<?> preInstanticateBean : preInstanticateBeans) {
             beans.put(preInstanticateBean, instanticate(preInstanticateBean));
         }
@@ -70,5 +81,9 @@ public class BeanFactory {
     public Map<Class<?>, Object> getControllers() {
         return preInstanticateBeans.stream().filter(clazz -> clazz.isAnnotationPresent(Controller.class))
                 .collect(Collectors.toMap(clazz -> clazz, beans::get));
+    }
+
+    public void setPreInstanticateBeans(Set<Class<?>> preInstanticateBeans) {
+        this.preInstanticateBeans = preInstanticateBeans;
     }
 }

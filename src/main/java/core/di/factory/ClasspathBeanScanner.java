@@ -10,13 +10,24 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
-public class BeanScanner {
+public class ClasspathBeanScanner {
 
-    public Set<Class<?>> scan(Object... basePackage) {
+    private final BeanFactory beanFactory;
+
+    public ClasspathBeanScanner(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public void doScan(Object... basePackage) {
+        Set<Class<?>> beans = Sets.newHashSet();
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
-        return getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class);
+        beans.addAll(getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class));
+
+        beanFactory.setPreInstanticateBeans(beans);
+        beanFactory.initialize();
     }
 
     @SuppressWarnings("unchecked")
@@ -26,5 +37,9 @@ public class BeanScanner {
             beans.addAll(reflections.getTypesAnnotatedWith(annotation));
         }
         return beans;
+    }
+
+    public Map<Class<?>, Object> getFactoryController() {
+        return beanFactory.getControllers();
     }
 }
