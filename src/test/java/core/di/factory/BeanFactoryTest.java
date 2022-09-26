@@ -1,34 +1,30 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
-import core.annotation.web.Controller;
+import core.di.AnnotatedBeanDefinitionScanner;
 import core.di.BeanDefinitionRegistry;
+import core.di.BeanScanner;
+import core.di.ClassPathBeanDefinitionScanner;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class BeanFactoryTest {
-    private Reflections reflections;
     private BeanFactory beanFactory;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        reflections = new Reflections("core.di.factory.example");
-        Set<Class<?>> preInstantiateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         BeanDefinitionRegistry beanDefinitionRegistry = new BeanDefinitionRegistry();
-        beanDefinitionRegistry.registerClassPathBeans(preInstantiateClazz);
-        beanDefinitionRegistry.registerConfigurationBeans(Set.of(TestConfig.class));
+        BeanScanner annotatedBeanDefinitionScanner = new AnnotatedBeanDefinitionScanner(beanDefinitionRegistry);
+        annotatedBeanDefinitionScanner.scan(Set.of(TestConfig.class));
+        BeanScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
+        classPathBeanDefinitionScanner.scan(Set.of(TestConfig.class));
         beanFactory = new BeanFactory(beanDefinitionRegistry);
         beanFactory.initialize();
     }
@@ -57,14 +53,5 @@ class BeanFactoryTest {
 
         TestB testB = testA.getTestB();
         assertNotNull(testB.getTestC());
-    }
-
-    @SuppressWarnings("unchecked")
-    private Set<Class<?>> getTypesAnnotatedWith(Class<? extends Annotation>... annotations) {
-        Set<Class<?>> beans = Sets.newHashSet();
-        for (Class<? extends Annotation> annotation : annotations) {
-            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
-        }
-        return beans;
     }
 }

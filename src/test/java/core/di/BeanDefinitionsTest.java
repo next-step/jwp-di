@@ -4,11 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class BeanDefinitionsTest {
     private BeanDefinitions beanDefinitions;
@@ -21,8 +18,8 @@ class BeanDefinitionsTest {
 
     @BeforeEach
     void setUp() throws NoSuchMethodException {
-        methodBeanDefinition = new BeanDefinition(BeanDefinitionsTest.class, BeanDefinitionsTest.class.getDeclaredMethod("testMethod"));
-        classBeanDefinition = new BeanDefinition(BeanDefinitionsTest.class);
+        methodBeanDefinition = new MethodBeanDefinition(BeanDefinitionsTest.class, BeanDefinitionsTest.class.getDeclaredMethod("testMethod"));
+        classBeanDefinition = new ClassBeanDefinition(BeanDefinitionsTest.class);
 
         beanDefinitions = new BeanDefinitions();
         beanDefinitions.add(methodBeanDefinition);

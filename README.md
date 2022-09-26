@@ -31,10 +31,12 @@
 - 위와 같이 @Configuration 설정 파일을 통해 등록한 빈과 BeanScanner 를 통해 등록한 빈 간에도 DI가 가능해야 한다.
 
 # 기능 목록
-- BeanDefinition 객체
-  - 빈에 대한 클래스 정보와 메서드 정보를 필드로 가진다.
-  - 해당 빈이 클래스 타입 빈일 경우, 클래스의 타입을 필드로 가지고, 메서드 정보는 null 이다.
-  - 해당 빈이 메서드 타입 빈일 경우, 클래스 타입과 메서드 정보를 모두 가진다.
+- BeanDefinition 인터페이스
+  - 빈에 대한 클래스 정보와 메서드 정보를 관리한다.
+  - ClassBeanDefinition 구현체
+    - 빈에 대한 클래스 정보를 필드로 가진다. 클래스 타입의 반환하는 메서드를 제공한다.
+  - MethodBeanDefinition 구현체
+    - 빈에 대한 클래스 정보와 메서드 정보를 필드로 가진다. 클래스 타입과 메서드, 그리고 메서드 리턴 타입을 반환하는 메서드를 제공한다.
 - BeanDefinitions 객체
   - BeanDefinition 을 감싼 일급 컬렉션
   - 자동 & 수동으로 인해 등록될 모든 Bean 의 Definition 을 갖는다.
@@ -66,6 +68,7 @@
   - 최소 생성 시 설정 정보에 대한 클래스를 먼저 저장한다.
   - AnnotatedBeanDefinitionReader 와 ClassPathBeanDefinitionScanner 를 통해 등록된 BeanDefinitions 를 이용하여 BeanFactory 초기화 작업을 진행한다.
     - 설정 정보에 셋팅된 basePackages 를 기준으로 자동 스캔이 진행된다.
+    - 설정 정보에 basPackages 가 셋팅 되어있지 않다면, 해당 설정 정보의 패키지 위치부터 스캔하도록 한다.
   - 특정 애노테이션을 가지는 클래스들에 대한 타입과 그 인스턴스를 반환할 수 있다.
   - DispatcherServlet 이 초기화 될 때 함꼐 가장 먼저 초기화 된다. 
 - MyConfiguration 객체

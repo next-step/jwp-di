@@ -1,8 +1,8 @@
 package core.di.factory;
 
-import core.annotation.ComponentScan;
-import core.di.AnnotatedBeanDefinitionReader;
+import core.di.AnnotatedBeanDefinitionScanner;
 import core.di.BeanDefinitionRegistry;
+import core.di.BeanScanner;
 import core.di.ClassPathBeanDefinitionScanner;
 
 import java.lang.annotation.Annotation;
@@ -23,22 +23,14 @@ public class ApplicationContext {
     public void initialize() {
         BeanDefinitionRegistry beanDefinitionRegistry = new BeanDefinitionRegistry();
 
-        AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(beanDefinitionRegistry);
-        reader.register(this.configurationClasses);
+        BeanScanner annotatedBeanDefinitionScanner = new AnnotatedBeanDefinitionScanner(beanDefinitionRegistry);
+        annotatedBeanDefinitionScanner.scan(this.configurationClasses);
 
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
-        scanner.scan(getBasePackages(this.configurationClasses));
+        BeanScanner classPathBeanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
+        classPathBeanDefinitionScanner.scan(this.configurationClasses);
 
         this.beanFactory = new BeanFactory(beanDefinitionRegistry);
         this.beanFactory.initialize();
-    }
-
-    private Object[] getBasePackages(Set<Class<?>> configurationClasses) {
-        return configurationClasses.stream()
-                .filter(configurationClass -> configurationClass.isAnnotationPresent(ComponentScan.class))
-                .map(componentScan -> componentScan.getAnnotation(ComponentScan.class))
-                .map(ComponentScan::value)
-                .toArray();
     }
 
     public Map<Class<?>, Object> getBeansAnnotatedWith(Class<? extends Annotation> annotation) {
