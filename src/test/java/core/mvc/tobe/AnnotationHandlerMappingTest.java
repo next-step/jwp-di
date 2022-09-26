@@ -20,7 +20,7 @@ public class AnnotationHandlerMappingTest {
     public void setup() {
         final BeanFactory beanFactory = new BeanFactory();
         final ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
-        // classpathBeanScanner.doScan(); // TODO
+        classpathBeanScanner.doScan("core.mvc.tobe");
 
         handlerMapping = new AnnotationHandlerMapping(beanFactory.getControllers());
         handlerMapping.initialize();

@@ -27,8 +27,10 @@ public class ConfigurationBeanScanner {
                 .filter(method -> method.isAnnotationPresent(Bean.class))
                 .forEach(method -> methods.put(method.getReturnType(), method));
 
-        methods.forEach((key, value) -> beans.put(key, instanticateBean(value, instance)));
-        beanFactory.addBean(beans);
+        methods.forEach((key, value) -> {
+            final Object bean = instanticateBean(value, instance);
+            addBean(key, bean);
+        });
     }
 
     private Object instanticateBean(Method method, Object instance) {
@@ -51,7 +53,7 @@ public class ConfigurationBeanScanner {
         for (Class<?> parameterType : parameterTypes) {
             final Object parameterInstance = getInstance(parameterType, instance);
             args.add(parameterInstance);
-            beans.put(parameterType, parameterInstance);
+            addBean(parameterType, parameterInstance);
         }
         return args.toArray();
     }
@@ -61,5 +63,10 @@ public class ConfigurationBeanScanner {
             return beans.get(parameterType);
         }
         return instanticateBean(methods.get(parameterType), instance);
+    }
+
+    private void addBean(Class<?> key, Object bean) {
+        beans.put(key, bean);
+        beanFactory.addBean(bean);
     }
 }

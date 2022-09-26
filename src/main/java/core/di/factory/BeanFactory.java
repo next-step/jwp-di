@@ -13,16 +13,22 @@ public class BeanFactory {
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    void addBean(Map<? extends Class<?>, Object> beans) {
-        beans.forEach((key, value) -> {
-            logger.debug("Add bean to factory: {}", key.getName());
-            this.beans.put(key, value);
-        });
+    void addBean(Object bean) {
+        logger.debug("Add bean to factory: {}", bean.getClass().getName());
+        this.beans.put(bean.getClass(), bean);
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
+        final T bean = (T) beans.get(requiredType);
+        if (bean != null) {
+            return bean;
+        }
+        return (T) beans.get(BeanFactoryUtils.findConcreteClass(requiredType, beans.keySet()));
+    }
+
+    public Map<Class<?>, Object> getBeans() {
+        return beans;
     }
 
     public Map<Class<?>, Object> getControllers() {
