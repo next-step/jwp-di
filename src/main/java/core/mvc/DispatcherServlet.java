@@ -29,8 +29,9 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        final ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner();
-        beanFactory = classpathBeanScanner.initBeanFactory("next");
+        beanFactory = new BeanFactory();
+        final ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.doScan("next");
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());

@@ -4,28 +4,20 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private final Set<Class<?>> preInstanticateBeans;
-
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstanticateBeans) {
-        this.preInstanticateBeans = preInstanticateBeans;
-    }
-
     void addBean(Map<? extends Class<?>, Object> beans) {
-        this.beans.putAll(beans);
+        beans.forEach((key, value) -> {
+            logger.debug("Add bean to factory: {}", key.getName());
+            this.beans.put(key, value);
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -33,51 +25,14 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() {
-        preInstanticateBeans
-                .forEach(preInstanticateBean -> {
-                    beans.put(preInstanticateBean, instanticateBean(preInstanticateBean));
-                    logger.debug("Add bean to factory: {}", preInstanticateBean.getName());
-                });
-    }
-
     public Map<Class<?>, Object> getControllers() {
-        return preInstanticateBeans.stream()
+        return beans.keySet()
+                .stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
                 .collect(Collectors.toMap(clazz -> clazz, beans::get));
     }
 
-    private Object instanticateBean(Class<?> clazz) {
-        if (beans.containsKey(clazz)) {
-            return beans.get(clazz);
-        }
-        return instanticate(clazz);
-    }
+    public void initialize() {
 
-    private Object instanticate(Class<?> clazz) {
-        final Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(clazz);
-        if (constructor == null) {
-            return BeanUtils.instantiateClass(clazz);
-        }
-        return BeanUtils.instantiateClass(constructor, getArgs(constructor));
-    }
-
-    private Object[] getArgs(Constructor<?> constructor) {
-        final Class<?>[] parameterTypes = constructor.getParameterTypes();
-        final List<Object> args = new ArrayList<>();
-        for (Class<?> parameterType : parameterTypes) {
-            final Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(parameterType, preInstanticateBeans);
-            final Object instance = getInstance(concreteClass);
-            args.add(instance);
-            beans.put(concreteClass, instance);
-        }
-        return args.toArray();
-    }
-
-    private Object getInstance(Class<?> concreteClass) {
-        if (beans.containsKey(concreteClass)) {
-            return beans.get(concreteClass);
-        }
-        return instanticateBean(concreteClass);
     }
 }
