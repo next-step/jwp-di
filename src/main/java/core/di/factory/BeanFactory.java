@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
@@ -28,38 +30,45 @@ public class BeanFactory {
         return (T) beans.get(requiredType);
     }
 
-    public void initialize() throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void initialize() {
         for (Class<?> preInstanticateBean : preInstanticateBeans) {
             beans.put(preInstanticateBean, instanticate(preInstanticateBean));
         }
     }
 
-    Object instanticate(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    Object instanticate(Class<?> clazz) {
+        try {
+            return instantiateClass(clazz);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object instantiateClass(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         if (beans.containsKey(clazz)) {
             return beans.get(clazz);
         }
 
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
-
         if (injectedConstructor == null) {
-            return instantiateClass(clazz);
+            return BeanUtils.instantiateClass(BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans));
         }
 
-        Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
+        return instantiateConstructor(injectedConstructor);
+    }
+
+    private Object instantiateConstructor(Constructor<?> constructor)
+            throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
         List<Object> parameters = new ArrayList<>();
         for (Class<?> parameterType : parameterTypes) {
-            parameters.add(instanticate(parameterType));
+            parameters.add(instantiateClass(parameterType));
         }
-        return instantiateConstructor(injectedConstructor, parameters);
+        return BeanUtils.instantiateClass(constructor, parameters.toArray());
     }
 
-    private Object instantiateClass(Class<?> clazz) {
-        Class<?> concreteChildClass = BeanFactoryUtils.findConcreteClass(clazz, preInstanticateBeans);
-        return BeanUtils.instantiateClass(concreteChildClass);
-    }
-
-    private Object instantiateConstructor(Constructor<?> constructor, List<Object> parameters)
-            throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        return constructor.newInstance(parameters.toArray());
+    public Map<Class<?>, Object> getControllers() {
+        return preInstanticateBeans.stream().filter(clazz -> clazz.isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(clazz -> clazz, beans::get));
     }
 }
