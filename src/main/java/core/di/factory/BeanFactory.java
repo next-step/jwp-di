@@ -17,8 +17,6 @@ public class BeanFactory {
 
     private static final BeanFactory beanFactory = new BeanFactory();
 
-    private Set<Class<?>> preInstantiatedBeans; // TODO 상태값을 유지할 필요가 있을까?
-
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
     public static BeanFactory getInstance() {
@@ -32,25 +30,17 @@ public class BeanFactory {
 
     public void initialize(Object... basePackage) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         BeanScanner beanScanner = new BeanScanner();
-        preInstantiatedBeans = beanScanner.scan(basePackage);
+        Set<Class<?>> preInstantiatedBeans = beanScanner.scan(basePackage);
         for (Class<?> preInstantiatedBean : preInstantiatedBeans) {
-            Object instantiatedBean = this.getInstantiatedBean(preInstantiatedBean);
+            Object instantiatedBean = this.getInstantiatedBean(preInstantiatedBean, preInstantiatedBeans);
+
+            logger.debug("bean created ... class : {}", instantiatedBean.getClass().getName());
             beans.put(preInstantiatedBean, instantiatedBean);
         }
     }
 
     public Map<Class<?>, Object> getBeans() {
         return beans;
-    }
-
-    private List<Class<?>> getConstructorParameterClasses(Class<?>[] parameters) {
-        List<Class<?>> concreteParameters = new ArrayList<>();
-        for (Class<?> parameter : parameters) {
-            Class<?> concreteParameter = BeanFactoryUtils.findConcreteClass(parameter, preInstantiatedBeans);
-            concreteParameters.add(concreteParameter);
-        }
-
-        return concreteParameters;
     }
 
     private Object getNewInstance(Class<?> preInstantiatedBean, List<Object> parameterBeans) {
@@ -74,14 +64,29 @@ public class BeanFactory {
         throw new IllegalArgumentException();
     }
 
-    private Object getInstantiatedBean(Class<?> preInstantiatedBean) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    private List<Class<?>> getConstructorParameterClasses(Class<?>[] parameters, Set<Class<?>> preInstantiatedBeans) {
+        List<Class<?>> concreteParameters = new ArrayList<>();
+        for (Class<?> parameter : parameters) {
+            Class<?> concreteParameter = BeanFactoryUtils.findConcreteClass(parameter, preInstantiatedBeans);
+            concreteParameters.add(concreteParameter);
+        }
+
+        return concreteParameters;
+    }
+
+    private Object getInstantiatedBean(Class<?> preInstantiatedBean, Set<Class<?>> preInstantiatedBeans) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        Object instantiateTargetBean = this.beans.get(preInstantiatedBean);
+        if (instantiateTargetBean != null) {
+            return instantiateTargetBean;
+        }
+
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstantiatedBean);
         if (injectedConstructor == null) {
             return ReflectionUtils.getNoArgsConstructor(preInstantiatedBean).newInstance();
         }
 
         List<Object> parameterBeans = new ArrayList<>();
-        List<Class<?>> concreteParameterClasses = this.getConstructorParameterClasses(injectedConstructor.getParameterTypes());
+        List<Class<?>> concreteParameterClasses = this.getConstructorParameterClasses(injectedConstructor.getParameterTypes(), preInstantiatedBeans);
         for (Class<?> parameterClass : concreteParameterClasses) {
             Object parameterBean = this.beans.get(parameterClass);
             if (parameterBean != null) {
@@ -89,7 +94,7 @@ public class BeanFactory {
                 continue;
             }
 
-            parameterBeans.add(this.getInstantiatedBean(parameterClass));
+            parameterBeans.add(this.getInstantiatedBean(parameterClass, preInstantiatedBeans));
         }
 
         return this.getNewInstance(preInstantiatedBean, parameterBeans);
