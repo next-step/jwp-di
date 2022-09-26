@@ -20,3 +20,9 @@
 3. Bean 인스턴스 생성 로직을 구현한다.
 4. 생성자를 활용한 인스턴스 생성을 구현한다.
 5. MVC 프레임워크의 AnnotationHandlerMapping이 BeanFactory와 BeanScanner를 활용해 동작하도록 리팩토링한다.
+
+## 3단계 - @Configuration 설정
+1. 데이터 베이스 Connection 생성, 설정 정보를 하드 코딩으로 관리하는데, 데이터베이스에 종속되지 않고 javax.sql.DataSource 인터페이스에 의존관계를 갖도록 지원
+2. 자바 설정파일 표시는 @Configuration으로 표시하고, @Bean 애노테이션으로 BeanFactory에 등록한다.
+3. 설정 파일에서 @ComponentScan으로 BeanScanner에서 사용할 기본 패키지 설정
+4. @Configuration 설정 파일을 통해 등록한 빈과 BeanScanner를 통해 등록한 빈 간에도 DI가 가능해야 한다.
