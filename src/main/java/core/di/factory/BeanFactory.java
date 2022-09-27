@@ -32,10 +32,7 @@ public class BeanFactory {
         BeanScanner beanScanner = new BeanScanner();
         Set<Class<?>> preInstantiatedBeans = beanScanner.scan(basePackage);
         for (Class<?> preInstantiatedBean : preInstantiatedBeans) {
-            Object instantiatedBean = this.getInstantiatedBean(preInstantiatedBean, preInstantiatedBeans);
-
-            logger.debug("bean created ... class : {}", instantiatedBean.getClass().getName());
-            beans.put(preInstantiatedBean, instantiatedBean);
+            this.addInstantiatedBean(preInstantiatedBean, preInstantiatedBeans);
         }
     }
 
@@ -49,6 +46,7 @@ public class BeanFactory {
         for (Object parameterBean : parameterBeans) {
             constructorParameters[index++] = parameterBean;
         }
+
         return ReflectionUtils.newInstance(preInstantiatedBean, constructorParameters);
     }
 
@@ -62,7 +60,7 @@ public class BeanFactory {
         return concreteParameters;
     }
 
-    private Object getInstantiatedBean(Class<?> preInstantiatedBean, Set<Class<?>> preInstantiatedBeans) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    private Object addInstantiatedBean(Class<?> preInstantiatedBean, Set<Class<?>> preInstantiatedBeans) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         Object instantiateTargetBean = this.beans.get(preInstantiatedBean);
         if (instantiateTargetBean != null) {
             return instantiateTargetBean;
@@ -70,7 +68,10 @@ public class BeanFactory {
 
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstantiatedBean);
         if (injectedConstructor == null) {
-            return ReflectionUtils.getNoArgsConstructor(preInstantiatedBean).newInstance();
+            Object instantiatedBean = ReflectionUtils.getNoArgsConstructor(preInstantiatedBean).newInstance();
+            logger.debug("[{}] bean created.", preInstantiatedBean.getName());
+            beans.put(preInstantiatedBean, instantiatedBean);
+            return instantiatedBean;
         }
 
         List<Object> parameterBeans = new ArrayList<>();
@@ -82,10 +83,13 @@ public class BeanFactory {
                 continue;
             }
 
-            parameterBeans.add(this.getInstantiatedBean(parameterClass, preInstantiatedBeans));
+            parameterBeans.add(this.addInstantiatedBean(parameterClass, preInstantiatedBeans));
         }
 
-        return this.getNewInstance(preInstantiatedBean, parameterBeans);
+        Object instantiatedBean = this.getNewInstance(preInstantiatedBean, parameterBeans);
+        logger.debug("[{}] bean created.", preInstantiatedBean.getName());
+        beans.put(preInstantiatedBean, instantiatedBean);
+        return instantiatedBean;
     }
 
 }
