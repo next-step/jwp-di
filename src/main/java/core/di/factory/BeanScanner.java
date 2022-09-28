@@ -1,5 +1,7 @@
-package core.mvc.tobe;
+package core.di.factory;
 
+import core.annotation.Repository;
+import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.mvc.tobe.HandlerExecution;
@@ -14,15 +16,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static core.util.ReflectionUtils.newInstance;
 import static java.util.Arrays.asList;
 
-public class ControllerScanner {
+public class BeanScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeanScanner.class);
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
@@ -38,14 +40,20 @@ public class ControllerScanner {
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
 
-        Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
+        Set<Class<?>> preInstanticateBeans = getTargetAnnotationClass(reflections, Controller.class, Service.class, Repository.class);
+
+        BeanFactory beanFactory = new BeanFactory(preInstanticateBeans);
+        beanFactory.initialize();
+
+        Set<Class<?>> controllers = beanFactory.getControllerClass();
         for (Class<?> controller : controllers) {
-            Object target = newInstance(controller);
+            Object target = beanFactory.getBean(controller);
             addHandlerExecution(handlers, target, controller.getMethods());
         }
 
         return handlers;
     }
+
 
     private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
         Arrays.stream(methods)
@@ -57,6 +65,14 @@ public class ControllerScanner {
                     handlers.put(handlerKey, handlerExecution);
                     logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
                 });
+    }
+
+    private Set<Class<?>> getTargetAnnotationClass(Reflections reflections, Class<? extends Annotation>... annotations) {
+        Set<Class<?>> beans = new HashSet<>();
+        for (Class<? extends Annotation> annotation : annotations) {
+            beans.addAll(reflections.getTypesAnnotatedWith(annotation));
+        }
+        return beans;
     }
 
 }
