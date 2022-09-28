@@ -19,7 +19,7 @@ public class BeanFactoryTest {
         beanFactory.initialize();
 
         ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
-        classpathBeanScanner.doScan("core.di.factory.example");
+        classpathBeanScanner.doScan(configurationBeanScanner.getBasePackages());
     }
 
     @Test

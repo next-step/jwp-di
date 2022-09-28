@@ -29,7 +29,7 @@ public class ConfigurationBeanScannerTest {
         beanFactory.initialize();
 
         ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
-        classpathBeanScanner.doScan("core.di.factory.example");
+        classpathBeanScanner.doScan(new String[]{"core.di.factory.example"});
 
         assertNotNull(beanFactory.getBean(DataSource.class));
 

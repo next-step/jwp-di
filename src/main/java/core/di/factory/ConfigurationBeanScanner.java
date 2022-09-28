@@ -2,6 +2,7 @@ package core.di.factory;
 
 import com.google.common.collect.Maps;
 import core.annotation.Bean;
+import core.annotation.ComponentScan;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -15,15 +16,29 @@ public class ConfigurationBeanScanner {
     private final BeanFactory beanFactory;
     private final Map<Class<?>, Method> methods = Maps.newHashMap();
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
+    private String[] basePackages;
 
     public ConfigurationBeanScanner(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
-    public void register(Class<?> clazz) {
-        final Object instance = BeanUtils.instantiateClass(clazz);
+    public void register(Class<?> config) {
+        setBasePakages(config);
+        registerBeans(config);
+    }
 
-        Arrays.stream(clazz.getMethods())
+    private void setBasePakages(Class<?> config) {
+        final ComponentScan componentScan = config.getAnnotation(ComponentScan.class);
+        if (componentScan == null) {
+            throw new IllegalStateException("@ComponentScan 설정이 필요합니다.");
+        }
+        basePackages = componentScan.value();
+    }
+
+    private void registerBeans(Class<?> config) {
+        final Object instance = BeanUtils.instantiateClass(config);
+
+        Arrays.stream(config.getMethods())
                 .filter(method -> method.isAnnotationPresent(Bean.class))
                 .forEach(method -> methods.put(method.getReturnType(), method));
 
@@ -68,5 +83,9 @@ public class ConfigurationBeanScanner {
     private void addBean(Class<?> key, Object bean) {
         beans.put(key, bean);
         beanFactory.addBean(bean);
+    }
+
+    public String[] getBasePackages() {
+        return basePackages;
     }
 }

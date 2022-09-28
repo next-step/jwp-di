@@ -31,8 +31,8 @@ public class ClasspathBeanScanner {
     }
 
     @SuppressWarnings("unchecked")
-    public void doScan(String prefix) {
-        Reflections reflections = new Reflections(prefix, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
+    public void doScan(String[] basePackages) {
+        Reflections reflections = new Reflections(basePackages, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         preBeanTypes.addAll(getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class, Component.class));
         preBeanTypes.forEach(clazz -> {
             final Object bean = instanticateBean(clazz);
