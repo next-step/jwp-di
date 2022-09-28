@@ -1,11 +1,10 @@
 package core.mvc;
 
-import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.asis.RequestMapping;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
+import next.configuration.MyConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,20 +22,19 @@ public class DispatcherServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
 
     private HandlerMappingRegistry handlerMappingRegistry;
-    private HandlerAdapterRegistry handlerAdapterRegistry;
     private HandlerExecutor handlerExecutor;
-    private BeanFactory beanFactory;
 
     @Override
     public void init() {
-        final BeanScanner beanScanner = new BeanScanner();
-        beanFactory = beanScanner.initBeanFactory("next");
+        ApplicationContext applicationContext = new ApplicationContext(MyConfiguration.class);
+        AnnotationHandlerMapping annotationHandlerMapping = new AnnotationHandlerMapping(applicationContext);
+        annotationHandlerMapping.initialize();
 
         handlerMappingRegistry = new HandlerMappingRegistry();
         handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(beanFactory.getControllers()));
+        handlerMappingRegistry.addHandlerMpping(annotationHandlerMapping);
 
-        handlerAdapterRegistry = new HandlerAdapterRegistry();
+        HandlerAdapterRegistry handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
