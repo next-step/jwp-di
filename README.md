@@ -9,5 +9,7 @@
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
 
 ## STEP 1,2
-- [] @Controller, @Service, @Repository 를 찾아 인스턴스를 생성하고, @Inject 를 기반으로 의존관계를 주입한다.
-- 
+- [X] @Controller, @Service, @Repository 를 찾아 인스턴스를 생성하고, @Inject 를 기반으로 의존관계를 주입한다.
+  - [X] BeanScanner에서 빈이 될 대상 클래스를 스캔한다.
+  - [X] BeanFactory에서 빈이 될 대상 클래스들을 재귀적으로 의존관계를 주입하여 빈을 생성한다.
+  - [X] BeanFactory은 @Controller 애너테이트된 빈 목록을 제공한다.
