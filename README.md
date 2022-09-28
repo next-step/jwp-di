@@ -7,3 +7,7 @@
 
 ## 온라인 코드 리뷰 과정
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
+
+## Step 1 - DI 구현 요구사항
+- BeanFactoryTest 테스트 케이스 통과
+- ControllerScanner 리팩터링
