@@ -1,6 +1,7 @@
 package core.di.factory;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -8,8 +9,10 @@ import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static core.di.factory.BeanFactoryUtils.findConcreteClass;
@@ -32,11 +35,17 @@ public class BeanFactory {
     }
 
     public void initialize() {
-        preInstanticateBeans.forEach(clazz -> generateBean(clazz));
+        preInstanticateBeans.forEach(clazz -> createBean(clazz));
         logger.debug("[Beans created]: " + beans.keySet());
     }
 
-    private Object generateBean(Class<?> clazz) {
+    public Map<Class<?>, Object> getControllers() {
+        return beans.entrySet().stream()
+                .filter(entry -> entry.getKey().isAnnotationPresent(Controller.class))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private Object createBean(Class<?> clazz) {
         if (beans.containsKey(clazz)) {
             return beans.get(clazz);
         }
@@ -45,16 +54,25 @@ public class BeanFactory {
 
         final Constructor<?> injectedConstructor = getInjectedConstructor(concreteClass);
         if (injectedConstructor == null) {
-            final Object bean = BeanUtils.instantiateClass(concreteClass);
-            beans.put(concreteClass, bean);
-            return bean;
+            return createBeanNotInjected(concreteClass);
         }
+        return createBeanInjected(concreteClass, injectedConstructor);
+    }
 
+    private Object createBeanNotInjected(Class<?> concreteClass){
+        final Object bean = BeanUtils.instantiateClass(concreteClass);
+        beans.put(concreteClass, bean);
+        return bean;
+    }
+
+    private Object createBeanInjected(Class<?> concreteClass, Constructor<?> injectedConstructor) {
         final Class<?>[] parameterTypes = injectedConstructor.getParameterTypes();
         final Object[] args = Arrays.stream(parameterTypes)
-                .map(type -> generateBean(type))
+                .map(type -> createBean(type))
                 .toArray();
+
         final Object bean = BeanUtils.instantiateClass(injectedConstructor, args);
+
         beans.put(concreteClass, bean);
         return bean;
     }
