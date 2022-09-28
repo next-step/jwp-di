@@ -7,3 +7,7 @@
 
 ## 온라인 코드 리뷰 과정
 * [텍스트와 이미지로 살펴보는 온라인 코드 리뷰 과정](https://github.com/next-step/nextstep-docs/tree/master/codereview)
+
+## STEP 1,2
+- [] @Controller, @Service, @Repository 를 찾아 인스턴스를 생성하고, @Inject 를 기반으로 의존관계를 주입한다.
+- 
