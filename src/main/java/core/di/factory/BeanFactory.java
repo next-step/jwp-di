@@ -86,7 +86,7 @@ public class BeanFactory {
             return instantiateTargetBean;
         }
 
-        logger.debug("[{}] Try to create Bean from configuration ...", preInstantiatedBean.getName());
+        logger.debug("[{}] Try to create Bean from ClassPath ...", preInstantiatedBean.getName());
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(preInstantiatedBean);
         if (injectedConstructor == null) {
             Object instantiatedBean = ReflectionUtils.getNoArgsConstructor(preInstantiatedBean).newInstance();
@@ -153,7 +153,7 @@ public class BeanFactory {
             return;
         }
 
-        logger.debug("[{}] Try to create Bean from configuration ...", targetBeanClass);
+        logger.debug("[{}] Try to create Bean from Configuration ...", targetBeanClass);
         Object configurationClass = this.getBean(configurationBean);
         if (parameterClasses.length == 0) {
             this.beans.put(targetBeanClass, declaredBean.invoke(configurationClass));
