@@ -1,6 +1,7 @@
 package core.mvc;
 
-import core.di.factory.BeanFactory;
+import core.configuration.ApplicationConfiguration;
+import core.di.ApplicationContext;
 import core.mvc.asis.ControllerHandlerAdapter;
 import core.mvc.tobe.AnnotationHandlerMapping;
 import core.mvc.tobe.HandlerExecutionHandlerAdapter;
@@ -13,7 +14,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Optional;
 
 @WebServlet(name = "dispatcher", urlPatterns = "/", loadOnStartup = 1)
@@ -29,24 +29,23 @@ public class DispatcherServlet extends HttpServlet {
 
     @Override
     public void init() {
-        try {
-            BeanFactory.getInstance().initialize("next");
-        } catch (Exception e) {
-            throw new RuntimeException(e); // TODO
-        }
+
+        ApplicationContext applicationContext = new ApplicationContext();
+        applicationContext.initialize(ApplicationConfiguration.class);
 
         handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping());
+        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(applicationContext.getBeanFactory().getBeans()));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());
         handlerAdapterRegistry.addHandlerAdapter(new ControllerHandlerAdapter());
 
         handlerExecutor = new HandlerExecutor(handlerAdapterRegistry);
+
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         String requestUri = req.getRequestURI();
         logger.debug("Method : {}, Request URI : {}", req.getMethod(), requestUri);
 
