@@ -1,5 +1,7 @@
 package core.mvc.tobe;
 
+import core.configuration.TestApplicationConfiguration;
+import core.di.ApplicationContext;
 import core.di.factory.BeanFactory;
 import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.JdbcUserRepository;
@@ -14,7 +16,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import support.test.DBInitializer;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,9 +26,12 @@ public class AnnotationHandlerMappingTest {
     private UserDao userDao;
 
     @BeforeEach
-    public void setup() throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        BeanFactory.getInstance().initialize("core.mvc.tobe");
-        handlerMapping = new AnnotationHandlerMapping();
+    public void setup() {
+        ApplicationContext applicationContext = new ApplicationContext();
+        applicationContext.initialize(TestApplicationConfiguration.class);
+
+        BeanFactory beanFactory = applicationContext.getBeanFactory();
+        handlerMapping = new AnnotationHandlerMapping(beanFactory.getBeans());
         handlerMapping.initialize();
 
         DBInitializer.initialize();
