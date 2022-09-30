@@ -1,7 +1,6 @@
 package next.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import core.annotation.Inject;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
@@ -22,14 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 public class ApiUserController {
     private static final Logger logger = LoggerFactory.getLogger( ApiUserController.class );
 
-    private final ObjectMapper objectMapper;
-    private final UserDao userDao;
-
-    @Inject
-    public ApiUserController(ObjectMapper objectMapper, UserDao userDao) {
-        this.objectMapper = objectMapper;
-        this.userDao = userDao;
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final UserDao userDao = UserDao.getInstance();
 
     @RequestMapping(value = "/api/users", method = RequestMethod.POST)
     public ModelAndView create(HttpServletRequest request, HttpServletResponse response) throws Exception {

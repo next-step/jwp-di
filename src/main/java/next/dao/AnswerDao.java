@@ -18,6 +18,14 @@ public class AnswerDao {
 
     private final JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
+    private static class AnswerDaoHolder {
+        private static final AnswerDao ANSWER_DAO = new AnswerDao();
+    }
+
+    public static AnswerDao getInstance() {
+        return AnswerDaoHolder.ANSWER_DAO;
+    }
+
     public Answer insert(Answer answer) {
         String sql = "INSERT INTO ANSWERS (writer, contents, createdDate, questionId) VALUES (?, ?, ?, ?)";
         PreparedStatementCreator psc = new PreparedStatementCreator() {
