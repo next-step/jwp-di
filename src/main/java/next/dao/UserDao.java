@@ -14,6 +14,14 @@ public class UserDao {
 
     private final JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
+    private static class UserDaoHolder {
+        private static final UserDao USER_DAO = new UserDao();
+    }
+
+    public static UserDao getInstance() {
+        return UserDaoHolder.USER_DAO;
+    }
+
     public void insert(User user) {
         String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql, user.getUserId(), user.getPassword(), user.getName(), user.getEmail());

@@ -66,6 +66,7 @@ public class BeanFactory {
     }
 
     private List<Object> arguments(BeanConstructor constructor) {
+        logger.debug("constructor = {}, constructor types = {}", constructor, constructor.parameterTypes());
         return constructor.parameterTypes()
                 .stream()
                 .map(beanConstructors::get)

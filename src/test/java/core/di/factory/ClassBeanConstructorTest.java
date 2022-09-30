@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @DisplayName("클래스 빈 생성")
 class ClassBeanConstructorTest {
@@ -41,6 +42,18 @@ class ClassBeanConstructorTest {
                 .isInstanceOf(TestClass.class);
     }
 
+    @DisplayName("인스턴스화 가능 여부 확인")
+    @Test
+    void isNotInstanced() {
+        assertAll(
+                () -> assertThat(new ClassBeanConstructor(TestInterface.class).isNotInstanced()).isTrue(),
+                () -> assertThat(new ClassBeanConstructor(TestClass.class).isNotInstanced()).isFalse()
+        );
+    }
+
     private static class TestClass {
+    }
+
+    private interface TestInterface {
     }
 }

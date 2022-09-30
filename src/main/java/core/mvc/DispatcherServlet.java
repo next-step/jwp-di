@@ -34,8 +34,8 @@ public class DispatcherServlet extends HttpServlet {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext("next");
 
         handlerMappingRegistry = new HandlerMappingRegistry();
-        handlerMappingRegistry.addHandlerMpping(new RequestMapping());
-        handlerMappingRegistry.addHandlerMpping(new AnnotationHandlerMapping(applicationContext));
+        handlerMappingRegistry.addHandlerMapping(new RequestMapping());
+        handlerMappingRegistry.addHandlerMapping(new AnnotationHandlerMapping(applicationContext));
 
         handlerAdapterRegistry = new HandlerAdapterRegistry();
         handlerAdapterRegistry.addHandlerAdapter(new HandlerExecutionHandlerAdapter());

@@ -15,6 +15,14 @@ public class QuestionDao {
 
     private final JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
 
+    private static class QuestionDaoHolder {
+        private static final QuestionDao QUESTION_DAO = new QuestionDao();
+    }
+
+    public static QuestionDao getInstance() {
+        return QuestionDaoHolder.QUESTION_DAO;
+    }
+
     public Question insert(Question question) {
         String sql = "INSERT INTO QUESTIONS (writer, title, contents, createdDate) VALUES (?, ?, ?, ?)";
         PreparedStatementCreator psc = new PreparedStatementCreator() {
