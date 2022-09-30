@@ -5,11 +5,14 @@ import core.annotation.web.RequestMethod;
 import core.di.factory.container.ApplicationContext;
 import core.mvc.HandlerMapping;
 import core.mvc.exception.NotFoundException;
+import core.mvc.tobe.support.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+
+import static java.util.Arrays.asList;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
@@ -24,7 +27,13 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
         applicationContext.initialize();
-        handlerExecutions.putAll(new RequestHandlerConverter(applicationContext.controllers()).handlers());
+        handlerExecutions.putAll(new RequestHandlerConverter(asList(
+                new HttpRequestArgumentResolver(),
+                new HttpResponseArgumentResolver(),
+                new RequestParamArgumentResolver(),
+                new PathVariableArgumentResolver(),
+                new ModelArgumentResolver()
+        )).handlers(applicationContext.getControllers()));
     }
 
     public Object getHandler(HttpServletRequest request) {
