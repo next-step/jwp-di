@@ -6,5 +6,5 @@ public interface ApplicationContext {
 
     void initialize();
 
-    Collection<Object> controllers();
+    Collection<Object> getControllers();
 }

@@ -29,7 +29,7 @@ public class AnnotationConfigApplicationContext implements ApplicationContext {
         beanFactory.initialize();
     }
 
-    public Collection<Object> controllers() {
+    public Collection<Object> getControllers() {
         return beanFactory.beansAnnotatedWith(Controller.class);
     }
 }
