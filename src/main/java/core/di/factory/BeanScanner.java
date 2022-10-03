@@ -25,11 +25,16 @@ public class BeanScanner {
     public static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     public static BeanFactory scan(Object... basePackage) {
+        if (BeanFactory.isScannedPackage(basePackage)) {
+            return BeanFactory.getScannedPackage(basePackage);
+        }
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         Set<Class<?>> preInstanticateBeans = getTargetAnnotationClass(reflections, Controller.class, Service.class, Repository.class);
 
         BeanFactory beanFactory = new BeanFactory(preInstanticateBeans);
         beanFactory.initialize();
+
+        BeanFactory.putScannedPackage(beanFactory, basePackage);
 
         return beanFactory;
     }
