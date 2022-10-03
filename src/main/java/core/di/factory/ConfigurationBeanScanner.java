@@ -1,13 +1,14 @@
 package core.di.factory;
 
+import com.google.common.collect.Sets;
 import core.annotation.*;
-import org.springframework.beans.BeanUtils;
+import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ConfigurationBeanScanner {
 
@@ -17,48 +18,58 @@ public class ConfigurationBeanScanner {
         this.beanFactory = beanFactory;
     }
 
+    public ConfigurationBeanScanner(final BeanFactory beanFactory, final Object... basePackage) {
+        initialize(beanFactory, basePackage);
+        this.beanFactory = beanFactory;
+    }
+
+    private void initialize(BeanFactory beanFactory, Object[] basePackage) {
+        final var reflections = new Reflections(basePackage);
+        final var configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
+        initial(configurationClasses, beanFactory);
+    }
+
     public void register(Class<?> configClass) {
-        Object configurationClass = BeanUtils.instantiateClass(configClass);
-        Method[] declaredMethods = configClass.getDeclaredMethods();
-        for (Method declaredMethod : declaredMethods) {
-            Bean annotatedBean = declaredMethod.getAnnotation(Bean.class);
-            if (annotatedBean == null) {
-                continue;
-            }
-
-            Object object = getObject(configurationClass, declaredMethods, declaredMethod);
-            beanFactory.setBean(declaredMethod.getReturnType(), Optional.ofNullable(object).orElseThrow(IllegalArgumentException::new));
-        }
+        final Set<Class<?>> classes = Sets.newHashSet();
+        classes.add(configClass);
+        initial(classes, beanFactory);
     }
 
-    private Object getObject(Object configurationClass, Method[] declaredMethods, Method declaredMethod) {
-        int parameterCount = declaredMethod.getParameterCount();
-        if (parameterCount == 0) {
-            return invoke(declaredMethod, configurationClass);
-        }
-
-        List<Object> objects = new ArrayList<>();
-        Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
-        for (Class<?> parameterType : parameterTypes) {
-            getParameters(configurationClass, declaredMethods, objects, parameterType);
-        }
-        return invoke(declaredMethod, configurationClass, objects.toArray());
+    private void initial(Set<Class<?>> classes, BeanFactory beanFactory) {
+        final List<Method> beanMethods = getBeanMethods(classes);
+        registerBeansUnExistMethodParameter(beanFactory, beanMethods);
+        registerBeansExistMethodParameter(beanFactory, beanMethods);
     }
 
-    private void getParameters(Object configurationClass, Method[] declaredMethods, List<Object> objects, Class<?> parameterType) {
-        Object parameter = beanFactory.getBean(parameterType);
-        if (parameter != null) {
-            objects.add(parameter);
-            return;
-        }
+    private List<Method> getBeanMethods(Set<Class<?>> configurationClasses) {
+        return configurationClasses.stream()
+                .flatMap(aClass -> Stream.of(aClass.getDeclaredMethods()))
+                .filter(method -> method.isAnnotationPresent(Bean.class))
+                .collect(Collectors.toList());
+    }
 
-        for (Method method : declaredMethods) {
-            if (method.getName().equalsIgnoreCase(parameterType.getSimpleName())) {
-                Object object = getObject(configurationClass, declaredMethods, method);
-                objects.add(object);
-                beanFactory.setBean(method.getReturnType(), Optional.ofNullable(object).orElseThrow(IllegalArgumentException::new));
-            }
-        }
+    private void registerBeansUnExistMethodParameter(BeanFactory beanFactory, List<Method> beanMethods) {
+        beanMethods.stream()
+                .filter(method -> method.getParameterCount() == 0)
+                .map(method -> invoke(method, beanFactory.instanticate(method.getDeclaringClass())))
+                .forEach(bean -> beanFactory.setBean(bean.getClass(), bean));
+    }
+
+    private void registerBeansExistMethodParameter(BeanFactory beanFactory, List<Method> beanMethods) {
+        beanMethods.stream()
+                .filter(method -> method.getParameterCount() > 0)
+                .map(method -> invoke(
+                        method,
+                        beanFactory.instanticate(method.getDeclaringClass()),
+                        createParameterObjects(beanFactory, method))
+                )
+                .forEach(bean -> beanFactory.setBean(bean.getClass(), bean));
+    }
+
+    private static Object[] createParameterObjects(final BeanFactory beanFactory, final Method method) {
+        return Arrays.stream(method.getParameterTypes())
+                .map(beanFactory::getBean)
+                .toArray();
     }
 
     private Object invoke(Method method, Object configurationClass, Object... args) {

@@ -8,10 +8,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
@@ -30,7 +27,12 @@ public class BeanFactory {
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
+        return (T) beans.entrySet()
+                .stream()
+                .filter(entry -> requiredType.isAssignableFrom(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(beans.get(requiredType));
     }
 
     public <T> void setBean(Class<T> inputType, Object object) {
@@ -56,8 +58,8 @@ public class BeanFactory {
     }
 
     private Object instantiateClass(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        if (beans.containsKey(clazz)) {
-            return beans.get(clazz);
+        if (getBean(clazz) != null) {
+            return getBean(clazz);
         }
 
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);

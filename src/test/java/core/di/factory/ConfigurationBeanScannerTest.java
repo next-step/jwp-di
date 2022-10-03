@@ -25,7 +25,7 @@ class ConfigurationBeanScannerTest {
     @Test
     public void register_classpathBeanScanner_통합() {
         BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory, "next");
         cbs.register(IntegrationConfig.class);
         beanFactory.initialize();
 
