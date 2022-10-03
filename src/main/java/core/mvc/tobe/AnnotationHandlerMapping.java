@@ -7,19 +7,16 @@ import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import core.mvc.HandlerMapping;
+import core.mvc.tobe.support.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
-import static core.di.factory.BeanScanner.argumentResolvers;
 import static core.di.factory.BeanScanner.nameDiscoverer;
+import static java.util.Arrays.asList;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
@@ -27,6 +24,14 @@ public class AnnotationHandlerMapping implements HandlerMapping {
     private Object[] basePackage;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+
+    public static final List<ArgumentResolver> argumentResolvers = asList(
+            new HttpRequestArgumentResolver(),
+            new HttpResponseArgumentResolver(),
+            new RequestParamArgumentResolver(),
+            new PathVariableArgumentResolver(),
+            new ModelArgumentResolver()
+    );
 
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;
