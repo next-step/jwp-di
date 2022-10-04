@@ -36,9 +36,7 @@ public class ConfigurationBeanScanner {
     }
 
     private void initial(Set<Class<?>> classes, BeanFactory beanFactory) {
-        final List<Method> beanMethods = getBeanMethods(classes);
-        registerBeansUnExistMethodParameter(beanFactory, beanMethods);
-        registerBeansExistMethodParameter(beanFactory, beanMethods);
+        registerBeans(beanFactory, getBeanMethods(classes));
     }
 
     private List<Method> getBeanMethods(Set<Class<?>> configurationClasses) {
@@ -48,16 +46,9 @@ public class ConfigurationBeanScanner {
                 .collect(Collectors.toList());
     }
 
-    private void registerBeansUnExistMethodParameter(BeanFactory beanFactory, List<Method> beanMethods) {
+    private void registerBeans(BeanFactory beanFactory, List<Method> beanMethods) {
         beanMethods.stream()
-                .filter(method -> method.getParameterCount() == 0)
-                .map(method -> invoke(method, beanFactory.instanticate(method.getDeclaringClass())))
-                .forEach(bean -> beanFactory.setBean(bean.getClass(), bean));
-    }
-
-    private void registerBeansExistMethodParameter(BeanFactory beanFactory, List<Method> beanMethods) {
-        beanMethods.stream()
-                .filter(method -> method.getParameterCount() > 0)
+                .sorted(Comparator.comparingInt(Method::getParameterCount))
                 .map(method -> invoke(
                         method,
                         beanFactory.instanticate(method.getDeclaringClass()),
