@@ -71,4 +71,18 @@ public class BeanFactory {
                 .filter(clazz -> clazz.isAnnotationPresent(Controller.class))
                 .collect(Collectors.toUnmodifiableSet());
     }
+
+    private static Map<Object, BeanFactory> scannedPackage = Maps.newHashMap();
+
+    public static boolean isScannedPackage(Object... basePackage) {
+        return scannedPackage.containsKey(basePackage);
+    }
+
+    public static BeanFactory getScannedPackage(Object... basePackage) {
+        return scannedPackage.get(basePackage);
+    }
+
+    public static void putScannedPackage(BeanFactory beanFactory, Object... basePackage) {
+        scannedPackage.put(basePackage, beanFactory);
+    }
 }

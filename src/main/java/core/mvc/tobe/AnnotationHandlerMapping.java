@@ -1,32 +1,56 @@
 package core.mvc.tobe;
 
 import com.google.common.collect.Maps;
+import core.annotation.web.Controller;
+import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
+import core.di.factory.BeanFactory;
 import core.di.factory.BeanScanner;
 import core.mvc.HandlerMapping;
+import core.mvc.tobe.support.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.*;
+
+import static core.di.factory.BeanScanner.nameDiscoverer;
+import static java.util.Arrays.asList;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
     private Object[] basePackage;
-    private BeanScanner beanScanner;
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
+    public static final List<ArgumentResolver> argumentResolvers = asList(
+            new HttpRequestArgumentResolver(),
+            new HttpResponseArgumentResolver(),
+            new RequestParamArgumentResolver(),
+            new PathVariableArgumentResolver(),
+            new ModelArgumentResolver()
+    );
+
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;
-        beanScanner = new BeanScanner();
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(beanScanner.scan(basePackage));
+
+        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+        BeanFactory beanFactory = BeanScanner.scan(basePackage);
+
+        Set<Class<?>> controllers = beanFactory.getControllerClass();
+        for (Class<?> controller : controllers) {
+            Object target = beanFactory.getBean(controller);
+            addHandlerExecution(handlers, target, controller.getMethods());
+        }
+        handlerExecutions.putAll(handlers);
     }
+
 
     public Object getHandler(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
@@ -43,5 +67,17 @@ public class AnnotationHandlerMapping implements HandlerMapping {
         }
 
         return null;
+    }
+
+    private void addHandlerExecution(Map<HandlerKey, HandlerExecution> handlers, final Object target, Method[] methods) {
+        Arrays.stream(methods)
+                .filter(method -> method.isAnnotationPresent(RequestMapping.class))
+                .forEach(method -> {
+                    RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+                    HandlerKey handlerKey = new HandlerKey(requestMapping.value(), requestMapping.method());
+                    HandlerExecution handlerExecution = new HandlerExecution(nameDiscoverer, argumentResolvers, target, method);
+                    handlers.put(handlerKey, handlerExecution);
+                    logger.info("Add - method: {}, path: {}, HandlerExecution: {}", requestMapping.method(), requestMapping.value(), method.getName());
+                });
     }
 }
