@@ -8,18 +8,18 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
     private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
 
-    private final Set<Class<?>> preInstanticateBeans;
+    private Set<Class<?>> preInstanticateBeans;
 
     private final Map<Class<?>, Object> beans = Maps.newHashMap();
+
+    public BeanFactory() {
+    }
 
     public BeanFactory(Set<Class<?>> preInstanticateBeans) {
         this.preInstanticateBeans = preInstanticateBeans;
@@ -27,10 +27,23 @@ public class BeanFactory {
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
+        return (T) beans.entrySet()
+                .stream()
+                .filter(entry -> requiredType.isAssignableFrom(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(beans.get(requiredType));
+    }
+
+    public <T> void setBean(Class<T> inputType, Object object) {
+        beans.put(inputType, object);
     }
 
     public void initialize() {
+        if (preInstanticateBeans == null || preInstanticateBeans.size() < 1) {
+            return;
+        }
+
         for (Class<?> preInstanticateBean : preInstanticateBeans) {
             beans.put(preInstanticateBean, instanticate(preInstanticateBean));
         }
@@ -45,8 +58,8 @@ public class BeanFactory {
     }
 
     private Object instantiateClass(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        if (beans.containsKey(clazz)) {
-            return beans.get(clazz);
+        if (getBean(clazz) != null) {
+            return getBean(clazz);
         }
 
         Constructor<?> injectedConstructor = BeanFactoryUtils.getInjectedConstructor(clazz);
@@ -70,5 +83,9 @@ public class BeanFactory {
     public Map<Class<?>, Object> getControllers() {
         return preInstanticateBeans.stream().filter(clazz -> clazz.isAnnotationPresent(Controller.class))
                 .collect(Collectors.toMap(clazz -> clazz, beans::get));
+    }
+
+    public void setPreInstanticateBeans(Set<Class<?>> preInstanticateBeans) {
+        this.preInstanticateBeans = preInstanticateBeans;
     }
 }

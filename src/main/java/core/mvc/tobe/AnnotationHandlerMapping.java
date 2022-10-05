@@ -3,35 +3,30 @@ package core.mvc.tobe;
 import com.google.common.collect.Maps;
 import core.annotation.web.RequestMethod;
 import core.di.factory.BeanFactory;
-import core.di.factory.BeanScanner;
+import core.di.factory.ClasspathBeanScanner;
 import core.mvc.HandlerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
-import java.util.Set;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
 
-    private Object[] basePackage;
-    private BeanScanner beanScanner;
-
-    private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
+    private final Object[] basePackage;
+    private final ClasspathBeanScanner classpathBeanScanner;
+    private final Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
     public AnnotationHandlerMapping(Object... basePackage) {
         this.basePackage = basePackage;
-        beanScanner = new BeanScanner();
+        classpathBeanScanner = new ClasspathBeanScanner(new BeanFactory());
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        Set<Class<?>> classes = beanScanner.scan(basePackage);
-
-        BeanFactory beanFactory = new BeanFactory(classes);
-        beanFactory.initialize();
-        Map<Class<?>, Object> controllers = beanFactory.getControllers();
+        classpathBeanScanner.doScan(basePackage);
+        Map<Class<?>, Object> controllers = classpathBeanScanner.getFactoryController();
 
         ControllerResolver controllerResolver = new ControllerResolver();
         for (Map.Entry<Class<?>, Object> classObjectEntry : controllers.entrySet()) {
