@@ -1,12 +1,18 @@
 package core.util;
 
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ReflectionUtils {
 
@@ -92,6 +98,18 @@ public class ReflectionUtils {
             }
         }
         return false;
+    }
+
+    public static Set<Class<?>> getPreInstantiatedBeansWithAnnotations(List<Class<? extends Annotation>> targetAnnotations, String... basePackage) {
+        Reflections reflections = new Reflections(basePackage, Scanners.TypesAnnotated, Scanners.SubTypes, Scanners.MethodsAnnotated);
+
+        Set<Class<?>> preInstantiatedBeans = new HashSet<>();
+        for (Class<? extends Annotation> targetAnnotation : targetAnnotations) {
+            Set<Class<?>> targetBeanClasses = reflections.getTypesAnnotatedWith(targetAnnotation);
+            preInstantiatedBeans.addAll(targetBeanClasses);
+        }
+
+        return preInstantiatedBeans;
     }
 
 }

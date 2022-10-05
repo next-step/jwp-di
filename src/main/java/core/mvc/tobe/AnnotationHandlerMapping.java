@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.annotation.web.RequestMethod;
-import core.di.factory.BeanFactory;
 import core.mvc.HandlerMapping;
 import core.mvc.tobe.support.*;
 import org.slf4j.Logger;
@@ -21,6 +20,7 @@ import static java.util.Arrays.asList;
 
 public class AnnotationHandlerMapping implements HandlerMapping {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationHandlerMapping.class);
+    private final Map<Class<?>, Object> beans;
 
     private static final List<ArgumentResolver> argumentResolvers = asList(
             new HttpRequestArgumentResolver(),
@@ -35,12 +35,13 @@ public class AnnotationHandlerMapping implements HandlerMapping {
 
     private Map<HandlerKey, HandlerExecution> handlerExecutions = Maps.newHashMap();
 
-    public AnnotationHandlerMapping() {
+    public AnnotationHandlerMapping(Map<Class<?>, Object> beans) {
+        this.beans = beans;
     }
 
     public void initialize() {
         logger.info("## Initialized Annotation Handler Mapping");
-        handlerExecutions.putAll(this.getHandlers(BeanFactory.getInstance().getBeans()));
+        handlerExecutions.putAll(this.getHandlers(beans));
     }
 
     public Object getHandler(HttpServletRequest request) {

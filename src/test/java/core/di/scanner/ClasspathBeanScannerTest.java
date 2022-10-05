@@ -1,5 +1,6 @@
-package core.di.factory;
+package core.di.scanner;
 
+import core.di.factory.BeanFactory;
 import core.di.factory.example.JdbcQuestionRepository;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyQnaService;
@@ -11,11 +12,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-class BeanScannerTest {
+class ClasspathBeanScannerTest {
 
     @Test
     void scanTest() {
-        Set<Class<?>> preInstantiatedBeans = BeanScanner.getInstance().scan("core.di.factory");
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner();
+        BeanFactory beanFactory = new BeanFactory();
+        classpathBeanScanner.scan(beanFactory, "core.di.factory");
+        Set<Class<?>> preInstantiatedBeans = beanFactory.getPreInstantiatedBeans();
         Set<Class<?>> expected = new HashSet<>(Arrays.asList(JdbcQuestionRepository.class, JdbcUserRepository.class, MyQnaService.class, QnaController.class));
 
         Assertions.assertThat(preInstantiatedBeans).isEqualTo(expected);
