@@ -37,19 +37,14 @@ public class BeanFactory {
         this.preInstantiatedBeansFromConfiguration.add(target);
     }
 
-    public void addAllPreInstantiatedBeansFromConfiguration(List<Class<?>> targets) {
-        this.preInstantiatedBeansFromConfiguration.addAll(targets);
-    }
-
     public void initialize() throws InvocationTargetException, InstantiationException, IllegalAccessException {
 
-        for (Class<?> preInstantiatedBean : this.preInstantiatedBeans) {
-            this.addInstantiatedBeanFromClassPath(preInstantiatedBean);
+        for (Class<?> configurationBean : this.preInstantiatedBeansFromConfiguration) {
+            this.instantiatedBeansFromConfigurationBeans(configurationBean);
         }
 
-        this.preInstantiatedBeans.addAll(this.preInstantiatedBeansFromConfiguration);
-        for (Class<?> configurationBean : this.preInstantiatedBeansFromConfiguration) {
-            this.addInstantiatedBeansFromConfigurationBeans(configurationBean);
+        for (Class<?> preInstantiatedBean : this.preInstantiatedBeans) {
+            this.instantiatedBeanFromClassPath(preInstantiatedBean);
         }
     }
 
@@ -80,7 +75,7 @@ public class BeanFactory {
         return concreteParameters;
     }
 
-    private Object addInstantiatedBeanFromClassPath(Class<?> preInstantiatedBean) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    private Object instantiatedBeanFromClassPath(Class<?> preInstantiatedBean) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         Object instantiateTargetBean = this.beans.get(preInstantiatedBean);
         if (instantiateTargetBean != null) {
             return instantiateTargetBean;
@@ -104,7 +99,7 @@ public class BeanFactory {
                 continue;
             }
 
-            parameterBeans.add(this.addInstantiatedBeanFromClassPath(parameterClass));
+            parameterBeans.add(this.instantiatedBeanFromClassPath(parameterClass));
         }
 
         Object instantiatedBean = this.getNewInstance(preInstantiatedBean, parameterBeans);
@@ -117,11 +112,11 @@ public class BeanFactory {
         return Arrays.stream(method.getDeclaredAnnotations()).anyMatch(annotation -> annotation.annotationType().equals(Bean.class));
     }
 
-    private Object[] getParameterBeans(Class<?>[] parameterClasses) {
-        List<Object> parameterBeans = Arrays.stream(parameterClasses)
-                .map(this.beans::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+    private Object[] getParameterBeans(Class<?>[] parameterClasses) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        List<Object> parameterBeans = new ArrayList<>();
+        for (Class<?> parameterClass : parameterClasses) {
+            parameterBeans.add(this.instantiatedBeanFromClassPath(parameterClass));
+        }
 
         if (parameterClasses.length != parameterBeans.size()) {
             throw new IllegalArgumentException();
@@ -136,17 +131,17 @@ public class BeanFactory {
         return parameters;
     }
 
-    private void addInstantiatedBeansFromConfigurationBeans(Class<?> configurationBeanClass) throws InvocationTargetException, IllegalAccessException {
+    private void instantiatedBeansFromConfigurationBeans(Class<?> configurationBeanClass) throws InvocationTargetException, IllegalAccessException, InstantiationException {
         List<Method> declaredBeans = Arrays.stream(configurationBeanClass.getDeclaredMethods())
                 .filter(this::isBean)
                 .collect(Collectors.toList());
 
         for (Method declaredBean : declaredBeans) {
-            this.addBeanFromBeanAnnotationMethod(declaredBean.getParameterTypes(), configurationBeanClass, declaredBean);
+            this.instantiateFromBeanAnnotationMethod(declaredBean.getParameterTypes(), configurationBeanClass, declaredBean);
         }
     }
 
-    private void addBeanFromBeanAnnotationMethod(Class<?>[] parameterClasses, Class<?> configurationBean, Method declaredBean) throws InvocationTargetException, IllegalAccessException {
+    private void instantiateFromBeanAnnotationMethod(Class<?>[] parameterClasses, Class<?> configurationBeanClass, Method declaredBean) throws InvocationTargetException, IllegalAccessException, InstantiationException {
         Class<?> targetBeanClass = declaredBean.getReturnType();
         Object targetBean = this.beans.get(targetBeanClass);
         if (Objects.nonNull(targetBean)) {
@@ -154,7 +149,7 @@ public class BeanFactory {
         }
 
         logger.debug("[{}] Try to create Bean from Configuration ...", targetBeanClass);
-        Object configurationClass = this.getBean(configurationBean);
+        Object configurationClass = this.instantiatedBeanFromClassPath(configurationBeanClass);
         if (parameterClasses.length == 0) {
             this.beans.put(targetBeanClass, declaredBean.invoke(configurationClass));
             logger.debug("[{}] Bean created from Configuration.", targetBeanClass);
