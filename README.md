@@ -26,3 +26,9 @@
 2. 자바 설정파일 표시는 @Configuration으로 표시하고, @Bean 애노테이션으로 BeanFactory에 등록한다.
 3. 설정 파일에서 @ComponentScan으로 BeanScanner에서 사용할 기본 패키지 설정
 4. @Configuration 설정 파일을 통해 등록한 빈과 BeanScanner를 통해 등록한 빈 간에도 DI가 가능해야 한다.
+
+## 4단계 - @Configuration 설정 (힌트)
+1. ConfigurationBeanScanner와 ClasspathBeanScanner의 통합을 담당하는 새로운 클래스를 ApplicationContext라는 이름으로 추가한다.
+2. AnnotationHandlerMapping에서 ApplicationContext을 사용해 초기화가 가능하도록 통합한다.
+3. 싱글턴으로 인스턴스 생성하던 기존 방식을 @Inject 애노테이션을 통해 주입 받을 수 있도록 수정한다.
+4. 기존 테스트가 동작할 수 있도록 테스트 코드를 수정한다.
