@@ -6,6 +6,7 @@ import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import next.config.DataSourceConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
@@ -22,10 +23,12 @@ public class BeanFactoryTest {
 
     @BeforeEach
     @SuppressWarnings("unchecked")
-    public void setup() throws InvocationTargetException, IllegalAccessException, InstantiationException {
+    public void setup() {
         reflections = new Reflections("core.di.factory.example");
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         beanFactory = new BeanFactory(preInstanticateClazz);
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.register(DataSourceConfiguration.class);
         beanFactory.initialize();
     }
 

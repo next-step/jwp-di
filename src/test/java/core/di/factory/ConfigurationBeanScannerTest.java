@@ -4,6 +4,7 @@ import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyJdbcTemplate;
+import next.config.DataSourceConfiguration;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -15,8 +16,8 @@ class ConfigurationBeanScannerTest {
     @Test
     public void register_simple() {
         BeanFactory beanFactory = new BeanFactory();
-        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory, "next");
-        cbs.register(ExampleConfig.class);
+        ConfigurationBeanScanner cbs = new ConfigurationBeanScanner(beanFactory);
+        cbs.register(DataSourceConfiguration.class);
         beanFactory.initialize();
 
         assertNotNull(beanFactory.getBean(DataSource.class));

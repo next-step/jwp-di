@@ -13,15 +13,20 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 
-public class ClasspathBeanScanner {
+class ClasspathBeanScanner {
 
     private final BeanFactory beanFactory;
 
-    public ClasspathBeanScanner(BeanFactory beanFactory) {
+    ClasspathBeanScanner(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
-    public void doScan(Object... basePackage) {
+    ClasspathBeanScanner(BeanFactory beanFactory, Object... basePackage) {
+        this.beanFactory = beanFactory;
+        doScan(basePackage);
+    }
+
+    void doScan(Object... basePackage) {
         Set<Class<?>> beans = Sets.newHashSet();
         Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(), new MethodAnnotationsScanner());
         beans.addAll(getTypesAnnotatedWith(reflections, Controller.class, Service.class, Repository.class));
