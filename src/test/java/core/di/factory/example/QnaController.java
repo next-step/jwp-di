@@ -10,7 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class QnaController {
-    private MyQnaService qnaService;
+
+    private final MyQnaService qnaService;
 
     @Inject
     public QnaController(MyQnaService qnaService) {

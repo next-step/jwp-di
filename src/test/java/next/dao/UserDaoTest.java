@@ -1,5 +1,7 @@
 package next.dao;
 
+import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTemplate;
 import next.dto.UserUpdatedDto;
 import next.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +19,7 @@ public class UserDaoTest {
     @BeforeEach
     public void setup() {
         DBInitializer.initialize();
-
-        userDao = UserDao.getInstance();
+        userDao = new UserDao(new JdbcTemplate(ConnectionManager.getDataSource()));
     }
 
     @Test

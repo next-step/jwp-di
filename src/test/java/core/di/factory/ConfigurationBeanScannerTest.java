@@ -1,6 +1,5 @@
 package core.di.factory;
 
-import core.di.factory.example.ExampleConfig;
 import core.di.factory.example.IntegrationConfig;
 import core.di.factory.example.JdbcUserRepository;
 import core.di.factory.example.MyJdbcTemplate;
@@ -37,8 +36,7 @@ class ConfigurationBeanScannerTest {
 
         JdbcUserRepository userRepository = beanFactory.getBean(JdbcUserRepository.class);
         assertNotNull(userRepository);
-        assertNotNull(userRepository.getDataSource()); // 데이터 소스를 빈으로 등록되어있고,
-        // classpath를 초기화하는 과정에서 해당 DataSource도 주입 될 수 있도록 수정 필요
+        assertNotNull(userRepository.getDataSource());
 
         MyJdbcTemplate jdbcTemplate = beanFactory.getBean(MyJdbcTemplate.class);
         assertNotNull(jdbcTemplate);
