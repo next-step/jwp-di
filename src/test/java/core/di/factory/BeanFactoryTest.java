@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ import core.annotation.Configuration;
 import core.annotation.Repository;
 import core.annotation.Service;
 import core.annotation.web.Controller;
+import core.di.factory.definition.BeanDefinition;
+import core.di.factory.definition.SimpleBeanDefinition;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
 
@@ -29,7 +32,15 @@ public class BeanFactoryTest {
         Set<Class<?>> preInstanticateClazz = getTypesAnnotatedWith(Controller.class, Service.class, Repository.class);
         var configurations = getTypesAnnotatedWith(Configuration.class);
 
-        beanFactory = new BeanFactory(preInstanticateClazz, configurations);
+        Set<BeanDefinition> beanDefinitions = preInstanticateClazz.stream()
+            .map(SimpleBeanDefinition::new)
+            .collect(Collectors.toSet());
+
+        beanFactory = new BeanFactory(beanDefinitions);
+        var configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        for (Class<?> configuration : configurations) {
+            configurationBeanScanner.register(configuration);
+        }
         beanFactory.initialize();
     }
 

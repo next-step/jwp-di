@@ -12,20 +12,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 
-import core.annotation.Configuration;
-import core.annotation.Repository;
-import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
 import core.di.factory.BeanFactory;
+import core.di.factory.ClasspathBeanScanner;
+import core.di.factory.ConfigurationBeanScanner;
 import core.mvc.tobe.support.ArgumentResolver;
 import core.mvc.tobe.support.HttpRequestArgumentResolver;
 import core.mvc.tobe.support.HttpResponseArgumentResolver;
@@ -48,17 +44,19 @@ public class BeanScanner {
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 
     public Map<HandlerKey, HandlerExecution> scan(Object... basePackage) {
-        Reflections reflections = new Reflections(basePackage, new TypeAnnotationsScanner(), new SubTypesScanner(),
-            new MethodAnnotationsScanner());
-        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+        var beanFactory = new BeanFactory();
 
-        var beans = findBeanClasses(reflections, Controller.class, Service.class, Repository.class);
-        var configurations = findBeanClasses(reflections, Configuration.class);
+        var classpathBeanScanner = new ClasspathBeanScanner(beanFactory);
+        classpathBeanScanner.doScan(basePackage);
 
-        var beanFactory = new BeanFactory(beans, configurations);
+        var configurationBeanScanner = new ConfigurationBeanScanner(beanFactory);
+        configurationBeanScanner.register(basePackage);
+
         beanFactory.initialize();
 
-        for (Class<?> bean : beans) {
+
+        Map<HandlerKey, HandlerExecution> handlers = new HashMap<>();
+        for (Class<?> bean : beanFactory.getBeans()) {
             if (!bean.isAnnotationPresent(Controller.class)) {
                 continue;
             }
