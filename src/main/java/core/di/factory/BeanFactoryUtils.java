@@ -9,6 +9,7 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 import core.annotation.Inject;
+import core.di.factory.definition.BeanDefinition;
 
 public class BeanFactoryUtils {
     /**
@@ -35,15 +36,33 @@ public class BeanFactoryUtils {
      * @param preInstanticateBeans
      * @return
      */
-    public static Class<?> findConcreteClass(Class<?> injectedClazz, Set<Class<?>> preInstanticateBeans) {
+    public static BeanDefinition findConcreteClass(BeanDefinition injectedClazz, Set<BeanDefinition> preInstanticateBeans) {
+        if (!injectedClazz.notCreatable()) {
+            return injectedClazz;
+        }
+
+        for (var preInstanticateBean : preInstanticateBeans) {
+            Class<?> beanClass = preInstanticateBean.getBeanClass();
+            Set<Class<?>> interfaces = Sets.newHashSet(beanClass.getInterfaces());
+
+            if (interfaces.contains(injectedClazz.getBeanClass())) {
+                return preInstanticateBean;
+            }
+        }
+
+        throw new IllegalStateException(injectedClazz + "인터페이스를 구현하는 Bean이 존재하지 않는다.");
+    }
+
+    public static <T> Class<?> findConcreteClass(Class<T> injectedClazz, Set<Class<?>> preInstanticateBeans) {
         if (!injectedClazz.isInterface()) {
             return injectedClazz;
         }
 
-        for (Class<?> clazz : preInstanticateBeans) {
-            Set<Class<?>> interfaces = Sets.newHashSet(clazz.getInterfaces());
-            if (interfaces.contains(injectedClazz)) {
-                return clazz;
+        for (var preInstanticateBean : preInstanticateBeans) {
+            Set<Class<?>> interfaces = Sets.newHashSet(preInstanticateBean.getInterfaces());
+
+            if (interfaces.contains(preInstanticateBean)) {
+                return preInstanticateBean;
             }
         }
 
