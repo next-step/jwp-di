@@ -81,8 +81,8 @@ public class BeanFactory {
     }
 
     public Map<Class<?>, Object> getControllers() {
-        return preInstanticateBeans.stream().filter(clazz -> clazz.isAnnotationPresent(Controller.class))
-                .collect(Collectors.toMap(clazz -> clazz, beans::get));
+        return Collections.unmodifiableMap(preInstanticateBeans.stream().filter(clazz -> clazz
+                .isAnnotationPresent(Controller.class)).collect(Collectors.toMap(clazz -> clazz, beans::get)));
     }
 
     public void setPreInstanticateBeans(Set<Class<?>> preInstanticateBeans) {

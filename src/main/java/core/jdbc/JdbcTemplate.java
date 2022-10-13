@@ -1,5 +1,6 @@
 package core.jdbc;
 
+import core.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,19 +12,11 @@ import java.util.List;
 public class JdbcTemplate {
     private static final Logger logger = LoggerFactory.getLogger( JdbcTemplate.class );
 
-    private static final JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private final DataSource dataSource;
 
-    private DataSource dataSource;
-
-    private JdbcTemplate() {
-    }
-
+    @Inject
     public JdbcTemplate(DataSource dataSource) {
         this.dataSource = dataSource;
-    }
-
-    public static JdbcTemplate getInstance() {
-        return jdbcTemplate;
     }
 
     public void update(String sql, PreparedStatementSetter pss) throws DataAccessException {

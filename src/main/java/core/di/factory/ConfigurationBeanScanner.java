@@ -13,23 +13,25 @@ import java.util.stream.Stream;
 public class ConfigurationBeanScanner {
 
     private final BeanFactory beanFactory;
+    private final Object[] basePackage;
 
     public ConfigurationBeanScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+        this(beanFactory, (Object[]) null);
     }
 
     public ConfigurationBeanScanner(final BeanFactory beanFactory, final Object... basePackage) {
-        initialize(beanFactory, basePackage);
         this.beanFactory = beanFactory;
+        this.basePackage = basePackage;
+        initialize();
     }
 
-    private void initialize(BeanFactory beanFactory, Object[] basePackage) {
+    private void initialize() {
         final var reflections = new Reflections(basePackage);
         final var configurationClasses = reflections.getTypesAnnotatedWith(Configuration.class);
         initial(configurationClasses, beanFactory);
     }
 
-    public void register(Class<?> configClass) {
+    void register(Class<?> configClass) {
         final Set<Class<?>> classes = Sets.newHashSet();
         classes.add(configClass);
         initial(classes, beanFactory);
