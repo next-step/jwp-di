@@ -1,8 +1,7 @@
 package core.mvc.tobe;
 
-import core.annotation.web.Controller;
 import core.annotation.web.RequestMapping;
-import core.di.factory.BeanFactory;
+import core.di.factory.ApplicationContext;
 import core.mvc.tobe.support.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +16,6 @@ import static java.util.Arrays.asList;
 
 public class ControllerScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(core.mvc.tobe.ControllerScanner.class);
-
     private static final List<ArgumentResolver> argumentResolvers = asList(
                 new HttpRequestArgumentResolver(),
                 new HttpResponseArgumentResolver(),
@@ -28,17 +25,17 @@ public class ControllerScanner {
         );
 
     private static final ParameterNameDiscoverer nameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
-    private final BeanFactory beanFactory;
+    private final ApplicationContext applicationContext;
 
-    public ControllerScanner(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public ControllerScanner(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
+
     public Map<HandlerKey, HandlerExecution> scan() {
-        return beanFactory.annotatedWith(Controller.class)
-                .entrySet()
+        return applicationContext.getControllers()
                 .stream()
-                .flatMap(entry -> getHandlerKeyExecutions(entry.getValue(), entry.getKey().getMethods()).entrySet().stream())
+                .flatMap(controller -> getHandlerKeyExecutions(controller, controller.getClass().getMethods()).entrySet().stream())
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
