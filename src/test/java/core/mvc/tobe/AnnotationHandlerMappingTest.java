@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTemplate;
 import next.dao.UserDao;
 import next.model.User;
 import support.test.DBInitializer;
@@ -17,11 +19,11 @@ public class AnnotationHandlerMappingTest {
 
     @BeforeEach
     public void setup() {
-        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe");
+        handlerMapping = new AnnotationHandlerMapping("core.mvc.tobe", "next.dao");
         handlerMapping.initialize();
 
         DBInitializer.initialize();
-        userDao = new UserDao();
+        userDao = new UserDao(new JdbcTemplate(ConnectionManager.getDataSource()));
     }
 
     @Test

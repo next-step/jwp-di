@@ -11,6 +11,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import core.annotation.Inject;
 import core.annotation.Repository;
 import core.jdbc.JdbcTemplate;
 import core.jdbc.KeyHolder;
@@ -22,9 +23,11 @@ import next.model.Answer;
 public class AnswerDao {
     private static final Logger logger = LoggerFactory.getLogger( AnswerDao.class );
 
-    private JdbcTemplate jdbcTemplate = JdbcTemplate.getInstance();
+    private final JdbcTemplate jdbcTemplate;
 
-    public AnswerDao() {
+    @Inject
+    public AnswerDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Answer insert(Answer answer) {

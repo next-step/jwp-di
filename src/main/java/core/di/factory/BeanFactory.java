@@ -1,64 +1,77 @@
 package core.di.factory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Maps;
 
-public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
+import core.di.factory.definition.BeanDefinition;
 
-    private Set<Class<?>> preInstantiateBeans;
+public class BeanFactory {
+
+    private final Set<BeanDefinition> preInstantiateBeans;
 
     private Map<Class<?>, Object> beans = Maps.newHashMap();
 
-    public BeanFactory(Set<Class<?>> preInstantiateBeans) {
+    public BeanFactory(Set<BeanDefinition> preInstantiateBeans) {
         this.preInstantiateBeans = preInstantiateBeans;
+    }
+
+    public BeanFactory() {
+        this(new HashSet<>());
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> requiredType) {
-        return (T)beans.get(requiredType);
+        if (beans.containsKey(requiredType)) {
+            return (T)beans.get(requiredType);
+        }
+
+        Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(requiredType, beans.keySet());
+        if (beans.containsKey(concreteClass)) {
+            return (T)beans.get(concreteClass);
+        }
+
+        return (T)fetchBean(requiredType);
+    }
+
+    public void addBean(BeanDefinition beanDefinition) {
+        preInstantiateBeans.add(beanDefinition);
     }
 
     public void initialize() {
-        for (Class<?> preInstantiateBean : preInstantiateBeans) {
-            beans.putIfAbsent(preInstantiateBean, fetchBean(preInstantiateBean));
+        for (var preInstantiateBean : preInstantiateBeans) {
+            fetchBean(preInstantiateBean);
         }
     }
 
-    private Object fetchBean(Class<?> target) {
-        if (beans.containsKey(target)) {
-            return beans.get(target);
+    private Object fetchBean(BeanDefinition target) {
+        if (beans.containsKey(target.getBeanClass())) {
+            return beans.get(target.getBeanClass());
         }
 
-        if (target.isInterface()) {
-            Class<?> concreteClass = BeanFactoryUtils.findConcreteClass(target, preInstantiateBeans);
+        if (target.notCreatable()) {
+            BeanDefinition concreteClass = BeanFactoryUtils.findConcreteClass(target, preInstantiateBeans);
             return fetchBean(concreteClass);
         }
 
-        Constructor<?> constructor = BeanFactoryUtils.getInjectedConstructor(target)
-            .orElseGet(() -> fetchDefaultConstructor(target));
-
-        return createBean(constructor);
+        return createBean(target);
     }
 
-    private Constructor<?> fetchDefaultConstructor(Class<?> target) {
-        try {
-            return target.getDeclaredConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("기본생성자를 찾을 수 없습니다" + target);
-        }
+    private Object fetchBean(Class<?> clazz) {
+        var beanDefinition = preInstantiateBeans.stream()
+            .filter(it -> it.getBeanClass().equals(clazz) || it.isConcreteClass(clazz))
+            .findAny()
+            .orElseThrow(() -> new IllegalStateException("정의되지 않은 빈입니다." + clazz));
+
+        return fetchBean(beanDefinition);
     }
 
-    private Object createBean(Constructor<?> constructor) {
-        var parameterTypes = constructor.getParameterTypes();
-        var parameterCount = constructor.getParameterCount();
+    private Object createBean(BeanDefinition target) {
+        var parameterTypes = target.getParameterTypes();
+        var parameterCount = target.getParameterCount();
 
         var parameterValues = new Object[parameterCount];
 
@@ -67,10 +80,15 @@ public class BeanFactory {
         }
 
         try {
-            constructor.setAccessible(true);
-            return constructor.newInstance(parameterValues);
+            var instance = target.createObject(parameterValues);
+            beans.put(target.getBeanClass(), instance);
+            return instance;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalArgumentException("bean을 생성할 수 없습니다" + constructor);
+            throw new IllegalArgumentException("bean을 생성할 수 없습니다" + target);
         }
+    }
+
+    public Set<Class<?>> getBeans() {
+        return beans.keySet();
     }
 }
