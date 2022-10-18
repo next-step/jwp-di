@@ -1,77 +1,72 @@
 package core.di.factory;
 
-import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.BeanCreationException;
+import core.di.factory.bean.Bean;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.requireNonNullElseGet;
-
 public class BeanFactory {
-    private static final Logger logger = LoggerFactory.getLogger(BeanFactory.class);
+    private final Map<Class<?>, Bean> beanByType;
+    private final Map<Class<?>, Object> instanceByType = new HashMap<>();
 
-
-    private final BeanScanner scanner;
-    private Map<Class<?>, Object> beans = Maps.newHashMap();
-
-    public BeanFactory(BeanScanner scanner) {
-        this.scanner = scanner;
-    }
-    @SuppressWarnings("unchecked")
-    public <T> T getBean(Class<T> requiredType) {
-        return (T) beans.get(requiredType);
+    public BeanFactory(Collection<Bean> instanceByType) {
+        this.beanByType = instanceByType.stream()
+                .collect(Collectors.toUnmodifiableMap(Bean::getType, Function.identity()));
     }
 
     public void initialize() {
-        scanner.scan()
-                .forEach(this::createInstance);
+        beanByType.values().forEach(this::createInstance);
+    }
+    @SuppressWarnings("unchecked")
+    public <T> T getBean(Class<T> requiredType) {
+        return (T) instanceByType.get(requiredType);
     }
 
-    private Object createInstance(Class<?> clazz) {
-        if (beans.containsKey(clazz)) {
-            return beans.get(clazz);
+    private Object createInstance(Bean bean) {
+        if (instanceByType.containsKey(bean.getType())) {
+            return instanceByType.get(bean.getType());
         }
 
-        Object instance = instantiateClass(clazz);
-        beans.put(clazz, instance);
+        Object instance = instantiateClass(bean);
+        instanceByType.put(bean.getType(), instance);
         return instance;
     }
 
-    private Object instantiateClass(Class<?> clazz) {
-        if (clazz.isInterface()) {
-            return createInstance(scanner.subTypeOf(clazz));
+    private Object instantiateClass(Bean bean) {
+        if (bean.isNotInstanced()) {
+            return createInstance(beanByType.get(getSubType(bean.getType())));
         }
 
-        Constructor<?> constructor = requireNonNullElseGet(BeanFactoryUtils.getInjectedConstructor(clazz), () -> defaultConstructor(clazz));
-        return BeanUtils.instantiateClass(constructor, getParameters(constructor));
+        return bean.instantiate(getParameters(bean));
     }
 
-    private Constructor<?> defaultConstructor(Class<?> clazz) {
-        try {
-            return clazz.getConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new BeanCreationException(clazz.getName(), e);
-        }
+    private Class<?> getSubType(Class<?> clazz) {
+        return beanByType.keySet()
+                .stream()
+                .filter(type -> !type.equals(clazz) && clazz.isAssignableFrom(type))
+                .findAny()
+                .orElseThrow(() -> new NoSuchBeanDefinitionException(clazz));
     }
-
-    private Object[] getParameters(Constructor<?> constructor) {
-        return Arrays.stream(constructor.getParameterTypes())
+    private List<Object> getParameters(Bean bean) {
+        return bean.getParameterTypes()
+                .stream()
+                .map(beanByType::get)
                 .map(this::createInstance)
-                .toArray();
+                .collect(Collectors.toList());
     }
 
-    public Map<Class<?>, Object> annotatedWith(Class<? extends Annotation> annotation) {
-        return beans.entrySet()
+    public Collection<Object> annotatedWith(Class<? extends Annotation> annotation) {
+        return instanceByType.entrySet()
                 .stream()
                 .filter(entry -> entry.getKey().isAnnotationPresent(annotation))
-                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
     }
 
 }

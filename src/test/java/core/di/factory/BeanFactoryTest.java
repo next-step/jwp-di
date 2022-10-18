@@ -1,19 +1,15 @@
 package core.di.factory;
 
-import com.google.common.collect.Sets;
-import core.annotation.Repository;
-import core.annotation.Service;
 import core.annotation.web.Controller;
 import core.di.factory.example.MyQnaService;
 import core.di.factory.example.QnaController;
+import core.di.factory.bean.Bean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.reflections.Reflections;
 
-import java.lang.annotation.Annotation;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,8 +20,13 @@ public class BeanFactoryTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     public void setup() {
-        BeanScanner beanScanner = new BeanScanner("core.di.factory.example");
-        beanFactory = new BeanFactory(beanScanner);
+        ConfigurationBeanScanner configurationBeanScanner = new ConfigurationBeanScanner("core.di.factory.example");
+        ClasspathBeanScanner classpathBeanScanner = new ClasspathBeanScanner(configurationBeanScanner.getConfiguration());
+
+        Collection<Bean> beanConstructors = new ArrayList<>();
+        beanConstructors.addAll(configurationBeanScanner.scan());
+        beanConstructors.addAll(classpathBeanScanner.scan());
+        beanFactory = new BeanFactory(beanConstructors);
         beanFactory.initialize();
     }
 
@@ -45,10 +46,8 @@ public class BeanFactoryTest {
     @DisplayName("Controller 애노테이션 있는 빈들 조회")
     void annotatedWith() {
         //when
-        Map<Class<?>, Object> controllers = beanFactory.annotatedWith(Controller.class);
+        Collection<Object> controllers = beanFactory.annotatedWith(Controller.class);
         //then
-        assertThat(controllers).hasEntrySatisfying(
-                QnaController.class, value -> assertThat(value).isInstanceOf(QnaController.class));
-
+        assertThat(controllers).hasExactlyElementsOfTypes(QnaController.class);
     }
 }
